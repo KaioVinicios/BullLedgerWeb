@@ -23,7 +23,7 @@
 
     /* Path aliases */
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"]
