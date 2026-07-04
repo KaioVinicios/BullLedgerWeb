@@ -10,6 +10,7 @@ import { FormsSection } from "@/pages/DesignSystem/sections/FormsSection";
 import { OverlaysSection } from "@/pages/DesignSystem/sections/OverlaysSection";
 import { RadiusSection } from "@/pages/DesignSystem/sections/RadiusSection";
 import { TypographySection } from "@/pages/DesignSystem/sections/TypographySection";
+import { PATHS } from "@/routes/path";
 
 const sections = [
   { id: "colors", label: "Colors" },
@@ -29,10 +30,10 @@ export function DesignSystemPage() {
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Link
-              to="/"
+              to={PATHS.HOME}
               className="font-heading flex items-center gap-2 font-semibold"
             >
-              <BullLedgerLogo className="size-7" />
+              <BullLedgerLogo aria-hidden className="size-7" />
               BullLedger
             </Link>
             <span className="text-muted-foreground text-sm">
