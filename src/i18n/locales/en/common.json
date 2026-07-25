@@ -1,0 +1,33 @@
+{
+  "theme": {
+    "label": "Change theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "label": "Change language",
+    "en": "English",
+    "pt": "Português"
+  },
+  "field": {
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "home": {
+    "tagline": "Track your investments with clarity: positions, transactions, and performance in one place.",
+    "notOpen": "BullLedger is still being built and isn’t open yet.",
+    "previewCta": "Preview the interface"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page does not exist.",
+    "backHome": "Back home"
+  },
+  "legal": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "pending": "We’re finalizing this document ahead of launch. It’ll be published in full before you can create a live account.",
+    "backToSignup": "Back to sign up"
+  }
+}

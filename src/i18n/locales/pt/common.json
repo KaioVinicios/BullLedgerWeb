@@ -1,0 +1,33 @@
+{
+  "theme": {
+    "label": "Alterar tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
+  "language": {
+    "label": "Alterar idioma",
+    "en": "English",
+    "pt": "Português"
+  },
+  "field": {
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha"
+  },
+  "home": {
+    "tagline": "Acompanhe seus investimentos com clareza: posições, transações e desempenho em um só lugar.",
+    "notOpen": "A BullLedger ainda está em construção e não está aberta.",
+    "previewCta": "Ver a interface"
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "Esta página não existe.",
+    "backHome": "Voltar ao início"
+  },
+  "legal": {
+    "terms": "Termos de Serviço",
+    "privacy": "Política de Privacidade",
+    "pending": "Estamos finalizando este documento antes do lançamento. Ele será publicado por completo antes que você possa criar uma conta.",
+    "backToSignup": "Voltar ao cadastro"
+  }
+}

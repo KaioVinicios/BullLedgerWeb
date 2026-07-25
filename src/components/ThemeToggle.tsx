@@ -1,4 +1,5 @@
 import { useTheme } from "next-themes";
+import { useTranslation } from "react-i18next";
 import {
   IconDeviceDesktop,
   IconMoon,
@@ -16,11 +17,12 @@ import {
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Change theme">
+        <Button variant="ghost" size="icon" aria-label={t("theme.label")}>
           <IconSun className="dark:hidden" />
           <IconMoon className="hidden dark:block" />
         </Button>
@@ -28,13 +30,13 @@ export function ThemeToggle() {
       <DropdownMenuContent align="end">
         <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="light">
-            <IconSun /> Light
+            <IconSun /> {t("theme.light")}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">
-            <IconMoon /> Dark
+            <IconMoon /> {t("theme.dark")}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
-            <IconDeviceDesktop /> System
+            <IconDeviceDesktop /> {t("theme.system")}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

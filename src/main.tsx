@@ -4,6 +4,7 @@ import { RouterProvider } from "@tanstack/react-router";
 import { ThemeProvider } from "next-themes";
 
 import "./index.css";
+import "@/i18n/config";
 import { router } from "@/routes/router";
 
 createRoot(document.getElementById("root")!).render(
