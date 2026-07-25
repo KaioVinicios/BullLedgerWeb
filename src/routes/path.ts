@@ -10,4 +10,8 @@
 export const PATHS = {
   HOME: "/",
   DESIGN_SYSTEM: "/design-system",
+  REGISTER: "/register",
+  LOGIN: "/login",
+  TERMS: "/terms",
+  PRIVACY: "/privacy",
 } as const;

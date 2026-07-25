@@ -1,8 +1,12 @@
 import { createRoute, createRouter, Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { HomePage } from "@/pages/HomePage";
 import { DesignSystemPage } from "@/pages/DesignSystem";
+import { RegisterPage } from "@/pages/Register";
+import { LoginPage } from "@/pages/Login";
+import { LegalPage } from "@/pages/Legal";
 import { PATHS } from "@/routes/path";
 import { rootRoute } from "@/routes/root";
 
@@ -18,7 +22,38 @@ const designSystemRoute = createRoute({
   component: DesignSystemPage,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, designSystemRoute]);
+const registerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: PATHS.REGISTER,
+  component: RegisterPage,
+});
+
+const loginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: PATHS.LOGIN,
+  component: LoginPage,
+});
+
+const termsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: PATHS.TERMS,
+  component: () => <LegalPage document="terms" />,
+});
+
+const privacyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: PATHS.PRIVACY,
+  component: () => <LegalPage document="privacy" />,
+});
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  designSystemRoute,
+  registerRoute,
+  loginRoute,
+  termsRoute,
+  privacyRoute,
+]);
 
 export const router = createRouter({
   routeTree,
@@ -26,12 +61,13 @@ export const router = createRouter({
 });
 
 function NotFound() {
+  const { t } = useTranslation();
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-4">
-      <h1>404</h1>
-      <p className="text-muted-foreground">This page does not exist.</p>
+    <main className="flex min-h-svh flex-col items-center justify-center gap-4 px-6 text-center">
+      <h1>{t("notFound.title")}</h1>
+      <p className="text-muted-foreground">{t("notFound.description")}</p>
       <Button asChild variant="outline">
-        <Link to={PATHS.HOME}>Back home</Link>
+        <Link to={PATHS.HOME}>{t("notFound.backHome")}</Link>
       </Button>
     </main>
   );
