@@ -366,3 +366,10 @@ $RECYCLE.BIN/
 
 # Impeccable skill local state
 .impeccable/
+
+# Documentation mirrored from the backend repository (source of truth: BullLedgerAPI).
+# Synced by BullLedgerAPI/scripts/sync_frontend_docs.py — never commit it here.
+docs/backend/
+
+### Project-local working docs ###
+docs/*todo.md
