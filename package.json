@@ -16,6 +16,7 @@
     "api:schema": "bun scripts/fetch-schema.ts",
     "api:types": "openapi-typescript openapi.yaml -o src/types/api.d.ts",
     "api:sync": "bun run api:schema && bun run api:types",
+    "test:e2e": "playwright test",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.62.0",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tailwindcss/vite": "^4.3.1",
     "@testing-library/dom": "10.4.1",
