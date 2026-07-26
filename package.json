@@ -17,6 +17,7 @@
     "api:types": "openapi-typescript openapi.yaml -o src/types/api.d.ts",
     "api:sync": "bun run api:schema && bun run api:types",
     "test:e2e": "playwright test",
+    "check": "bun run lint && bun run format:check && bun run typecheck && bun run test",
     "preview": "vite preview"
   },
   "dependencies": {

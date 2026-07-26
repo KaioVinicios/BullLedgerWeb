@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  verify:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun run build
+        env:
+          # Not required today — nothing imports src/config/env.ts yet. Set now
+          # so the build keeps working the moment Phase 1's HTTP client does.
+          VITE_API_URL: https://bull-ledger.voynan.com
+
+  schema-drift:
+    name: Generated types match the live schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Regenerate from the live schema
+        run: bun run api:sync
+        env:
+          VITE_API_URL: https://bull-ledger.voynan.com
+      - name: Fail if the committed types are stale
+        run: git diff --exit-code openapi.yaml src/types/api.d.ts
