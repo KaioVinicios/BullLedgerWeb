@@ -19,6 +19,7 @@
     "@fontsource-variable/geist-mono": "^5.2.8",
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource-variable/space-grotesk": "^5.2.10",
+    "@react-oauth/google": "0.13.5",
     "@tabler/icons-react": "^3.44.0",
     "@tanstack/react-form": "^1.33.0",
     "@tanstack/react-query": "^5.101.0",
