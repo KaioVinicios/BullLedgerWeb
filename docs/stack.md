@@ -35,6 +35,7 @@ Everything below is declared in `package.json` and installed with `bun install`.
 | **vitest** + **@testing-library/react** | Unit + component tests |
 | **playwright** | E2E tests |
 | **eslint** + **prettier** | Lint + format |
+| **posthog-js** | Product analytics + observability |
 
 ---
 
@@ -54,9 +55,10 @@ Everything below is declared in `package.json` and installed with `bun install`.
 | Lint + format | **ESLint + Prettier** | Native fit with shadcn/ui ecosystem — no tooling friction. |
 | i18n | **react-i18next** | Most widely adopted React i18n library. Handles namespaces, lazy loading of translation files, pluralization, and interpolation out of the box. |
 | OAuth | **@react-oauth/google** | Lightweight Google OAuth2 wrapper for React. Triggers the OAuth flow and handles the callback; hands the token to the backend for exchange. |
+| Observability | **PostHog** | Product analytics, session replay, feature flags, and error tracking in one SDK. |
 
 ---
 
 ## Stack at a Glance
 
-React · TypeScript · Vite · Tailwind · shadcn/ui · TanStack Form · TanStack Query · TanStack Router · Zustand · React Context · Zod · react-i18next · @react-oauth/google · bun · Vitest · React Testing Library · Playwright · ESLint · Prettier
+React · TypeScript · Vite · Tailwind · shadcn/ui · TanStack Form · TanStack Query · TanStack Router · Zustand · React Context · Zod · react-i18next · @react-oauth/google · PostHog · bun · Vitest · React Testing Library · Playwright · ESLint · Prettier
