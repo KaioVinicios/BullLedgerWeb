@@ -30,7 +30,7 @@ export function PasswordField({ className, ...props }: PasswordFieldProps) {
             visible ? t("field.hidePassword") : t("field.showPassword")
           }
           aria-pressed={visible}
-          className="text-muted-foreground hover:text-foreground focus-visible:ring-ring absolute inset-y-0 right-0 flex items-center rounded-md px-3 outline-none focus-visible:ring-3"
+          className="absolute inset-y-0 right-0 flex items-center rounded-md px-3 text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring"
         >
           {visible ? (
             <IconEyeOff className="size-4" />

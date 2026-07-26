@@ -44,7 +44,7 @@ export function TextField({
         {trailing}
       </div>
       {hint && (
-        <p id={`${name}-hint`} className="text-muted-foreground text-xs">
+        <p id={`${name}-hint`} className="text-xs text-muted-foreground">
           {hint}
         </p>
       )}

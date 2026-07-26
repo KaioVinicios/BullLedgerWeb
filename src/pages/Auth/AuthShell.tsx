@@ -21,7 +21,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto w-full max-w-sm">
           <Link
             to={PATHS.HOME}
-            className="focus-visible:ring-ring inline-flex items-center gap-2 rounded-md outline-none focus-visible:ring-3"
+            className="inline-flex items-center gap-2 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring"
           >
             <BullLedgerLogo aria-hidden className="size-7" />
             <span className="font-heading text-lg font-semibold tracking-tight">

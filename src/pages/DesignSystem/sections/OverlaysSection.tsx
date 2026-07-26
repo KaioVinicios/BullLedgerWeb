@@ -138,7 +138,7 @@ export function OverlaysSection() {
             <div className="grid gap-4">
               <div className="space-y-1">
                 <h4 className="text-sm leading-none font-medium">Filters</h4>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Narrow down your transaction history.
                 </p>
               </div>

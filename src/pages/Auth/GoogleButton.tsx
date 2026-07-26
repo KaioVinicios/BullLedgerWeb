@@ -6,7 +6,13 @@ export function GoogleButton({
   ...props
 }: React.ComponentProps<typeof Button> & { label: string }) {
   return (
-    <Button type="button" variant="outline" size="lg" className="w-full" {...props}>
+    <Button
+      type="button"
+      variant="outline"
+      size="lg"
+      className="w-full"
+      {...props}
+    >
       <GoogleLogo />
       {label}
     </Button>

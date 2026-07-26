@@ -26,17 +26,17 @@ const sections = [
 export function DesignSystemPage() {
   return (
     <div className="min-h-svh">
-      <header className="bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
+      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Link
               to={PATHS.HOME}
-              className="font-heading flex items-center gap-2 font-semibold"
+              className="flex items-center gap-2 font-heading font-semibold"
             >
               <BullLedgerLogo aria-hidden className="size-7" />
               BullLedger
             </Link>
-            <span className="text-muted-foreground text-sm">
+            <span className="text-sm text-muted-foreground">
               / Design System
             </span>
           </div>
@@ -51,7 +51,7 @@ export function DesignSystemPage() {
               <a
                 key={section.id}
                 href={`#${section.id}`}
-                className="text-muted-foreground hover:text-foreground block rounded-md px-2 py-1 text-sm transition-colors"
+                className="block rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 {section.label}
               </a>
@@ -62,11 +62,11 @@ export function DesignSystemPage() {
         <main className="min-w-0 flex-1 space-y-16 pb-24">
           <div className="space-y-3">
             <h1>Design System</h1>
-            <p className="text-muted-foreground max-w-2xl">
+            <p className="max-w-2xl text-muted-foreground">
               The foundations and components that BullLedger is built from —
               tokens, type, and the shadcn component set, themed for both light
-              and dark. Everything on this page uses the exact styles shipped
-              to the app.
+              and dark. Everything on this page uses the exact styles shipped to
+              the app.
             </p>
           </div>
 

@@ -50,7 +50,7 @@ export function RegisterPage() {
     <AuthShell>
       <div className="mt-10">
         <h1 className="text-3xl">{t("register.title")}</h1>
-        <p className="text-muted-foreground mt-2 text-sm text-pretty">
+        <p className="mt-2 text-sm text-pretty text-muted-foreground">
           {t("register.subtitle")}
         </p>
       </div>
@@ -66,11 +66,11 @@ export function RegisterPage() {
         />
 
         <div className="flex items-center gap-3">
-          <span className="bg-border h-px flex-1" />
-          <span className="text-muted-foreground text-xs">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">
             {t("divider.registerEmail")}
           </span>
-          <span className="bg-border h-px flex-1" />
+          <span className="h-px flex-1 bg-border" />
         </div>
 
         <form
@@ -135,15 +135,13 @@ export function RegisterPage() {
                     />
                     <label
                       htmlFor={field.name}
-                      className="text-muted-foreground text-sm leading-snug select-none"
+                      className="text-sm leading-snug text-muted-foreground select-none"
                     >
                       <Trans
                         t={t}
                         i18nKey="terms.agreement"
                         components={{
-                          terms: (
-                            <Link to={PATHS.TERMS} className={authLink} />
-                          ),
+                          terms: <Link to={PATHS.TERMS} className={authLink} />,
                           privacy: (
                             <Link to={PATHS.PRIVACY} className={authLink} />
                           ),
@@ -182,7 +180,7 @@ export function RegisterPage() {
         </form>
       </div>
 
-      <p className="text-muted-foreground mt-8 text-center text-sm">
+      <p className="mt-8 text-center text-sm text-muted-foreground">
         {t("register.haveAccount")}{" "}
         <Link to={PATHS.LOGIN} className={authLink}>
           {t("register.signIn")}

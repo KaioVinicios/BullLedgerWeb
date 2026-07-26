@@ -62,7 +62,9 @@ export function FeedbackSection() {
       <DemoBlock label="Toasts">
         <Button
           variant="outline"
-          onClick={() => toast("Portfolio synced", { description: "42 positions updated." })}
+          onClick={() =>
+            toast("Portfolio synced", { description: "42 positions updated." })
+          }
         >
           Default
         </Button>

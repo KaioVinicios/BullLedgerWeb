@@ -31,8 +31,12 @@ export function FormsSection() {
         <div className="grid gap-2">
           <Label htmlFor="ds-search">Search</Label>
           <div className="relative">
-            <IconSearch className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-            <Input id="ds-search" className="pl-8" placeholder="Search assets…" />
+            <IconSearch className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="ds-search"
+              className="pl-8"
+              placeholder="Search assets…"
+            />
           </div>
         </div>
         <div className="grid gap-2">

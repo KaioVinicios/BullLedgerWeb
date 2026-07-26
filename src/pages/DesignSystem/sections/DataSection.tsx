@@ -54,10 +54,38 @@ const stats = [
 ];
 
 const transactions = [
-  { date: "Jun 27, 2026", ticker: "AAPL", type: "Buy", qty: 10, price: "$187.32", total: "$1,873.20" },
-  { date: "Jun 24, 2026", ticker: "VOO", type: "Buy", qty: 2, price: "$512.08", total: "$1,024.16" },
-  { date: "Jun 19, 2026", ticker: "PETR4", type: "Sell", qty: 100, price: "R$38.05", total: "R$3,805.00" },
-  { date: "Jun 12, 2026", ticker: "BTC", type: "Buy", qty: 0.004, price: "$100,547.00", total: "$402.19" },
+  {
+    date: "Jun 27, 2026",
+    ticker: "AAPL",
+    type: "Buy",
+    qty: 10,
+    price: "$187.32",
+    total: "$1,873.20",
+  },
+  {
+    date: "Jun 24, 2026",
+    ticker: "VOO",
+    type: "Buy",
+    qty: 2,
+    price: "$512.08",
+    total: "$1,024.16",
+  },
+  {
+    date: "Jun 19, 2026",
+    ticker: "PETR4",
+    type: "Sell",
+    qty: 100,
+    price: "R$38.05",
+    total: "R$3,805.00",
+  },
+  {
+    date: "Jun 12, 2026",
+    ticker: "BTC",
+    type: "Buy",
+    qty: 0.004,
+    price: "$100,547.00",
+    total: "$402.19",
+  },
 ];
 
 export function DataSection() {
@@ -83,7 +111,7 @@ export function DataSection() {
               </CardAction>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <IconWallet className="size-3.5" />
                 vs. last 30 days
               </p>
@@ -112,9 +140,7 @@ export function DataSection() {
                 </TableCell>
                 <TableCell className="font-medium">{tx.ticker}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant={tx.type === "Buy" ? "secondary" : "outline"}
-                  >
+                  <Badge variant={tx.type === "Buy" ? "secondary" : "outline"}>
                     {tx.type}
                   </Badge>
                 </TableCell>
@@ -142,21 +168,21 @@ export function DataSection() {
           </TabsList>
           <TabsContent
             value="overview"
-            className="text-muted-foreground pt-3 text-sm"
+            className="pt-3 text-sm text-muted-foreground"
           >
             A snapshot of your portfolio: total value, allocation, and recent
             performance.
           </TabsContent>
           <TabsContent
             value="positions"
-            className="text-muted-foreground pt-3 text-sm"
+            className="pt-3 text-sm text-muted-foreground"
           >
             Every open position with cost basis, current price, and unrealized
             P/L.
           </TabsContent>
           <TabsContent
             value="history"
-            className="text-muted-foreground pt-3 text-sm"
+            className="pt-3 text-sm text-muted-foreground"
           >
             The full transaction ledger, filterable by asset, type, and date.
           </TabsContent>

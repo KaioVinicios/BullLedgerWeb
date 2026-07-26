@@ -33,7 +33,7 @@ export function RadiusSection() {
           <div key={radius.token} className="space-y-1.5 text-center">
             <div
               className={cn(
-                "bg-muted size-20 border-2 border-dashed",
+                "size-20 border-2 border-dashed bg-muted",
                 radius.className,
               )}
             />
@@ -44,7 +44,9 @@ export function RadiusSection() {
       <DemoBlock label="Spacing scale" className="items-end">
         {spacing.map((step) => (
           <div key={step.token} className="space-y-1.5 text-center">
-            <div className={cn("bg-primary mx-auto rounded-xs", step.className)} />
+            <div
+              className={cn("mx-auto rounded-xs bg-primary", step.className)}
+            />
             <p className="font-mono text-xs">{step.token}</p>
           </div>
         ))}

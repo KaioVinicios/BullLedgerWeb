@@ -17,7 +17,7 @@ export function ShowcaseSection({
     <section id={id} className="scroll-mt-24 space-y-6">
       <div className="space-y-1.5">
         <h2>{title}</h2>
-        <p className="text-muted-foreground max-w-2xl text-sm">{description}</p>
+        <p className="max-w-2xl text-sm text-muted-foreground">{description}</p>
       </div>
       {children}
     </section>
@@ -34,13 +34,13 @@ export function DemoBlock({ label, className, children }: DemoBlockProps) {
   return (
     <div className="space-y-2">
       {label && (
-        <p className="text-muted-foreground font-mono text-xs tracking-wide uppercase">
+        <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
           {label}
         </p>
       )}
       <div
         className={cn(
-          "bg-card/50 flex flex-wrap items-center gap-4 rounded-xl border p-6",
+          "flex flex-wrap items-center gap-4 rounded-xl border bg-card/50 p-6",
           className,
         )}
       >

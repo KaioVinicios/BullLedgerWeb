@@ -44,7 +44,7 @@ export function LoginPage() {
     <AuthShell>
       <div className="mt-10">
         <h1 className="text-3xl">{t("login.title")}</h1>
-        <p className="text-muted-foreground mt-2 text-sm text-pretty">
+        <p className="mt-2 text-sm text-pretty text-muted-foreground">
           {t("login.subtitle")}
         </p>
       </div>
@@ -60,11 +60,11 @@ export function LoginPage() {
         />
 
         <div className="flex items-center gap-3">
-          <span className="bg-border h-px flex-1" />
-          <span className="text-muted-foreground text-xs">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">
             {t("divider.loginEmail")}
           </span>
-          <span className="bg-border h-px flex-1" />
+          <span className="h-px flex-1 bg-border" />
         </div>
 
         <form
@@ -120,7 +120,7 @@ export function LoginPage() {
                 />
                 <Label
                   htmlFor={field.name}
-                  className="text-muted-foreground font-normal"
+                  className="font-normal text-muted-foreground"
                 >
                   {t("login.rememberMe")}
                 </Label>
@@ -150,7 +150,7 @@ export function LoginPage() {
         </form>
       </div>
 
-      <p className="text-muted-foreground mt-8 text-center text-sm">
+      <p className="mt-8 text-center text-sm text-muted-foreground">
         {t("login.noAccount")}{" "}
         <Link to={PATHS.REGISTER} className={authLink}>
           {t("login.createAccount")}

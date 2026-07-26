@@ -8,14 +8,46 @@ interface TokenSwatch {
 }
 
 const semanticTokens: TokenSwatch[] = [
-  { token: "background", swatchClass: "bg-background", sampleClass: "text-foreground" },
-  { token: "card", swatchClass: "bg-card", sampleClass: "text-card-foreground" },
-  { token: "popover", swatchClass: "bg-popover", sampleClass: "text-popover-foreground" },
-  { token: "primary", swatchClass: "bg-primary", sampleClass: "text-primary-foreground" },
-  { token: "secondary", swatchClass: "bg-secondary", sampleClass: "text-secondary-foreground" },
-  { token: "muted", swatchClass: "bg-muted", sampleClass: "text-muted-foreground" },
-  { token: "accent", swatchClass: "bg-accent", sampleClass: "text-accent-foreground" },
-  { token: "destructive", swatchClass: "bg-destructive", sampleClass: "text-white" },
+  {
+    token: "background",
+    swatchClass: "bg-background",
+    sampleClass: "text-foreground",
+  },
+  {
+    token: "card",
+    swatchClass: "bg-card",
+    sampleClass: "text-card-foreground",
+  },
+  {
+    token: "popover",
+    swatchClass: "bg-popover",
+    sampleClass: "text-popover-foreground",
+  },
+  {
+    token: "primary",
+    swatchClass: "bg-primary",
+    sampleClass: "text-primary-foreground",
+  },
+  {
+    token: "secondary",
+    swatchClass: "bg-secondary",
+    sampleClass: "text-secondary-foreground",
+  },
+  {
+    token: "muted",
+    swatchClass: "bg-muted",
+    sampleClass: "text-muted-foreground",
+  },
+  {
+    token: "accent",
+    swatchClass: "bg-accent",
+    sampleClass: "text-accent-foreground",
+  },
+  {
+    token: "destructive",
+    swatchClass: "bg-destructive",
+    sampleClass: "text-white",
+  },
 ];
 
 const utilityTokens: TokenSwatch[] = [
@@ -36,10 +68,7 @@ function Swatch({ token, swatchClass, sampleClass }: TokenSwatch) {
   return (
     <div className="w-36 space-y-1.5">
       <div
-        className={cn(
-          "flex h-16 items-end rounded-lg border p-2",
-          swatchClass,
-        )}
+        className={cn("flex h-16 items-end rounded-lg border p-2", swatchClass)}
       >
         {sampleClass && (
           <span className={cn("text-sm font-medium", sampleClass)}>Aa</span>
@@ -79,7 +108,10 @@ export function ColorsSection() {
         </div>
         <div className="flex w-full max-w-md">
           {chartTokens.map((token) => (
-            <p key={token.token} className="flex-1 text-center font-mono text-xs">
+            <p
+              key={token.token}
+              className="flex-1 text-center font-mono text-xs"
+            >
               {token.token.replace("chart-", "")}
             </p>
           ))}

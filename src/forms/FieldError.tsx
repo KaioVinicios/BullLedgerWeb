@@ -14,7 +14,7 @@ export function FieldError({ id, errors }: { id: string; errors: unknown[] }) {
   const message = firstError(errors);
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-destructive text-xs">
+    <p id={id} role="alert" className="text-xs text-destructive">
       {message}
     </p>
   );

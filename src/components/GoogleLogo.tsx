@@ -3,7 +3,10 @@ import { cn } from "@/lib/utils";
 // Google "G" mark in its four brand colors. Kept as its own component so the
 // brand colors are never subject to the app's theme tokens (a monochrome G
 // would misrepresent the provider).
-export function GoogleLogo({ className, ...props }: React.ComponentProps<"svg">) {
+export function GoogleLogo({
+  className,
+  ...props
+}: React.ComponentProps<"svg">) {
   return (
     <svg
       viewBox="0 0 24 24"

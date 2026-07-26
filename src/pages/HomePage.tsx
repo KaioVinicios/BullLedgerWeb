@@ -20,10 +20,10 @@ export function HomePage() {
       <BullLedgerLogo aria-hidden className="size-16" />
       <div className="space-y-2">
         <h1>BullLedger</h1>
-        <p className="text-muted-foreground max-w-md">{t("home.tagline")}</p>
+        <p className="max-w-md text-muted-foreground">{t("home.tagline")}</p>
       </div>
       <div className="flex flex-col items-center gap-3">
-        <p className="text-muted-foreground text-sm">{t("home.notOpen")}</p>
+        <p className="text-sm text-muted-foreground">{t("home.notOpen")}</p>
         <Button asChild variant="outline">
           <Link to={PATHS.DESIGN_SYSTEM}>{t("home.previewCta")}</Link>
         </Button>

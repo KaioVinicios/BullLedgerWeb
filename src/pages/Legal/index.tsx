@@ -24,7 +24,7 @@ export function LegalPage({ document }: { document: "terms" | "privacy" }) {
       <div className="w-full max-w-md text-center">
         <Link
           to={PATHS.HOME}
-          className="focus-visible:ring-ring inline-flex items-center gap-2 rounded-md outline-none focus-visible:ring-3"
+          className="inline-flex items-center gap-2 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring"
         >
           <BullLedgerLogo aria-hidden className="size-7" />
           <span className="font-heading text-lg font-semibold tracking-tight">
@@ -32,12 +32,12 @@ export function LegalPage({ document }: { document: "terms" | "privacy" }) {
           </span>
         </Link>
 
-        <div className="bg-muted text-muted-foreground mx-auto mt-10 flex size-12 items-center justify-center rounded-xl">
+        <div className="mx-auto mt-10 flex size-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
           <IconFileText className="size-6" aria-hidden />
         </div>
 
         <h1 className="mt-6 text-2xl">{t(`legal.${document}`)}</h1>
-        <p className="text-muted-foreground mt-3 text-pretty">
+        <p className="mt-3 text-pretty text-muted-foreground">
           {t("legal.pending")}
         </p>
 

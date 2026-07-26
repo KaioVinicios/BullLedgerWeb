@@ -1,10 +1,6 @@
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import {
-  IconDeviceDesktop,
-  IconMoon,
-  IconSun,
-} from "@tabler/icons-react";
+import { IconDeviceDesktop, IconMoon, IconSun } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
 import {

@@ -60,7 +60,7 @@ export function TrustPanel({ className }: { className?: string }) {
 
       <div className="relative flex h-full flex-col justify-center">
         <h2 className="text-xl leading-snug">{t("trust.heading")}</h2>
-        <p className="text-muted-foreground mt-2.5 text-sm text-pretty">
+        <p className="mt-2.5 text-sm text-pretty text-muted-foreground">
           {t("trust.subtitle")}
         </p>
 
@@ -68,7 +68,7 @@ export function TrustPanel({ className }: { className?: string }) {
         <div className="mt-7 rounded-xl border bg-card p-4 shadow-sm">
           <div className="flex items-baseline justify-between">
             <div>
-              <p className="text-muted-foreground text-xs font-medium">
+              <p className="text-xs font-medium text-muted-foreground">
                 {t("trust.totalValue")}
               </p>
               <p className="font-mono text-xl font-semibold tabular-nums">
@@ -76,10 +76,10 @@ export function TrustPanel({ className }: { className?: string }) {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-muted-foreground text-xs font-medium">
+              <p className="text-xs font-medium text-muted-foreground">
                 {t("trust.today")}
               </p>
-              <span className="inline-flex items-center gap-0.5 font-mono text-sm font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+              <span className="inline-flex items-center gap-0.5 font-mono text-sm font-medium text-emerald-600 tabular-nums dark:text-emerald-400">
                 <IconArrowUpRight className="size-3.5" aria-hidden />
                 +0.65%
               </span>
@@ -91,7 +91,7 @@ export function TrustPanel({ className }: { className?: string }) {
               <div key={h.symbol} className="flex items-center justify-between">
                 <div className="min-w-0">
                   <p className="text-sm font-medium">{h.symbol}</p>
-                  <p className="text-muted-foreground text-xs">
+                  <p className="text-xs text-muted-foreground">
                     {t(`trust.kind.${h.kind}`)}
                   </p>
                 </div>
@@ -107,7 +107,7 @@ export function TrustPanel({ className }: { className?: string }) {
             ))}
           </div>
 
-          <p className="text-muted-foreground mt-4 border-t pt-3 text-[0.6875rem]">
+          <p className="mt-4 border-t pt-3 text-[0.6875rem] text-muted-foreground">
             {t("trust.previewCaption")}
           </p>
         </div>
@@ -115,7 +115,7 @@ export function TrustPanel({ className }: { className?: string }) {
         <ul className="mt-7 space-y-3">
           {FEATURES.map(({ icon: Icon, key }) => (
             <li key={key} className="flex items-center gap-3">
-              <span className="bg-background text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-md border">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-background text-muted-foreground">
                 <Icon className="size-4" aria-hidden />
               </span>
               <span className="text-sm">{t(`trust.features.${key}`)}</span>

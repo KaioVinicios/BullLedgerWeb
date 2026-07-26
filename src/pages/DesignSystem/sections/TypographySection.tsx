@@ -16,8 +16,10 @@ export function TypographySection() {
     >
       <div className="grid gap-4 md:grid-cols-3">
         <DemoBlock label="Sans — body" className="block space-y-2">
-          <p className="text-2xl">The quick brown fox jumps over the lazy dog</p>
-          <p className="text-muted-foreground font-mono text-xs">
+          <p className="text-2xl">
+            The quick brown fox jumps over the lazy dog
+          </p>
+          <p className="font-mono text-xs text-muted-foreground">
             -apple-system → Inter Variable
           </p>
         </DemoBlock>
@@ -25,13 +27,13 @@ export function TypographySection() {
           <p className="font-heading text-2xl font-semibold tracking-tight">
             The quick brown fox jumps over the lazy dog
           </p>
-          <p className="text-muted-foreground font-mono text-xs">
+          <p className="font-mono text-xs text-muted-foreground">
             Space Grotesk Variable
           </p>
         </DemoBlock>
         <DemoBlock label="Mono — data & code" className="block space-y-2">
           <p className="font-mono text-2xl">$1,234.56 +2.4% 0xF9</p>
-          <p className="text-muted-foreground font-mono text-xs">
+          <p className="font-mono text-xs text-muted-foreground">
             Geist Mono Variable
           </p>
         </DemoBlock>
@@ -50,7 +52,7 @@ export function TypographySection() {
           Small — Prices are delayed up to 15 minutes and provided for
           informational purposes only.
         </p>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           Muted — Last synced 5 minutes ago.
         </p>
       </DemoBlock>
@@ -66,7 +68,7 @@ export function TypographySection() {
             </div>
           ))}
         </div>
-        <p className="text-muted-foreground mt-4 text-xs">
+        <p className="mt-4 text-xs text-muted-foreground">
           Amounts use <code className="font-mono">tabular-nums</code> so digits
           align vertically in tables and lists.
         </p>
