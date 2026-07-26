@@ -1,0 +1,5770 @@
+openapi: 3.0.3
+info:
+  title: BullLedger API
+  version: 1.0.0
+  description: Multi-country investment portfolio ledger — movements-first API.
+paths:
+  /api/accounts/:
+    get:
+      operationId: api_accounts_list
+      description: Accounts and their country-scoped tax wrappers (FR-ACCT).
+      summary: List my accounts
+      parameters:
+      - in: query
+        name: include_archived
+        schema:
+          type: boolean
+        description: Pass `true` to also return archived rows (hidden by default).
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Accounts
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAccountList'
+          description: A page of your accounts.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      operationId: api_accounts_create
+      description: Accounts and their country-scoped tax wrappers (FR-ACCT).
+      summary: Create an account
+      tags:
+      - Accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCreateEnvelope'
+          description: The created account.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/accounts/{id}/:
+    get:
+      operationId: api_accounts_retrieve
+      description: Accounts and their country-scoped tax wrappers (FR-ACCT).
+      summary: Get one account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this account.
+        required: true
+      tags:
+      - Accounts
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountGetEnvelope'
+          description: The requested account.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      operationId: api_accounts_partial_update
+      description: Accounts and their country-scoped tax wrappers (FR-ACCT).
+      summary: Update an account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this account.
+        required: true
+      tags:
+      - Accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAccountRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountPatchEnvelope'
+          description: The updated account.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/accounts/{id}/archive/:
+    post:
+      operationId: api_accounts_archive_create
+      description: Accounts and their country-scoped tax wrappers (FR-ACCT).
+      summary: Archive an account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this account.
+        required: true
+      tags:
+      - Accounts
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountArchiveEnvelope'
+          description: The archived account.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/accounts/{id}/unarchive/:
+    post:
+      operationId: api_accounts_unarchive_create
+      description: Accounts and their country-scoped tax wrappers (FR-ACCT).
+      summary: Unarchive an account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this account.
+        required: true
+      tags:
+      - Accounts
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountUnarchiveEnvelope'
+          description: The restored account.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/assets/:
+    get:
+      operationId: api_assets_list
+      description: Instruments, typed by archetype (FR-ASSET). Archive instead of
+        delete.
+      summary: List my assets
+      parameters:
+      - in: query
+        name: include_archived
+        schema:
+          type: boolean
+        description: Pass `true` to also return archived rows (hidden by default).
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Assets
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAssetList'
+          description: A page of your assets.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      operationId: api_assets_create
+      description: Instruments, typed by archetype (FR-ASSET). Archive instead of
+        delete.
+      summary: Create an asset
+      tags:
+      - Assets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetCreateEnvelope'
+          description: The created asset.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/assets/{id}/:
+    get:
+      operationId: api_assets_retrieve
+      description: Instruments, typed by archetype (FR-ASSET). Archive instead of
+        delete.
+      summary: Get one asset
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this asset.
+        required: true
+      tags:
+      - Assets
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetGetEnvelope'
+          description: The requested asset.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      operationId: api_assets_partial_update
+      description: Instruments, typed by archetype (FR-ASSET). Archive instead of
+        delete.
+      summary: Update an asset
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this asset.
+        required: true
+      tags:
+      - Assets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAssetUpdateRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetPatchEnvelope'
+          description: The updated asset.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/assets/{id}/archive/:
+    post:
+      operationId: api_assets_archive_create
+      description: Instruments, typed by archetype (FR-ASSET). Archive instead of
+        delete.
+      summary: Archive an asset
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this asset.
+        required: true
+      tags:
+      - Assets
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetArchiveEnvelope'
+          description: The archived asset.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/assets/{id}/unarchive/:
+    post:
+      operationId: api_assets_unarchive_create
+      description: Instruments, typed by archetype (FR-ASSET). Archive instead of
+        delete.
+      summary: Unarchive an asset
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this asset.
+        required: true
+      tags:
+      - Assets
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetUnarchiveEnvelope'
+          description: The restored asset.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/auth/google/:
+    post:
+      operationId: api_auth_google_create
+      description: |-
+        Google authorization-code exchange (FR-AUTH-002, design §6).
+
+        The SPA posts the code; allauth exchanges it server-side (the client
+        secret never leaves the backend) and the LoginView machinery sets the
+        same httpOnly JWT cookies as email login.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialLoginRequest'
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialLogin'
+          description: ''
+  /api/auth/login/:
+    post:
+      operationId: api_auth_login_create
+      description: |-
+        Check the credentials and return the REST Token
+        if the credentials are valid and authenticated.
+        Calls Django Auth login method to register User ID
+        in Django session framework
+
+        Accept the following POST parameters: username, password
+        Return the REST Framework Token Object's key.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailLoginRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookieJWT'
+          description: ''
+  /api/auth/logout/:
+    post:
+      operationId: api_auth_logout_create
+      description: |-
+        Calls Django logout method and delete the Token object
+        assigned to the current User object.
+
+        Accepts/Returns nothing.
+      tags:
+      - Auth
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/auth/password/reset/:
+    post:
+      operationId: api_auth_password_reset_create
+      description: |-
+        Calls Django Auth PasswordResetForm save method.
+
+        Accepts the following POST parameters: email
+        Returns the success/fail message.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SPAPasswordResetRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/auth/password/reset/confirm/:
+    post:
+      operationId: api_auth_password_reset_confirm_create
+      description: |-
+        Password reset e-mail link is confirmed, therefore
+        this resets the user's password.
+
+        Accepts the following POST parameters: token, uid,
+            new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/auth/registration/:
+    post:
+      operationId: api_auth_registration_create
+      description: |-
+        Registration that also sets the JWT cookies (design §4).
+
+        dj-rest-auth's RegisterView generates the token pair but only puts it in
+        the response body — it never sets the cookies, so a fresh registration
+        wouldn't be logged in. The body itself stays token-free via
+        CookieJWTSerializer.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRegisterRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailRegister'
+          description: ''
+  /api/auth/registration/resend-email/:
+    post:
+      operationId: api_auth_registration_resend_email_create
+      description: |-
+        Resends another email to an unverified email.
+
+        Accepts the following POST parameter: email.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerificationRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/auth/registration/verify-email/:
+    post:
+      operationId: api_auth_registration_verify_email_create
+      description: |-
+        Verifies the email associated with the provided key.
+
+        Accepts the following POST parameter: key.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/auth/token/refresh/:
+    post:
+      operationId: api_auth_token_refresh_create
+      description: |-
+        Token refresh with cookie-only output.
+
+        dj-rest-auth's refresh view strips the rotated refresh token from the
+        body but still returns the new access token there. Both belong in
+        httpOnly cookies only (NFR-SEC-001), so the access token and its
+        expiration are removed after the parent sets the cookies.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/user/:
+    get:
+      operationId: api_auth_user_retrieve
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - Auth
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailUserDetails'
+          description: ''
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    put:
+      operationId: api_auth_user_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailUserDetailsRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailUserDetails'
+          description: ''
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      operationId: api_auth_user_partial_update
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEmailUserDetailsRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailUserDetails'
+          description: ''
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/contribution-limits/:
+    get:
+      operationId: api_contribution_limits_list
+      description: Fixture/admin-maintained reference data — read-only via API.
+      summary: List contribution limits
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Reference
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedContributionLimitList'
+          description: A page of contribution limits, newest year first.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/contribution-limits/{id}/:
+    get:
+      operationId: api_contribution_limits_retrieve
+      description: Fixture/admin-maintained reference data — read-only via API.
+      summary: Get one contribution limit
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this contribution limit.
+        required: true
+      tags:
+      - Reference
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributionLimitGetEnvelope'
+          description: The requested contribution limit.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No contribution limit with that id.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/fx-rates/:
+    get:
+      operationId: api_fx_rates_list
+      description: 'Global market facts: everyone reads, only staff writes (M7 decision
+        2).'
+      summary: List FX rates
+      parameters:
+      - in: query
+        name: base
+        schema:
+          type: string
+          enum:
+          - BRL
+          - CAD
+          - USD
+        description: Filter by base currency.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: quote
+        schema:
+          type: string
+          enum:
+          - BRL
+          - CAD
+          - USD
+        description: Filter by quote currency.
+      tags:
+      - Pricing
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFxRateList'
+          description: A page of FX rates, newest first.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      operationId: api_fx_rates_create
+      description: The FX table is global; manual corrections are admin-only.
+      summary: Enter a manual FX rate (staff only)
+      tags:
+      - Pricing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FxRateRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FxRateCreateEnvelope'
+          description: The created FX rate.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Authenticated, but not permitted to perform this action.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/fx-rates/{id}/:
+    get:
+      operationId: api_fx_rates_retrieve
+      description: 'Global market facts: everyone reads, only staff writes (M7 decision
+        2).'
+      summary: Get one FX rate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this fx rate.
+        required: true
+      tags:
+      - Pricing
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FxRateGetEnvelope'
+          description: The requested FX rate.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/institutions/:
+    get:
+      operationId: api_institutions_list
+      description: Banks, brokerages, exchanges, and self-custody wallets (FR-INST).
+      summary: List my institutions
+      parameters:
+      - in: query
+        name: include_archived
+        schema:
+          type: boolean
+        description: Pass `true` to also return archived rows (hidden by default).
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Institutions
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInstitutionList'
+          description: A page of your institutions.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      operationId: api_institutions_create
+      description: Banks, brokerages, exchanges, and self-custody wallets (FR-INST).
+      summary: Create an institution
+      tags:
+      - Institutions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstitutionRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionCreateEnvelope'
+          description: The created institution.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/institutions/{id}/:
+    get:
+      operationId: api_institutions_retrieve
+      description: Banks, brokerages, exchanges, and self-custody wallets (FR-INST).
+      summary: Get one institution
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this institution.
+        required: true
+      tags:
+      - Institutions
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionGetEnvelope'
+          description: The requested institution.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      operationId: api_institutions_partial_update
+      description: Banks, brokerages, exchanges, and self-custody wallets (FR-INST).
+      summary: Update an institution
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this institution.
+        required: true
+      tags:
+      - Institutions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedInstitutionRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionPatchEnvelope'
+          description: The updated institution.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/institutions/{id}/archive/:
+    post:
+      operationId: api_institutions_archive_create
+      description: Banks, brokerages, exchanges, and self-custody wallets (FR-INST).
+      summary: Archive an institution
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this institution.
+        required: true
+      tags:
+      - Institutions
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionArchiveEnvelope'
+          description: The archived institution.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/institutions/{id}/unarchive/:
+    post:
+      operationId: api_institutions_unarchive_create
+      description: Banks, brokerages, exchanges, and self-custody wallets (FR-INST).
+      summary: Unarchive an institution
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this institution.
+        required: true
+      tags:
+      - Institutions
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstitutionUnarchiveEnvelope'
+          description: The restored institution.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/lots/:
+    get:
+      operationId: api_lots_list
+      description: Lots are born from entry movements only — list/rename/archive here.
+      summary: List my lots
+      parameters:
+      - in: query
+        name: account
+        schema:
+          type: string
+          format: uuid
+        description: Filter by account id.
+      - in: query
+        name: asset
+        schema:
+          type: string
+          format: uuid
+        description: Filter by asset id.
+      - in: query
+        name: include_archived
+        schema:
+          type: boolean
+        description: Pass `true` to also return archived lots (hidden by default).
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Lots
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLotList'
+          description: A page of your lots, oldest first.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/lots/{id}/:
+    get:
+      operationId: api_lots_retrieve
+      description: Lots are born from entry movements only — list/rename/archive here.
+      summary: Get one lot
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lot.
+        required: true
+      tags:
+      - Lots
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotGetEnvelope'
+          description: The requested lot.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      operationId: api_lots_partial_update
+      description: Lots are born from entry movements only — list/rename/archive here.
+      summary: Rename a lot
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lot.
+        required: true
+      tags:
+      - Lots
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLotRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotPatchEnvelope'
+          description: The renamed lot.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/lots/{id}/archive/:
+    post:
+      operationId: api_lots_archive_create
+      description: Lots are born from entry movements only — list/rename/archive here.
+      summary: Archive a lot
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lot.
+        required: true
+      tags:
+      - Lots
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotArchiveEnvelope'
+          description: The archived lot.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/lots/{id}/unarchive/:
+    post:
+      operationId: api_lots_unarchive_create
+      description: Lots are born from entry movements only — list/rename/archive here.
+      summary: Unarchive a lot
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lot.
+        required: true
+      tags:
+      - Lots
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LotUnarchiveEnvelope'
+          description: The restored lot.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/movements/:
+    get:
+      operationId: api_movements_list
+      description: 'Movements are immutable rows: no PATCH/PUT/DELETE — void/replace
+        only.'
+      summary: List my movements
+      parameters:
+      - in: query
+        name: account
+        schema:
+          type: string
+          format: uuid
+        description: Filter by account id.
+      - in: query
+        name: asset
+        schema:
+          type: string
+          format: uuid
+        description: Filter by asset id.
+      - in: query
+        name: include_voided
+        schema:
+          type: boolean
+        description: Pass `true` to also return voided rows (hidden by default).
+      - in: query
+        name: occurred_after
+        schema:
+          type: string
+          format: date
+        description: Only movements with occurred_on >= this date.
+      - in: query
+        name: occurred_before
+        schema:
+          type: string
+          format: date
+        description: Only movements with occurred_on <= this date.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - BONUS
+          - BUY
+          - COUPON
+          - DEPOSIT
+          - DISTRIBUTION
+          - DIVIDEND
+          - FEE
+          - INTEREST
+          - MATURITY
+          - REDEMPTION
+          - SELL
+          - SPLIT
+          - TAX
+          - TRANSFER_IN
+          - TRANSFER_OUT
+          - WITHDRAWAL
+        description: Filter by movement type.
+      tags:
+      - Movements
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMovementList'
+          description: A page of movements, newest first.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      operationId: api_movements_create
+      description: 'Movements are immutable rows: no PATCH/PUT/DELETE — void/replace
+        only.'
+      summary: Record a movement
+      tags:
+      - Movements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovementRecordRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovementRecordEnvelope'
+          description: The recorded movement.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/movements/{id}/:
+    get:
+      operationId: api_movements_retrieve
+      description: 'Movements are immutable rows: no PATCH/PUT/DELETE — void/replace
+        only.'
+      summary: Get one movement
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this movement.
+        required: true
+      tags:
+      - Movements
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovementGetEnvelope'
+          description: The requested movement.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/movements/{id}/replace/:
+    post:
+      operationId: api_movements_replace_create
+      description: Voids this row and records a successor linked via `replaces` (FR-AUDIT-002).
+        Provide only the fields that change.
+      summary: Replace a movement (void-and-replace edit)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this movement.
+        required: true
+      tags:
+      - Movements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovementRecordRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovementReplaceEnvelope'
+          description: The replacement movement.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/movements/{id}/void/:
+    post:
+      operationId: api_movements_void_create
+      description: Soft-delete (FR-AUDIT-001). A transfer leg voids its pair too.
+      summary: Void a movement
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this movement.
+        required: true
+      tags:
+      - Movements
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovementVoidEnvelope'
+          description: The voided movement.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/movements/transfer/:
+    post:
+      operationId: api_movements_transfer_create
+      description: Writes both legs atomically and pairs them (FR-MOV-007).
+      summary: Record a transfer between my accounts
+      tags:
+      - Movements
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferRecordEnvelope'
+          description: Both legs of the transfer.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/portfolio/allocation/:
+    get:
+      operationId: api_portfolio_allocation_retrieve
+      description: Portfolio value sliced by archetype (free cash as its own FREE_CASH
+        slice), native currency, and country, as of `on` — derived, never stored (FR-VIEW-004).
+        Weights are fractions of the computable total.
+      summary: Allocation breakdowns
+      parameters:
+      - in: query
+        name: 'on'
+        schema:
+          type: string
+          format: date
+        description: Valuation date (YYYY-MM-DD). Defaults to today.
+      tags:
+      - Portfolio
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioAllocationEnvelope'
+          description: The allocation breakdowns.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/portfolio/holdings/{account_id}/{asset_id}/:
+    get:
+      operationId: api_portfolio_holdings_retrieve
+      description: Position, cost basis, realized/unrealized gain, income, costs,
+        per-lot breakdown, and real return for one (account, asset) holding as of
+        `on` (FR-VIEW-002). Holding period, registration, and tax_advantaged are information
+        only (BR-TAX). Includes the resolved target's derived status block when one
+        applies (FR-TARGET-005). 404 when the pair has never been traded.
+      summary: Holding detail
+      parameters:
+      - in: path
+        name: account_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: asset_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: 'on'
+        schema:
+          type: string
+          format: date
+        description: Valuation date (YYYY-MM-DD). Defaults to today.
+      tags:
+      - Portfolio
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldingDetailEnvelope'
+          description: The holding's detail.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such holding in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/portfolio/overview/:
+    get:
+      operationId: api_portfolio_overview_retrieve
+      description: Total value, per-account groups (free cash + holding rows), and
+        per-archetype totals in the profile's reporting currency, as of `on`. Figures
+        the reference data cannot support are excluded from the sums and listed under
+        `missing` (FR-VIEW-001). Holding rows carry a derived target_status when a
+        target resolves (FR-TARGET-005, information only).
+      summary: Portfolio overview
+      parameters:
+      - in: query
+        name: 'on'
+        schema:
+          type: string
+          format: date
+        description: Valuation date (YYYY-MM-DD). Defaults to today.
+      tags:
+      - Portfolio
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioOverviewEnvelope'
+          description: The portfolio overview.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/price-quotes/:
+    get:
+      operationId: api_price_quotes_list
+      description: Manual current prices for MARKET/NAV assets (FR-PRICE-001).
+      summary: List price quotes on my assets
+      parameters:
+      - in: query
+        name: asset
+        schema:
+          type: string
+          format: uuid
+        description: Filter by asset id.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Pricing
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPriceQuoteList'
+          description: A page of price quotes on your own assets.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      operationId: api_price_quotes_create
+      description: Manual current prices for MARKET/NAV assets (FR-PRICE-001).
+      summary: Enter a manual price quote
+      tags:
+      - Pricing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriceQuoteRequest'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceQuoteCreateEnvelope'
+          description: The created price quote.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/price-quotes/{id}/:
+    get:
+      operationId: api_price_quotes_retrieve
+      description: Manual current prices for MARKET/NAV assets (FR-PRICE-001).
+      summary: Get one price quote
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this price quote.
+        required: true
+      tags:
+      - Pricing
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceQuoteGetEnvelope'
+          description: The requested price quote.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/profile/:
+    get:
+      operationId: api_profile_retrieve
+      description: 'The requesting user''s profile. There is no id in the URL: the
+        endpoint always resolves to the caller''s own profile.'
+      summary: Get my profile
+      tags:
+      - Profile
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileGetEnvelope'
+          description: Your own profile.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      operationId: api_profile_partial_update
+      description: Changes the currency all portfolio totals are displayed in and/or
+        the country whose inflation index deflates real-return figures (null hides
+        real return). Figures are recomputed at read time; stored movements are never
+        mutated (BR-FX).
+      summary: Update my reporting preferences
+      tags:
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfilePatchEnvelope'
+          description: The updated profile.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/targets/:
+    get:
+      operationId: api_targets_list
+      description: Performance expectations by archetype, account, or holding (FR-TARGET).
+      summary: List my targets
+      parameters:
+      - in: query
+        name: include_archived
+        schema:
+          type: boolean
+        description: Pass `true` to also return archived rows (hidden by default).
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: scope
+        schema:
+          type: string
+          enum:
+          - ACCOUNT_ARCHETYPE
+          - HOLDING
+          - PORTFOLIO_ARCHETYPE
+        description: Only targets at this hierarchy level.
+      tags:
+      - Targets
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTargetList'
+          description: A page of your targets.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    post:
+      operationId: api_targets_create
+      description: Performance expectations by archetype, account, or holding (FR-TARGET).
+      summary: Create a target
+      tags:
+      - Targets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TargetRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TargetCreateEnvelope'
+          description: The created target.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/targets/{id}/:
+    get:
+      operationId: api_targets_retrieve
+      description: Performance expectations by archetype, account, or holding (FR-TARGET).
+      summary: Get one target
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this target.
+        required: true
+      tags:
+      - Targets
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TargetGetEnvelope'
+          description: The requested target.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    patch:
+      operationId: api_targets_partial_update
+      description: Performance expectations by archetype, account, or holding (FR-TARGET).
+      summary: Update a target
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this target.
+        required: true
+      tags:
+      - Targets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTargetUpdateRequest'
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TargetPatchEnvelope'
+          description: The updated target.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/targets/{id}/archive/:
+    post:
+      operationId: api_targets_archive_create
+      description: Performance expectations by archetype, account, or holding (FR-TARGET).
+      summary: Archive a target
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this target.
+        required: true
+      tags:
+      - Targets
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TargetArchiveEnvelope'
+          description: The archived target.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/targets/{id}/unarchive/:
+    post:
+      operationId: api_targets_unarchive_create
+      description: Performance expectations by archetype, account, or holding (FR-TARGET).
+      summary: Unarchive a target
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this target.
+        required: true
+      tags:
+      - Targets
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TargetUnarchiveEnvelope'
+          description: The restored target.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: No such object in your portfolio.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        institution:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          maxLength: 100
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        registration:
+          $ref: '#/components/schemas/RegistrationEnum'
+        base_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        account_number:
+          type: string
+          maxLength: 50
+        contribution_room:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        plan_type:
+          allOf:
+          - $ref: '#/components/schemas/PlanTypeEnum'
+          nullable: true
+        deductible:
+          type: boolean
+          nullable: true
+        tax_regime:
+          allOf:
+          - $ref: '#/components/schemas/TaxRegimeEnum'
+          nullable: true
+        taxed_on:
+          allOf:
+          - $ref: '#/components/schemas/TaxedOnEnum'
+          nullable: true
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - archived_at
+      - base_currency
+      - country
+      - id
+      - name
+      - registration
+    AccountArchetypeTarget:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        scope:
+          $ref: '#/components/schemas/TargetScopeEnum'
+        account:
+          type: string
+          format: uuid
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        loss_limit_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        loss_limit_period:
+          allOf:
+          - $ref: '#/components/schemas/PeriodEnum'
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetStep'
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - account
+      - archetype
+      - archived_at
+      - id
+      - scope
+      - steps
+    AccountArchetypeTargetRequest:
+      type: object
+      properties:
+        scope:
+          $ref: '#/components/schemas/TargetScopeEnum'
+        account:
+          type: string
+          format: uuid
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        loss_limit_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        loss_limit_period:
+          allOf:
+          - $ref: '#/components/schemas/PeriodEnum'
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetStepRequest'
+      required:
+      - account
+      - archetype
+      - scope
+      - steps
+    AccountArchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Account'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AccountCreateEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Account'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AccountGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Account'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AccountGroup:
+      type: object
+      description: 'One account''s slice of the overview: free cash + holding rows.'
+      properties:
+        account:
+          type: string
+          format: uuid
+        cash:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        subtotal:
+          $ref: '#/components/schemas/Money'
+        complete:
+          type: boolean
+        holdings:
+          type: array
+          items:
+            $ref: '#/components/schemas/HoldingSummary'
+      required:
+      - account
+      - cash
+      - complete
+      - holdings
+      - subtotal
+    AccountPatchEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Account'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AccountRequest:
+      type: object
+      properties:
+        institution:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        registration:
+          $ref: '#/components/schemas/RegistrationEnum'
+        base_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        account_number:
+          type: string
+          maxLength: 50
+        contribution_room:
+          allOf:
+          - $ref: '#/components/schemas/MoneyRequest'
+          nullable: true
+        plan_type:
+          allOf:
+          - $ref: '#/components/schemas/PlanTypeEnum'
+          nullable: true
+        deductible:
+          type: boolean
+          nullable: true
+        tax_regime:
+          allOf:
+          - $ref: '#/components/schemas/TaxRegimeEnum'
+          nullable: true
+        taxed_on:
+          allOf:
+          - $ref: '#/components/schemas/TaxedOnEnum'
+          nullable: true
+      required:
+      - base_currency
+      - country
+      - name
+      - registration
+    AccountUnarchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Account'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AllocationSlice:
+      type: object
+      description: One value/weight slice of an allocation dimension (FR-VIEW-004).
+      properties:
+        key:
+          type: string
+        value:
+          $ref: '#/components/schemas/Money'
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        complete:
+          type: boolean
+      required:
+      - complete
+      - key
+      - value
+      - weight
+    ApiError:
+      type: object
+      description: The wire shape of every raised 4xx/5xx body (M9 decision 2).
+      properties:
+        status:
+          type: integer
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+          description: Human-readable summary. Never carries figures or credentials.
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Field name to messages. Nested fields use dotted keys; problems
+            with no field use "detail".
+      required:
+      - errors
+      - message
+      - status
+    ArchetypeEnum:
+      enum:
+      - CASH_DEPOSIT
+      - FIXED_INCOME
+      - EXCHANGE_SECURITY
+      - NAV_FUND
+      - CRYPTO
+      type: string
+      description: |-
+        * `CASH_DEPOSIT` - Cash deposit
+        * `FIXED_INCOME` - Fixed income
+        * `EXCHANGE_SECURITY` - Exchange-traded security
+        * `NAV_FUND` - NAV-priced fund
+        * `CRYPTO` - Crypto
+    ArchetypeSlice:
+      type: object
+      description: Per-archetype total (holdings only; free cash is its own bucket).
+      properties:
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        value:
+          $ref: '#/components/schemas/Money'
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        complete:
+          type: boolean
+      required:
+      - archetype
+      - complete
+      - value
+      - weight
+    Asset:
+      oneOf:
+      - $ref: '#/components/schemas/CashDepositAsset'
+      - $ref: '#/components/schemas/FixedIncomeAsset'
+      - $ref: '#/components/schemas/ExchangeSecurityAsset'
+      - $ref: '#/components/schemas/NavFundAsset'
+      - $ref: '#/components/schemas/CryptoAsset'
+      discriminator:
+        propertyName: archetype
+        mapping:
+          CASH_DEPOSIT: '#/components/schemas/CashDepositAsset'
+          FIXED_INCOME: '#/components/schemas/FixedIncomeAsset'
+          EXCHANGE_SECURITY: '#/components/schemas/ExchangeSecurityAsset'
+          NAV_FUND: '#/components/schemas/NavFundAsset'
+          CRYPTO: '#/components/schemas/CryptoAsset'
+    AssetArchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Asset'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AssetCreateEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Asset'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AssetGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Asset'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AssetPatchEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Asset'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AssetRequest:
+      oneOf:
+      - $ref: '#/components/schemas/CashDepositAssetRequest'
+      - $ref: '#/components/schemas/FixedIncomeAssetRequest'
+      - $ref: '#/components/schemas/ExchangeSecurityAssetRequest'
+      - $ref: '#/components/schemas/NavFundAssetRequest'
+      - $ref: '#/components/schemas/CryptoAssetRequest'
+      discriminator:
+        propertyName: archetype
+        mapping:
+          CASH_DEPOSIT: '#/components/schemas/CashDepositAssetRequest'
+          FIXED_INCOME: '#/components/schemas/FixedIncomeAssetRequest'
+          EXCHANGE_SECURITY: '#/components/schemas/ExchangeSecurityAssetRequest'
+          NAV_FUND: '#/components/schemas/NavFundAssetRequest'
+          CRYPTO: '#/components/schemas/CryptoAssetRequest'
+    AssetUnarchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Asset'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    CashDepositAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        pricing_mode:
+          allOf:
+          - $ref: '#/components/schemas/PricingModeEnum'
+          readOnly: true
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        rate_type:
+          $ref: '#/components/schemas/RateTypeEnum'
+        rate_index:
+          $ref: '#/components/schemas/RateIndexEnum'
+        compounding:
+          $ref: '#/components/schemas/CompoundingEnum'
+        deposit_insurance:
+          $ref: '#/components/schemas/DepositInsuranceEnum'
+        liquidity:
+          $ref: '#/components/schemas/LiquidityEnum'
+        rate_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+      required:
+      - archetype
+      - archived_at
+      - compounding
+      - country
+      - currency
+      - deposit_insurance
+      - id
+      - liquidity
+      - name
+      - pricing_mode
+      - rate_index
+      - rate_type
+    CashDepositAssetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        rate_type:
+          $ref: '#/components/schemas/RateTypeEnum'
+        rate_index:
+          $ref: '#/components/schemas/RateIndexEnum'
+        compounding:
+          $ref: '#/components/schemas/CompoundingEnum'
+        deposit_insurance:
+          $ref: '#/components/schemas/DepositInsuranceEnum'
+        liquidity:
+          $ref: '#/components/schemas/LiquidityEnum'
+        rate_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+      required:
+      - archetype
+      - compounding
+      - country
+      - currency
+      - deposit_insurance
+      - liquidity
+      - name
+      - rate_index
+      - rate_type
+    CompoundingEnum:
+      enum:
+      - DAILY
+      - MONTHLY
+      type: string
+      description: |-
+        * `DAILY` - Daily
+        * `MONTHLY` - Monthly
+    ContributionLimit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        registration:
+          allOf:
+          - $ref: '#/components/schemas/RegistrationEnum'
+          readOnly: true
+        year:
+          type: integer
+          readOnly: true
+        limit:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          readOnly: true
+      required:
+      - id
+      - limit
+      - registration
+      - year
+    ContributionLimitGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ContributionLimit'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    CookieJWT:
+      type: object
+      description: |-
+        Login/registration response body: user payload only.
+
+        dj-rest-auth's JWTSerializer returns the access (and on registration the
+        refresh) token in the response body even with JWT_AUTH_HTTPONLY=True.
+        Tokens must travel in httpOnly cookies only (NFR-SEC-001), so the token
+        fields are dropped from the body.
+      properties:
+        user:
+          allOf:
+          - $ref: '#/components/schemas/EmailUserDetails'
+          readOnly: true
+      required:
+      - user
+    CountryEnum:
+      enum:
+      - BR
+      - US
+      - CA
+      type: string
+      description: |-
+        * `BR` - Brazil
+        * `US` - United States
+        * `CA` - Canada
+    CouponFrequencyEnum:
+      enum:
+      - NONE
+      - SEMIANNUAL
+      - ANNUAL
+      type: string
+      description: |-
+        * `NONE` - None
+        * `SEMIANNUAL` - Semiannual
+        * `ANNUAL` - Annual
+    CryptoAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        pricing_mode:
+          allOf:
+          - $ref: '#/components/schemas/PricingModeEnum'
+          readOnly: true
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        symbol:
+          type: string
+          maxLength: 10
+        decimals:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        price_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        chain:
+          type: string
+          nullable: true
+          maxLength: 50
+      required:
+      - archetype
+      - archived_at
+      - country
+      - currency
+      - decimals
+      - id
+      - name
+      - price_currency
+      - pricing_mode
+      - symbol
+    CryptoAssetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        symbol:
+          type: string
+          minLength: 1
+          maxLength: 10
+        decimals:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        price_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        chain:
+          type: string
+          nullable: true
+          maxLength: 50
+      required:
+      - archetype
+      - country
+      - currency
+      - decimals
+      - name
+      - price_currency
+      - symbol
+    CurrencyEnum:
+      enum:
+      - BRL
+      - USD
+      - CAD
+      type: string
+      description: |-
+        * `BRL` - Brazilian real
+        * `USD` - US dollar
+        * `CAD` - Canadian dollar
+    DepositInsuranceEnum:
+      enum:
+      - FGC
+      - FDIC
+      - CDIC
+      - NONE
+      type: string
+      description: |-
+        * `FGC` - FGC
+        * `FDIC` - FDIC
+        * `CDIC` - CDIC
+        * `NONE` - None
+    EmailLoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+    EmailRegister:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        reporting_currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          default: BRL
+      required:
+      - email
+    EmailRegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password1:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password2:
+          type: string
+          writeOnly: true
+          minLength: 1
+        reporting_currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          default: BRL
+      required:
+      - email
+      - password1
+      - password2
+    EmailUserDetails:
+      type: object
+      description: User model w/o password
+      properties:
+        pk:
+          type: integer
+          readOnly: true
+          title: ID
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - pk
+    EmailUserDetailsRequest:
+      type: object
+      description: User model w/o password
+      properties:
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+    ExchangeEnum:
+      enum:
+      - B3
+      - NYSE
+      - NASDAQ
+      - TSX
+      - TSXV
+      type: string
+      description: |-
+        * `B3` - B3
+        * `NYSE` - NYSE
+        * `NASDAQ` - Nasdaq
+        * `TSX` - TSX
+        * `TSXV` - TSX Venture
+    ExchangeSecurityAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        pricing_mode:
+          allOf:
+          - $ref: '#/components/schemas/PricingModeEnum'
+          readOnly: true
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        security_type:
+          $ref: '#/components/schemas/SecurityTypeEnum'
+        ticker:
+          type: string
+          maxLength: 12
+        exchange:
+          $ref: '#/components/schemas/ExchangeEnum'
+        pays_distributions:
+          type: boolean
+        isin:
+          type: string
+          nullable: true
+          maxLength: 12
+      required:
+      - archetype
+      - archived_at
+      - country
+      - currency
+      - exchange
+      - id
+      - name
+      - pays_distributions
+      - pricing_mode
+      - security_type
+      - ticker
+    ExchangeSecurityAssetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        security_type:
+          $ref: '#/components/schemas/SecurityTypeEnum'
+        ticker:
+          type: string
+          minLength: 1
+          maxLength: 12
+        exchange:
+          $ref: '#/components/schemas/ExchangeEnum'
+        pays_distributions:
+          type: boolean
+        isin:
+          type: string
+          nullable: true
+          maxLength: 12
+      required:
+      - archetype
+      - country
+      - currency
+      - exchange
+      - name
+      - pays_distributions
+      - security_type
+      - ticker
+    FixedIncomeAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        pricing_mode:
+          allOf:
+          - $ref: '#/components/schemas/PricingModeEnum'
+          readOnly: true
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        instrument_kind:
+          $ref: '#/components/schemas/InstrumentKindEnum'
+        issuer_type:
+          $ref: '#/components/schemas/IssuerTypeEnum'
+        maturity_date:
+          type: string
+          format: date
+        rate_type:
+          $ref: '#/components/schemas/RateTypeEnum'
+        rate_index:
+          $ref: '#/components/schemas/RateIndexEnum'
+        coupon_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        coupon_frequency:
+          $ref: '#/components/schemas/CouponFrequencyEnum'
+        tax_advantaged:
+          type: boolean
+        early_redemption:
+          type: boolean
+        deposit_insurance:
+          $ref: '#/components/schemas/DepositInsuranceEnum'
+        issuer:
+          type: string
+          format: uuid
+          nullable: true
+        issuer_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        face_value:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        rate_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+      required:
+      - archetype
+      - archived_at
+      - country
+      - coupon_frequency
+      - coupon_rate
+      - currency
+      - deposit_insurance
+      - early_redemption
+      - id
+      - instrument_kind
+      - issuer_type
+      - maturity_date
+      - name
+      - pricing_mode
+      - rate_index
+      - rate_type
+      - tax_advantaged
+    FixedIncomeAssetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        instrument_kind:
+          $ref: '#/components/schemas/InstrumentKindEnum'
+        issuer_type:
+          $ref: '#/components/schemas/IssuerTypeEnum'
+        maturity_date:
+          type: string
+          format: date
+        rate_type:
+          $ref: '#/components/schemas/RateTypeEnum'
+        rate_index:
+          $ref: '#/components/schemas/RateIndexEnum'
+        coupon_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        coupon_frequency:
+          $ref: '#/components/schemas/CouponFrequencyEnum'
+        tax_advantaged:
+          type: boolean
+        early_redemption:
+          type: boolean
+        deposit_insurance:
+          $ref: '#/components/schemas/DepositInsuranceEnum'
+        issuer:
+          type: string
+          format: uuid
+          nullable: true
+        issuer_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        face_value:
+          allOf:
+          - $ref: '#/components/schemas/MoneyRequest'
+          nullable: true
+        rate_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+      required:
+      - archetype
+      - country
+      - coupon_frequency
+      - coupon_rate
+      - currency
+      - deposit_insurance
+      - early_redemption
+      - instrument_kind
+      - issuer_type
+      - maturity_date
+      - name
+      - rate_index
+      - rate_type
+      - tax_advantaged
+    FxRate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        base:
+          $ref: '#/components/schemas/CurrencyEnum'
+        quote:
+          $ref: '#/components/schemas/CurrencyEnum'
+        date:
+          type: string
+          format: date
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        source:
+          allOf:
+          - $ref: '#/components/schemas/PriceSourceEnum'
+          readOnly: true
+      required:
+      - base
+      - date
+      - id
+      - quote
+      - rate
+      - source
+    FxRateCreateEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/FxRate'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    FxRateGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/FxRate'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    FxRateRequest:
+      type: object
+      properties:
+        base:
+          $ref: '#/components/schemas/CurrencyEnum'
+        quote:
+          $ref: '#/components/schemas/CurrencyEnum'
+        date:
+          type: string
+          format: date
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+      required:
+      - base
+      - date
+      - quote
+      - rate
+    HoldingDetail:
+      type: object
+      description: FR-VIEW-002 — full native + base detail with a reporting block.
+      properties:
+        account:
+          type: string
+          format: uuid
+        asset:
+          type: string
+          format: uuid
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        on_date:
+          type: string
+          format: date
+        holding_start:
+          type: string
+          format: date
+          nullable: true
+        holding_period_days:
+          type: integer
+          nullable: true
+        registration:
+          $ref: '#/components/schemas/RegistrationEnum'
+        tax_advantaged:
+          type: boolean
+          nullable: true
+        reporting_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        principal:
+          allOf:
+          - $ref: '#/components/schemas/MoneyPair'
+          nullable: true
+        current_value:
+          allOf:
+          - $ref: '#/components/schemas/MoneyPair'
+          nullable: true
+        cost_basis_remaining:
+          $ref: '#/components/schemas/MoneyPair'
+        invested:
+          $ref: '#/components/schemas/MoneyPair'
+        realized_gain:
+          $ref: '#/components/schemas/MoneyPair'
+        unrealized_gain:
+          allOf:
+          - $ref: '#/components/schemas/MoneyPair'
+          nullable: true
+        income_received:
+          $ref: '#/components/schemas/MoneyPair'
+        costs:
+          $ref: '#/components/schemas/MoneyPair'
+        total_return:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        reporting:
+          $ref: '#/components/schemas/HoldingReporting'
+        real_return:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        target:
+          allOf:
+          - $ref: '#/components/schemas/TargetStatusResult'
+          nullable: true
+        lots:
+          type: array
+          items:
+            $ref: '#/components/schemas/LotProjection'
+      required:
+      - account
+      - archetype
+      - asset
+      - cost_basis_remaining
+      - costs
+      - current_value
+      - holding_period_days
+      - holding_start
+      - income_received
+      - invested
+      - lots
+      - on_date
+      - principal
+      - quantity
+      - real_return
+      - realized_gain
+      - registration
+      - reporting
+      - reporting_currency
+      - target
+      - tax_advantaged
+      - total_return
+      - unrealized_gain
+    HoldingDetailEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/HoldingDetail'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    HoldingReporting:
+      type: object
+      description: The headline figures converted to reporting currency (BR-FX).
+      properties:
+        value:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        invested:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        realized_gain:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        unrealized_gain:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        income_received:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+      required:
+      - income_received
+      - invested
+      - realized_gain
+      - unrealized_gain
+      - value
+    HoldingSummary:
+      type: object
+      description: One overview row (M8 decision 3) — reporting currency + native
+        value.
+      properties:
+        account:
+          type: string
+          format: uuid
+        asset:
+          type: string
+          format: uuid
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        principal_native:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        current_value_native:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        value:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        invested:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        realized_gain:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        unrealized_gain:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        income_received:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        total_return:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        complete:
+          type: boolean
+        target_status:
+          allOf:
+          - $ref: '#/components/schemas/TargetStatusEnum'
+          nullable: true
+      required:
+      - account
+      - archetype
+      - asset
+      - complete
+      - current_value_native
+      - income_received
+      - invested
+      - principal_native
+      - quantity
+      - realized_gain
+      - target_status
+      - total_return
+      - unrealized_gain
+      - value
+    HoldingTarget:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        scope:
+          $ref: '#/components/schemas/TargetScopeEnum'
+        account:
+          type: string
+          format: uuid
+        asset:
+          type: string
+          format: uuid
+        loss_limit_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        loss_limit_period:
+          allOf:
+          - $ref: '#/components/schemas/PeriodEnum'
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetStep'
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - account
+      - archived_at
+      - asset
+      - id
+      - scope
+      - steps
+    HoldingTargetRequest:
+      type: object
+      properties:
+        scope:
+          $ref: '#/components/schemas/TargetScopeEnum'
+        account:
+          type: string
+          format: uuid
+        asset:
+          type: string
+          format: uuid
+        loss_limit_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        loss_limit_period:
+          allOf:
+          - $ref: '#/components/schemas/PeriodEnum'
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetStepRequest'
+      required:
+      - account
+      - asset
+      - scope
+      - steps
+    Institution:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        kinds:
+          type: array
+          items:
+            $ref: '#/components/schemas/KindsEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        logo:
+          type: string
+          format: uri
+          maxLength: 200
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+        is_self_custody:
+          type: boolean
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - archived_at
+      - country
+      - id
+      - kinds
+      - name
+    InstitutionArchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Institution'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    InstitutionCreateEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Institution'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    InstitutionGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Institution'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    InstitutionPatchEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Institution'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    InstitutionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        kinds:
+          type: array
+          items:
+            $ref: '#/components/schemas/KindsEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        logo:
+          type: string
+          format: uri
+          maxLength: 200
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+        is_self_custody:
+          type: boolean
+      required:
+      - country
+      - kinds
+      - name
+    InstitutionUnarchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Institution'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    InstrumentKindEnum:
+      enum:
+      - CERTIFICATE
+      - BOND
+      type: string
+      description: |-
+        * `CERTIFICATE` - Certificate
+        * `BOND` - Bond
+    IssuerTypeEnum:
+      enum:
+      - GOVERNMENT
+      - CORPORATE
+      - MUNICIPAL
+      - BANK
+      type: string
+      description: |-
+        * `GOVERNMENT` - Government
+        * `CORPORATE` - Corporate
+        * `MUNICIPAL` - Municipal
+        * `BANK` - Bank
+    KindsEnum:
+      enum:
+      - BANK
+      - BROKERAGE
+      - EXCHANGE
+      - PENSION_PROVIDER
+      type: string
+      description: |-
+        * `BANK` - Bank
+        * `BROKERAGE` - Brokerage
+        * `EXCHANGE` - Exchange
+        * `PENSION_PROVIDER` - Pension provider
+    LiquidityEnum:
+      enum:
+      - IMMEDIATE
+      - AT_MATURITY
+      type: string
+      description: |-
+        * `IMMEDIATE` - Immediate
+        * `AT_MATURITY` - At maturity
+    Lot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        account:
+          type: string
+          format: uuid
+          readOnly: true
+        asset:
+          type: string
+          format: uuid
+          readOnly: true
+        label:
+          type: string
+          maxLength: 100
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - account
+      - archived_at
+      - asset
+      - id
+    LotArchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Lot'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    LotGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Lot'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    LotPatchEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Lot'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    LotProjection:
+      type: object
+      description: lots.md §5 — one contribution's derived figures, native + base.
+      properties:
+        lot:
+          type: string
+          format: uuid
+        label:
+          type: string
+        status:
+          $ref: '#/components/schemas/LotStatusEnum'
+        quantity_remaining:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        principal_remaining:
+          allOf:
+          - $ref: '#/components/schemas/MoneyPair'
+          nullable: true
+        invested:
+          $ref: '#/components/schemas/MoneyPair'
+        income_attributed:
+          $ref: '#/components/schemas/MoneyPair'
+        realized_gain:
+          $ref: '#/components/schemas/MoneyPair'
+        unrealized_gain:
+          allOf:
+          - $ref: '#/components/schemas/MoneyPair'
+          nullable: true
+        lot_return:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+      required:
+      - income_attributed
+      - invested
+      - label
+      - lot
+      - lot_return
+      - principal_remaining
+      - quantity_remaining
+      - realized_gain
+      - status
+      - unrealized_gain
+    LotStatusEnum:
+      enum:
+      - OPEN
+      - CLOSED
+      type: string
+      description: |-
+        * `OPEN` - OPEN
+        * `CLOSED` - CLOSED
+    LotUnarchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Lot'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    MissingFigure:
+      type: object
+      description: One figure the rollup could not compute (M8 decision 2).
+      properties:
+        account:
+          type: string
+          format: uuid
+        asset:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+        reason:
+          $ref: '#/components/schemas/MissingReasonEnum'
+      required:
+      - account
+      - asset
+      - reason
+    MissingReasonEnum:
+      enum:
+      - NO_QUOTE
+      - NO_FX
+      type: string
+      description: |-
+        * `NO_QUOTE` - NO_QUOTE
+        * `NO_FX` - NO_FX
+    Money:
+      type: object
+      description: The wire shape of Money — also the shared `Money` schema component.
+      properties:
+        amount:
+          type: integer
+          description: Integer minor units (centavos/cents). Never a float.
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          description: |-
+            ISO 4217 code of the amount's currency.
+
+            * `BRL` - Brazilian real
+            * `USD` - US dollar
+            * `CAD` - Canadian dollar
+      required:
+      - amount
+      - currency
+    MoneyPair:
+      type: object
+      description: One figure in both historical-truth currencies (§7.1).
+      properties:
+        native:
+          $ref: '#/components/schemas/Money'
+        base:
+          $ref: '#/components/schemas/Money'
+      required:
+      - base
+      - native
+    MoneyRequest:
+      type: object
+      description: The wire shape of Money — also the shared `Money` schema component.
+      properties:
+        amount:
+          type: integer
+          description: Integer minor units (centavos/cents). Never a float.
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          description: |-
+            ISO 4217 code of the amount's currency.
+
+            * `BRL` - Brazilian real
+            * `USD` - US dollar
+            * `CAD` - Canadian dollar
+      required:
+      - amount
+      - currency
+    Movement:
+      type: object
+      description: Read shape — every stored column of the immutable row.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        account:
+          type: string
+          format: uuid
+          readOnly: true
+        asset:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        lot:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
+        occurred_on:
+          type: string
+          format: date
+          readOnly: true
+        quantity_delta:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          readOnly: true
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,12})?$
+          readOnly: true
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        cash_delta:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          readOnly: true
+        fee:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          readOnly: true
+          nullable: true
+        fx_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          readOnly: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        note:
+          type: string
+          readOnly: true
+        replaces:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        transfer_of:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        voided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - account
+      - asset
+      - cash_delta
+      - created_at
+      - fee
+      - fx_rate
+      - id
+      - lot
+      - note
+      - occurred_on
+      - quantity_delta
+      - replaces
+      - transfer_of
+      - type
+      - unit_price
+      - voided_at
+    MovementGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Movement'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    MovementRecordEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Movement'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    MovementRecordRequest:
+      type: object
+      description: Write shape for record (and, with partial=True, replace).
+      properties:
+        account:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        occurred_on:
+          type: string
+          format: date
+        asset:
+          type: string
+          format: uuid
+          nullable: true
+        quantity_delta:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,12})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        cash_delta:
+          $ref: '#/components/schemas/MoneyRequest'
+        fee:
+          allOf:
+          - $ref: '#/components/schemas/MoneyRequest'
+          nullable: true
+        fx_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        note:
+          type: string
+        lot:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - account
+      - cash_delta
+      - occurred_on
+      - type
+    MovementReplaceEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Movement'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    MovementVoidEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Movement'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    NavFundAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        pricing_mode:
+          allOf:
+          - $ref: '#/components/schemas/PricingModeEnum'
+          readOnly: true
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        fund_category:
+          type: string
+          maxLength: 50
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,12})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        management_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        performance_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        redemption_period:
+          type: string
+          nullable: true
+          maxLength: 20
+      required:
+      - archetype
+      - archived_at
+      - country
+      - currency
+      - fund_category
+      - id
+      - name
+      - pricing_mode
+    NavFundAssetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        fund_category:
+          type: string
+          minLength: 1
+          maxLength: 50
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,12})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        management_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        performance_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        redemption_period:
+          type: string
+          nullable: true
+          maxLength: 20
+      required:
+      - archetype
+      - country
+      - currency
+      - fund_category
+      - name
+    PaginatedAccountList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Account'
+    PaginatedAssetList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Asset'
+    PaginatedContributionLimitList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/ContributionLimit'
+    PaginatedFxRateList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/FxRate'
+    PaginatedInstitutionList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Institution'
+    PaginatedLotList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Lot'
+    PaginatedMovementList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Movement'
+    PaginatedPriceQuoteList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/PriceQuote'
+    PaginatedTargetList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/Target'
+    PasswordResetConfirmRequest:
+      type: object
+      description: Serializer for confirming a password reset attempt.
+      properties:
+        new_password1:
+          type: string
+          minLength: 1
+          maxLength: 128
+        new_password2:
+          type: string
+          minLength: 1
+          maxLength: 128
+        uid:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+      required:
+      - new_password1
+      - new_password2
+      - token
+      - uid
+    PatchedAccountArchetypeTargetUpdateRequest:
+      type: object
+      properties:
+        loss_limit_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        loss_limit_period:
+          allOf:
+          - $ref: '#/components/schemas/PeriodEnum'
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetStepRequest'
+    PatchedAccountRequest:
+      type: object
+      properties:
+        institution:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        registration:
+          $ref: '#/components/schemas/RegistrationEnum'
+        base_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        account_number:
+          type: string
+          maxLength: 50
+        contribution_room:
+          allOf:
+          - $ref: '#/components/schemas/MoneyRequest'
+          nullable: true
+        plan_type:
+          allOf:
+          - $ref: '#/components/schemas/PlanTypeEnum'
+          nullable: true
+        deductible:
+          type: boolean
+          nullable: true
+        tax_regime:
+          allOf:
+          - $ref: '#/components/schemas/TaxRegimeEnum'
+          nullable: true
+        taxed_on:
+          allOf:
+          - $ref: '#/components/schemas/TaxedOnEnum'
+          nullable: true
+    PatchedAssetUpdateRequest:
+      oneOf:
+      - $ref: '#/components/schemas/PatchedCashDepositAssetUpdateRequest'
+      - $ref: '#/components/schemas/PatchedFixedIncomeAssetUpdateRequest'
+      - $ref: '#/components/schemas/PatchedExchangeSecurityAssetUpdateRequest'
+      - $ref: '#/components/schemas/PatchedNavFundAssetUpdateRequest'
+      - $ref: '#/components/schemas/PatchedCryptoAssetUpdateRequest'
+    PatchedCashDepositAssetUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        rate_type:
+          $ref: '#/components/schemas/RateTypeEnum'
+        rate_index:
+          $ref: '#/components/schemas/RateIndexEnum'
+        compounding:
+          $ref: '#/components/schemas/CompoundingEnum'
+        deposit_insurance:
+          $ref: '#/components/schemas/DepositInsuranceEnum'
+        liquidity:
+          $ref: '#/components/schemas/LiquidityEnum'
+        rate_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+    PatchedCryptoAssetUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        symbol:
+          type: string
+          minLength: 1
+          maxLength: 10
+        decimals:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        price_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        chain:
+          type: string
+          nullable: true
+          maxLength: 50
+    PatchedEmailUserDetailsRequest:
+      type: object
+      description: User model w/o password
+      properties:
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+    PatchedExchangeSecurityAssetUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        security_type:
+          $ref: '#/components/schemas/SecurityTypeEnum'
+        ticker:
+          type: string
+          minLength: 1
+          maxLength: 12
+        exchange:
+          $ref: '#/components/schemas/ExchangeEnum'
+        pays_distributions:
+          type: boolean
+        isin:
+          type: string
+          nullable: true
+          maxLength: 12
+    PatchedFixedIncomeAssetUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        instrument_kind:
+          $ref: '#/components/schemas/InstrumentKindEnum'
+        issuer_type:
+          $ref: '#/components/schemas/IssuerTypeEnum'
+        maturity_date:
+          type: string
+          format: date
+        rate_type:
+          $ref: '#/components/schemas/RateTypeEnum'
+        rate_index:
+          $ref: '#/components/schemas/RateIndexEnum'
+        coupon_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        coupon_frequency:
+          $ref: '#/components/schemas/CouponFrequencyEnum'
+        tax_advantaged:
+          type: boolean
+        early_redemption:
+          type: boolean
+        deposit_insurance:
+          $ref: '#/components/schemas/DepositInsuranceEnum'
+        issuer:
+          type: string
+          format: uuid
+          nullable: true
+        issuer_name:
+          type: string
+          nullable: true
+          maxLength: 255
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        face_value:
+          allOf:
+          - $ref: '#/components/schemas/MoneyRequest'
+          nullable: true
+        rate_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+    PatchedHoldingTargetUpdateRequest:
+      type: object
+      properties:
+        loss_limit_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        loss_limit_period:
+          allOf:
+          - $ref: '#/components/schemas/PeriodEnum'
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetStepRequest'
+    PatchedInstitutionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        kinds:
+          type: array
+          items:
+            $ref: '#/components/schemas/KindsEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        logo:
+          type: string
+          format: uri
+          maxLength: 200
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+        is_self_custody:
+          type: boolean
+    PatchedLotRequest:
+      type: object
+      properties:
+        label:
+          type: string
+          maxLength: 100
+    PatchedNavFundAssetUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        country:
+          $ref: '#/components/schemas/CountryEnum'
+        fund_category:
+          type: string
+          minLength: 1
+          maxLength: 50
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,12})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        management_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        performance_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        redemption_period:
+          type: string
+          nullable: true
+          maxLength: 20
+    PatchedPortfolioArchetypeTargetUpdateRequest:
+      type: object
+      properties:
+        loss_limit_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        loss_limit_period:
+          allOf:
+          - $ref: '#/components/schemas/PeriodEnum'
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetStepRequest'
+    PatchedProfileRequest:
+      type: object
+      properties:
+        reporting_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        inflation_reference_country:
+          allOf:
+          - $ref: '#/components/schemas/CountryEnum'
+          nullable: true
+    PatchedTargetUpdateRequest:
+      oneOf:
+      - $ref: '#/components/schemas/PatchedPortfolioArchetypeTargetUpdateRequest'
+      - $ref: '#/components/schemas/PatchedAccountArchetypeTargetUpdateRequest'
+      - $ref: '#/components/schemas/PatchedHoldingTargetUpdateRequest'
+    PeriodEnum:
+      enum:
+      - MONTHLY
+      - QUARTERLY
+      - SEMIANNUAL
+      - ANNUAL
+      type: string
+      description: |-
+        * `MONTHLY` - Monthly
+        * `QUARTERLY` - Quarterly
+        * `SEMIANNUAL` - Semiannual
+        * `ANNUAL` - Annual
+    PlanTypeEnum:
+      enum:
+      - PGBL
+      - VGBL
+      type: string
+      description: |-
+        * `PGBL` - PGBL
+        * `VGBL` - VGBL
+    PortfolioAllocation:
+      type: object
+      description: FR-VIEW-004 — value/weight breakdowns; every dimension sums to
+        total.
+      properties:
+        on_date:
+          type: string
+          format: date
+        reporting_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        total_value:
+          $ref: '#/components/schemas/Money'
+        complete:
+          type: boolean
+        by_archetype:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllocationSlice'
+        by_currency:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllocationSlice'
+        by_country:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllocationSlice'
+        missing:
+          type: array
+          items:
+            $ref: '#/components/schemas/MissingFigure'
+      required:
+      - by_archetype
+      - by_country
+      - by_currency
+      - complete
+      - missing
+      - on_date
+      - reporting_currency
+      - total_value
+    PortfolioAllocationEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PortfolioAllocation'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    PortfolioArchetypeTarget:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        scope:
+          $ref: '#/components/schemas/TargetScopeEnum'
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        loss_limit_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        loss_limit_period:
+          allOf:
+          - $ref: '#/components/schemas/PeriodEnum'
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetStep'
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - archetype
+      - archived_at
+      - id
+      - scope
+      - steps
+    PortfolioArchetypeTargetRequest:
+      type: object
+      properties:
+        scope:
+          $ref: '#/components/schemas/TargetScopeEnum'
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        loss_limit_pct:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        loss_limit_period:
+          allOf:
+          - $ref: '#/components/schemas/PeriodEnum'
+          nullable: true
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetStepRequest'
+      required:
+      - archetype
+      - scope
+      - steps
+    PortfolioOverview:
+      type: object
+      description: FR-VIEW-001 — the whole dashboard in one reconciling response.
+      properties:
+        on_date:
+          type: string
+          format: date
+        reporting_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        total_value:
+          $ref: '#/components/schemas/Money'
+        free_cash:
+          $ref: '#/components/schemas/Money'
+        complete:
+          type: boolean
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountGroup'
+        archetypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchetypeSlice'
+        nominal_return:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        real_return:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        missing:
+          type: array
+          items:
+            $ref: '#/components/schemas/MissingFigure'
+      required:
+      - accounts
+      - archetypes
+      - complete
+      - free_cash
+      - missing
+      - nominal_return
+      - on_date
+      - real_return
+      - reporting_currency
+      - total_value
+    PortfolioOverviewEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PortfolioOverview'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    PriceQuote:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        asset:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,12})?$
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        price_source:
+          allOf:
+          - $ref: '#/components/schemas/PriceSourceEnum'
+          readOnly: true
+      required:
+      - asset
+      - date
+      - id
+      - price
+      - price_source
+    PriceQuoteCreateEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PriceQuote'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    PriceQuoteGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PriceQuote'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    PriceQuoteRequest:
+      type: object
+      properties:
+        asset:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,12})?$
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+      required:
+      - asset
+      - date
+      - price
+    PriceSourceEnum:
+      enum:
+      - MANUAL
+      - FEED
+      type: string
+      description: |-
+        * `MANUAL` - Manual
+        * `FEED` - Feed
+    PricingModeEnum:
+      enum:
+      - MARKET
+      - NAV
+      - ACCRUAL
+      type: string
+      description: |-
+        * `MARKET` - Market
+        * `NAV` - NAV
+        * `ACCRUAL` - Accrual
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reporting_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        inflation_reference_country:
+          allOf:
+          - $ref: '#/components/schemas/CountryEnum'
+          nullable: true
+      required:
+      - id
+    ProfileGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Profile'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    ProfilePatchEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Profile'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    RateIndexEnum:
+      enum:
+      - CDI
+      - SELIC
+      - IPCA
+      - IGPM
+      - NONE
+      type: string
+      description: |-
+        * `CDI` - CDI
+        * `SELIC` - Selic
+        * `IPCA` - IPCA
+        * `IGPM` - IGP-M
+        * `NONE` - None
+    RateTypeEnum:
+      enum:
+      - FIXED
+      - FLOATING
+      - INFLATION_LINKED
+      type: string
+      description: |-
+        * `FIXED` - Fixed
+        * `FLOATING` - Floating
+        * `INFLATION_LINKED` - Inflation-linked
+    RegistrationEnum:
+      enum:
+      - BR_TAXABLE
+      - BR_PREV_PGBL
+      - BR_PREV_VGBL
+      - US_TAXABLE
+      - US_401K
+      - US_IRA_TRADITIONAL
+      - US_IRA_ROTH
+      - CA_NON_REGISTERED
+      - CA_RRSP
+      - CA_TFSA
+      - CA_FHSA
+      type: string
+      description: |-
+        * `BR_TAXABLE` - Taxable (BR)
+        * `BR_PREV_PGBL` - PGBL private pension
+        * `BR_PREV_VGBL` - VGBL private pension
+        * `US_TAXABLE` - Taxable (US)
+        * `US_401K` - 401(k)
+        * `US_IRA_TRADITIONAL` - Traditional IRA
+        * `US_IRA_ROTH` - Roth IRA
+        * `CA_NON_REGISTERED` - Non-registered (CA)
+        * `CA_RRSP` - RRSP
+        * `CA_TFSA` - TFSA
+        * `CA_FHSA` - FHSA
+    ResendEmailVerificationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    RestAuthDetail:
+      type: object
+      properties:
+        detail:
+          type: string
+          readOnly: true
+      required:
+      - detail
+    SPAPasswordResetRequest:
+      type: object
+      description: Serializer for requesting a password reset e-mail.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    SecurityTypeEnum:
+      enum:
+      - STOCK
+      - ETF
+      - REIT
+      - FII
+      type: string
+      description: |-
+        * `STOCK` - Stock
+        * `ETF` - ETF
+        * `REIT` - REIT
+        * `FII` - FII
+    SocialLogin:
+      type: object
+      properties:
+        access_token:
+          type: string
+        code:
+          type: string
+        id_token:
+          type: string
+    SocialLoginRequest:
+      type: object
+      properties:
+        access_token:
+          type: string
+        code:
+          type: string
+        id_token:
+          type: string
+    Target:
+      oneOf:
+      - $ref: '#/components/schemas/PortfolioArchetypeTarget'
+      - $ref: '#/components/schemas/AccountArchetypeTarget'
+      - $ref: '#/components/schemas/HoldingTarget'
+      discriminator:
+        propertyName: scope
+        mapping:
+          PORTFOLIO_ARCHETYPE: '#/components/schemas/PortfolioArchetypeTarget'
+          ACCOUNT_ARCHETYPE: '#/components/schemas/AccountArchetypeTarget'
+          HOLDING: '#/components/schemas/HoldingTarget'
+    TargetArchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Target'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    TargetCreateEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Target'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    TargetGetEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Target'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    TargetPatchEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Target'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    TargetRequest:
+      oneOf:
+      - $ref: '#/components/schemas/PortfolioArchetypeTargetRequest'
+      - $ref: '#/components/schemas/AccountArchetypeTargetRequest'
+      - $ref: '#/components/schemas/HoldingTargetRequest'
+      discriminator:
+        propertyName: scope
+        mapping:
+          PORTFOLIO_ARCHETYPE: '#/components/schemas/PortfolioArchetypeTargetRequest'
+          ACCOUNT_ARCHETYPE: '#/components/schemas/AccountArchetypeTargetRequest'
+          HOLDING: '#/components/schemas/HoldingTargetRequest'
+    TargetScopeEnum:
+      enum:
+      - PORTFOLIO_ARCHETYPE
+      - ACCOUNT_ARCHETYPE
+      - HOLDING
+      type: string
+      description: |-
+        * `PORTFOLIO_ARCHETYPE` - Portfolio × archetype
+        * `ACCOUNT_ARCHETYPE` - Account × archetype
+        * `HOLDING` - Holding
+    TargetSource:
+      type: object
+      description: Which target package the verdict resolved from (provenance).
+      properties:
+        scope:
+          $ref: '#/components/schemas/TargetScopeEnum'
+        id:
+          type: string
+          format: uuid
+      required:
+      - id
+      - scope
+    TargetStatusEnum:
+      enum:
+      - AHEAD
+      - ON_TRACK
+      - BEHIND
+      - BELOW_FLOOR
+      type: string
+      description: |-
+        * `AHEAD` - Ahead
+        * `ON_TRACK` - On track
+        * `BEHIND` - Behind
+        * `BELOW_FLOOR` - Below floor
+    TargetStatusResult:
+      type: object
+      description: One holding's derived target verdict (M11) — information only (BR-SCOPE).
+      properties:
+        status:
+          $ref: '#/components/schemas/TargetStatusEnum'
+        actual:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        expected:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        band:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        source:
+          $ref: '#/components/schemas/TargetSource'
+      required:
+      - actual
+      - band
+      - expected
+      - source
+      - status
+    TargetStep:
+      type: object
+      description: One (from_month, rate, rate_period) segment (FR-TARGET-002).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        from_month:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        rate_period:
+          $ref: '#/components/schemas/PeriodEnum'
+      required:
+      - from_month
+      - id
+      - rate
+      - rate_period
+    TargetStepRequest:
+      type: object
+      description: One (from_month, rate, rate_period) segment (FR-TARGET-002).
+      properties:
+        from_month:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        rate_period:
+          $ref: '#/components/schemas/PeriodEnum'
+      required:
+      - from_month
+      - rate
+      - rate_period
+    TargetUnarchiveEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Target'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    TaxRegimeEnum:
+      enum:
+      - PROGRESSIVE
+      - REGRESSIVE
+      type: string
+      description: |-
+        * `PROGRESSIVE` - Progressive
+        * `REGRESSIVE` - Regressive
+    TaxedOnEnum:
+      enum:
+      - WHOLE_AMOUNT
+      - GAINS_ONLY
+      type: string
+      description: |-
+        * `WHOLE_AMOUNT` - Whole amount
+        * `GAINS_ONLY` - Gains only
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TransferLegs:
+      type: object
+      properties:
+        out:
+          $ref: '#/components/schemas/Movement'
+        in:
+          $ref: '#/components/schemas/Movement'
+      required:
+      - in
+      - out
+    TransferRecordEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/TransferLegs'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    TransferRequest:
+      type: object
+      description: Write shape for the two-legged transfer (FR-MOV-007).
+      properties:
+        source_account:
+          type: string
+          format: uuid
+        destination_account:
+          type: string
+          format: uuid
+        occurred_on:
+          type: string
+          format: date
+        asset:
+          type: string
+          format: uuid
+          nullable: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        cash_amount:
+          allOf:
+          - $ref: '#/components/schemas/MoneyRequest'
+          nullable: true
+        source_lot:
+          type: string
+          format: uuid
+          nullable: true
+        out_fx_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        in_fx_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        note:
+          type: string
+      required:
+      - destination_account
+      - occurred_on
+      - source_account
+    TypeEnum:
+      enum:
+      - DEPOSIT
+      - WITHDRAWAL
+      - TRANSFER_IN
+      - TRANSFER_OUT
+      - BUY
+      - SELL
+      - DIVIDEND
+      - DISTRIBUTION
+      - INTEREST
+      - COUPON
+      - MATURITY
+      - REDEMPTION
+      - FEE
+      - TAX
+      - SPLIT
+      - BONUS
+      type: string
+      description: |-
+        * `DEPOSIT` - Deposit
+        * `WITHDRAWAL` - Withdrawal
+        * `TRANSFER_IN` - Transfer in
+        * `TRANSFER_OUT` - Transfer out
+        * `BUY` - Buy
+        * `SELL` - Sell
+        * `DIVIDEND` - Dividend
+        * `DISTRIBUTION` - Distribution
+        * `INTEREST` - Interest
+        * `COUPON` - Coupon
+        * `MATURITY` - Maturity
+        * `REDEMPTION` - Redemption
+        * `FEE` - Fee
+        * `TAX` - Tax
+        * `SPLIT` - Split
+        * `BONUS` - Bonus
+    VerifyEmailRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - key
+  securitySchemes:
+    jwtCookieAuth:
+      type: apiKey
+      in: cookie
+      name: bl-access
+tags:
+- name: Auth
+  description: Registration, login, and session cookies.
+- name: Profile
+  description: The caller's own profile settings.
+- name: Institutions
+  description: Banks, brokerages, exchanges, wallets.
+- name: Accounts
+  description: Accounts and their tax wrappers.
+- name: Assets
+  description: Instruments, typed by archetype.
+- name: Movements
+  description: The ledger — the only source of truth.
+- name: Lots
+  description: Per-contribution organization of a holding.
+- name: Pricing
+  description: Price quotes and FX rates.
+- name: Reference
+  description: Contribution limits and reference data.
+- name: Portfolio
+  description: Derived reporting views.
+- name: Targets
+  description: Performance expectations and their derived status.

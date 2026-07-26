@@ -7,7 +7,9 @@ import tseslint from "typescript-eslint";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  // src/types/api.d.ts is generated from the OpenAPI schema. Linting or
+  // formatting it would make the CI drift diff meaningless.
+  globalIgnores(["dist", "src/types/api.d.ts"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
