@@ -1,0 +1,11 @@
+dist/
+node_modules/
+bun.lock
+docs/
+openapi.yaml
+src/types/api.d.ts
+
+# Vendored from upstream and updated wholesale — reformatting locally would
+# conflict on every sync.
+.claude/
+.impeccable/
