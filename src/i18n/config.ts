@@ -4,8 +4,10 @@ import LanguageDetector from "i18next-browser-languagedetector";
 
 import enCommon from "./locales/en/common.json";
 import enAuth from "./locales/en/auth.json";
+import enErrors from "./locales/en/errors.json";
 import ptCommon from "./locales/pt/common.json";
 import ptAuth from "./locales/pt/auth.json";
+import ptErrors from "./locales/pt/errors.json";
 
 export const SUPPORTED_LANGUAGES = ["en", "pt"] as const;
 export const LANGUAGE_STORAGE_KEY = "bullledger-lang";
@@ -15,14 +17,14 @@ void i18n
   .use(initReactI18next)
   .init({
     resources: {
-      en: { common: enCommon, auth: enAuth },
-      pt: { common: ptCommon, auth: ptAuth },
+      en: { common: enCommon, auth: enAuth, errors: enErrors },
+      pt: { common: ptCommon, auth: ptAuth, errors: ptErrors },
     },
     fallbackLng: "en",
     supportedLngs: SUPPORTED_LANGUAGES,
     // Map regional tags (pt-BR, en-US) down to the base language we ship.
     load: "languageOnly",
-    ns: ["common", "auth"],
+    ns: ["common", "auth", "errors"],
     defaultNS: "common",
     interpolation: { escapeValue: false },
     // Resources are bundled, so init runs synchronously and no Suspense
