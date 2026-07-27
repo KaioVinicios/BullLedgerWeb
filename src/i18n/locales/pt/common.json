@@ -29,5 +29,9 @@
     "privacy": "Política de Privacidade",
     "pending": "Estamos finalizando este documento antes do lançamento. Ele será publicado por completo antes que você possa criar uma conta.",
     "backToSignup": "Voltar ao cadastro"
+  },
+  "figure": {
+    "gain": "ganho",
+    "loss": "perda"
   }
 }

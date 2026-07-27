@@ -30,6 +30,15 @@
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
   --destructive: oklch(0.505 0.213 27.518);
+  /* Gain and loss. Deliberately not the gold ramp: --primary marks the
+     primary action and current selection, and a figure that moved is neither.
+     Matched contrast on --background (gain 6.10:1, loss 6.01:1) so neither
+     direction reads louder than the other, and both clear AA for body text.
+     Loss carries less chroma than --destructive so an error still outranks a
+     fact — a position that fell is not a problem to fix. Never the sole
+     signal: SignedFigure always renders a sign as well. */
+  --gain: oklch(0.48 0.12 158);
+  --loss: oklch(0.52 0.17 25);
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.62 0.015 286.067);
@@ -69,6 +78,9 @@
   --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  /* Re-tuned for the dark surface, matched again: gain 6.81:1, loss 6.71:1. */
+  --gain: oklch(0.66 0.14 158);
+  --loss: oklch(0.69 0.15 25);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.552 0.016 285.938);
@@ -113,6 +125,8 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-gain: var(--gain);
+  --color-loss: var(--loss);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);

@@ -29,5 +29,9 @@
     "privacy": "Privacy Policy",
     "pending": "We’re finalizing this document ahead of launch. It’ll be published in full before you can create a live account.",
     "backToSignup": "Back to sign up"
+  },
+  "figure": {
+    "gain": "gain",
+    "loss": "loss"
   }
 }

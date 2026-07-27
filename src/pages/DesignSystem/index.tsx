@@ -6,6 +6,7 @@ import { ButtonsSection } from "@/pages/DesignSystem/sections/ButtonsSection";
 import { ColorsSection } from "@/pages/DesignSystem/sections/ColorsSection";
 import { DataSection } from "@/pages/DesignSystem/sections/DataSection";
 import { FeedbackSection } from "@/pages/DesignSystem/sections/FeedbackSection";
+import { FiguresSection } from "@/pages/DesignSystem/sections/FiguresSection";
 import { FormsSection } from "@/pages/DesignSystem/sections/FormsSection";
 import { OverlaysSection } from "@/pages/DesignSystem/sections/OverlaysSection";
 import { RadiusSection } from "@/pages/DesignSystem/sections/RadiusSection";
@@ -21,6 +22,7 @@ const sections = [
   { id: "feedback", label: "Feedback" },
   { id: "overlays", label: "Overlays" },
   { id: "data", label: "Data display" },
+  { id: "figures", label: "Figures" },
 ];
 
 export function DesignSystemPage() {
@@ -78,6 +80,7 @@ export function DesignSystemPage() {
           <FeedbackSection />
           <OverlaysSection />
           <DataSection />
+          <FiguresSection />
         </main>
       </div>
     </div>
