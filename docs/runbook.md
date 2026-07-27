@@ -1,3 +1,5 @@
+<!-- v1.0.0 | last changed 2026-07-25 -->
+
 # Frontend Runbook
 
 Everything needed to install, run, verify, and build the BullLedger web client.
@@ -52,6 +54,9 @@ bun run test          bun run test:watch
 bun run test:e2e      # Playwright; boots the dev server itself
 ```
 
+Unit and component tests run against MSW, never the network. `bun run test`
+needs no `.env` beyond what `vite.config.ts` supplies under `test.env`.
+
 CI runs `bun run check` and `bun run build` on every push. Playwright is deliberately
 not in CI yet — it runs locally until there are real user flows to walk.
 
@@ -95,7 +100,28 @@ over every document in `docs/`.**
 
 ## Layout notes
 
-- `src/setupTests.ts` — Vitest setup; registers jest-dom matchers.
+- `src/setupTests.ts` — Vitest setup: jest-dom matchers, the MSW server, real
+  i18n resources, and React Testing Library's `cleanup`. The last two are not
+  optional. Without i18n, `t()` echoes the key and a test asserting on
+  translated copy can pass because the key contains the word it looked for;
+  without an explicit `cleanup`, the DOM accumulates across tests in a file
+  (RTL only auto-registers it under `globals: true`, which this project does
+  not use).
+- `src/mocks/` — MSW handlers and the `setupServer` instance. The server starts
+  with `onUnhandledRequest: "error"`, so a request no handler covers fails the
+  test instead of hitting the network. Default handlers are deliberately empty:
+  each suite declares the traffic it cares about with `server.use(...)`.
+- The transport layer is proven under MSW rather than against the live API —
+  CSRF, 401 recovery, refresh deduplication, and envelope unwrapping all have
+  integration tests in `src/lib/`.
+- `src/lib/apiClient.ts` sets **both** `withCredentials` and `withXSRFToken`.
+  The second is not redundant: since axios 1.6.2 the CSRF header is attached to
+  cross-origin requests only when it is set, and every request this app makes
+  is cross-origin. Drop it and the header disappears with no error.
+- The 401 retry flag on the axios config is a string key, not a symbol.
+  Replaying runs the config back through axios's `mergeConfig`, which
+  enumerates with `Object.keys` — a symbol would be dropped there and every
+  retry would look like a first attempt, refreshing in an endless loop.
 - `scripts/fetch-schema.ts` — downloads the OpenAPI schema. It runs through Bun rather
   than as a shell one-liner because Bun loads `.env` for its runtime but not into the
   shell that executes `package.json` scripts.

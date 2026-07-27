@@ -1,3 +1,5 @@
+<!-- v1.0.0 | last changed 2026-07-26 -->
+
 # Web Frontend Stack
 
 React + TypeScript web frontend. Consumes the BullLedger REST API. Built partly as a vehicle to learn newer tooling, with a future native Swift (iOS/macOS) client in mind.
@@ -30,9 +32,12 @@ Everything below is declared in `package.json` and installed with `bun install`.
 | **@tanstack/react-router** | Type-safe routing + validated search params (Zod) |
 | **zustand** | Interactive client UI state |
 | **zod** | Schema validation (forms, API boundaries, router params) |
+| **axios** | HTTP client: cookies, CSRF, and 401 recovery via interceptors |
+| **big.js** | Exact decimal arithmetic for quantities and unit prices |
 | **react-i18next** | Internationalization |
 | **@react-oauth/google** | Google OAuth2 flow wrapper |
 | **vitest** + **@testing-library/react** | Unit + component tests |
+| **msw** | Network mocking for unit and component tests |
 | **playwright** | E2E tests |
 | **eslint** + **prettier** | Lint + format |
 | **posthog-js** | Product analytics + observability |
@@ -50,8 +55,11 @@ Everything below is declared in `package.json` and installed with `bun install`.
 | Routing | **TanStack Router** | End-to-end type safety incl. **typed + validated search params** (Zod) — ideal for URL-driven table filters/pagination/sorting. Consistent with the rest of the TanStack stack; router loaders can prefetch Query data. |
 | Client state | **Zustand + React Context** | Context for provider-level concerns (theme, app shell); Zustand for interactive UI state (toggles, wizards) with selective re-render. Note: auth status is **not** client state — it comes from a `/me` query (server state) because the JWT lives in an httpOnly cookie. |
 | Validation | **Zod** | One source of truth for shape + types. Powers TanStack Form validation, API-boundary parsing, and router search-param schemas. |
+| Decimals | **big.js** | Quantities, unit prices, and FX rates arrive as decimal strings at scales floats cannot hold (quantity to 18 places). Used only where real arithmetic is unavoidable — formatting goes through `Intl`, which accepts decimal strings directly. |
+| API calls | **axios** | Cookie auth, CSRF, and 401-refresh-and-replay are all first-class: `withCredentials` + `withXSRFToken` cover the first two with no cookie-reading code of our own, and a response interceptor covers the third — axios hands back the original config, so replaying a failed request is one call with no body-consumption care. Cost: paths are plain strings, so a renamed route is a runtime 404 rather than a compile error. Mitigated by naming response types from `src/types/api.d.ts` at each call and keeping every path in `src/services/endpoints.ts`. |
 | Package manager | **bun** | Fastest, modern. |
 | Testing | **Vitest + React Testing Library** (unit/component), **Playwright** (E2E) | |
+| Test network | **MSW** | Intercepts at the request layer, so the real HTTP client runs unmodified — headers, status codes, and multi-request flows included. Stubbing axios would make tests assert on the mock's shape rather than the client's behaviour. |
 | Lint + format | **ESLint + Prettier** | Native fit with shadcn/ui ecosystem — no tooling friction. |
 | i18n | **react-i18next** | Most widely adopted React i18n library. Handles namespaces, lazy loading of translation files, pluralization, and interpolation out of the box. |
 | OAuth | **@react-oauth/google** | Lightweight Google OAuth2 wrapper for React. Triggers the OAuth flow and handles the callback; hands the token to the backend for exchange. |
@@ -61,4 +69,4 @@ Everything below is declared in `package.json` and installed with `bun install`.
 
 ## Stack at a Glance
 
-React · TypeScript · Vite · Tailwind · shadcn/ui · TanStack Form · TanStack Query · TanStack Router · Zustand · React Context · Zod · react-i18next · @react-oauth/google · PostHog · bun · Vitest · React Testing Library · Playwright · ESLint · Prettier
+React · TypeScript · Vite · Tailwind · shadcn/ui · TanStack Form · TanStack Query · TanStack Router · Zustand · React Context · Zod · axios · big.js · react-i18next · @react-oauth/google · PostHog · bun · Vitest · React Testing Library · MSW · Playwright · ESLint · Prettier
