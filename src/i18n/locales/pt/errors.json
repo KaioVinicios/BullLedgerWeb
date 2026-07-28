@@ -1,4 +1,10 @@
 {
   "network": "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
-  "unexpected": "Algo deu errado. Tente novamente."
+  "unexpected": "Algo deu errado. Tente novamente.",
+  "loginFailed": "E-mail ou senha incorretos.",
+  "emailTaken": "Já existe uma conta com este e-mail.",
+  "passwordMismatch": "As duas senhas precisam ser iguais.",
+  "passwordTooShort": "A senha precisa ter pelo menos 8 caracteres.",
+  "passwordTooCommon": "Esta senha é muito comum. Escolha uma mais forte.",
+  "resetLinkInvalid": "Este link expirou ou já foi usado."
 }

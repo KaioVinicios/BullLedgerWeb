@@ -17,6 +17,14 @@ interface ApiClientErrorInit {
   /** i18n key for client-generated messages; absent when the server spoke. */
   messageKey?: string;
   fields?: Record<string, string[]>;
+  /**
+   * The stable code behind each message in `fields`, same shape and keys.
+   * Optional even though the server always sends it: a body normalized before
+   * this field existed (an older fixture, a hand-built test double) should
+   * still produce a usable error rather than fail validation over a field
+   * nothing here has read yet.
+   */
+  codes?: Record<string, string[]>;
   cause?: unknown;
 }
 
@@ -30,6 +38,7 @@ export class ApiClientError extends Error {
   readonly kind: ApiErrorKind;
   readonly messageKey?: string;
   readonly fields: Readonly<Record<string, string[]>>;
+  readonly codes: Readonly<Record<string, string[]>>;
 
   constructor(init: ApiClientErrorInit) {
     super(init.message, { cause: init.cause });
@@ -38,11 +47,17 @@ export class ApiClientError extends Error {
     this.kind = init.kind;
     this.messageKey = init.messageKey;
     this.fields = Object.freeze({ ...(init.fields ?? {}) });
+    this.codes = Object.freeze({ ...(init.codes ?? {}) });
   }
 
   /** Messages for one field, addressed by its exact key (`steps.0.rate`). */
   fieldErrors(key: string): string[] {
     return this.fields[key] ?? [];
+  }
+
+  /** The stable codes behind one field's messages, in the same order. */
+  fieldCodes(key: string): string[] {
+    return this.codes[key] ?? [];
   }
 
   get nonFieldErrors(): string[] {
@@ -61,20 +76,30 @@ function kindForStatus(status: number): ApiErrorKind {
   return "validation";
 }
 
+/** `{ field: [message, ...] }` — the shape both `errors` and `codes` share. */
+function isMessageMap(value: unknown): value is Record<string, string[]> {
+  if (typeof value !== "object" || value === null) return false;
+
+  return Object.values(value as Record<string, unknown>).every(
+    (messages) =>
+      Array.isArray(messages) &&
+      messages.every((message) => typeof message === "string"),
+  );
+}
+
 function isApiErrorBody(body: unknown): body is ApiErrorBody {
   if (typeof body !== "object" || body === null) return false;
 
   const candidate = body as Record<string, unknown>;
   if (typeof candidate.message !== "string") return false;
-  if (typeof candidate.errors !== "object" || candidate.errors === null) {
+  if (!isMessageMap(candidate.errors)) return false;
+  // `codes` is validated when present but not required: see the comment on
+  // ApiClientErrorInit.codes.
+  if (candidate.codes !== undefined && !isMessageMap(candidate.codes)) {
     return false;
   }
 
-  return Object.values(candidate.errors as Record<string, unknown>).every(
-    (messages) =>
-      Array.isArray(messages) &&
-      messages.every((message) => typeof message === "string"),
-  );
+  return true;
 }
 
 /**
@@ -103,6 +128,7 @@ export function apiClientErrorFromBody(
     kind: kindForStatus(status),
     message: body.message,
     fields: body.errors,
+    codes: body.codes,
   });
 }
 

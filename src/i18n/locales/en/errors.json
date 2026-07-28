@@ -1,4 +1,10 @@
 {
   "network": "Could not reach the server. Check your connection and try again.",
-  "unexpected": "Something went wrong. Please try again."
+  "unexpected": "Something went wrong. Please try again.",
+  "loginFailed": "Incorrect email or password.",
+  "emailTaken": "An account with this email already exists.",
+  "passwordMismatch": "Both passwords must match.",
+  "passwordTooShort": "Password must be at least 8 characters.",
+  "passwordTooCommon": "This password is too common. Please choose a stronger one.",
+  "resetLinkInvalid": "This link has expired or already been used."
 }
