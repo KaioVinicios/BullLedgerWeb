@@ -8,9 +8,10 @@ import enErrors from "./locales/en/errors.json";
 import ptCommon from "./locales/pt/common.json";
 import ptAuth from "./locales/pt/auth.json";
 import ptErrors from "./locales/pt/errors.json";
+import { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGUAGES } from "./language";
 
-export const SUPPORTED_LANGUAGES = ["en", "pt"] as const;
-export const LANGUAGE_STORAGE_KEY = "bullledger-lang";
+export { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGUAGES } from "./language";
+export type { SupportedLanguage } from "./language";
 
 void i18n
   .use(LanguageDetector)

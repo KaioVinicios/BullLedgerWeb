@@ -376,6 +376,9 @@ docs/*todo.md
 docs/superpowers/
 
 ### Playwright ###
+# The API's console mailbox, which the E2E specs read emailed keys from. Kept
+# outside /test-results/ because Playwright empties that directory per run.
+/.e2e-mailbox/
 /test-results/
 /playwright-report/
 /blob-report/

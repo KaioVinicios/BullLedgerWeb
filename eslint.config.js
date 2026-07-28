@@ -24,6 +24,20 @@ export default defineConfig([
     },
   },
   {
+    // Playwright specs run in Node and drive a browser, so they see both sets
+    // of globals. The React plugins have nothing to say here, and one of them
+    // is actively wrong: a fixture's `use(value)` is Playwright's hand-off to
+    // the test, not React's `use` hook.
+    files: ["e2e/**/*.ts"],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+      "react-refresh/only-export-components": "off",
+    },
+  },
+  {
     // shadcn-generated files export cva variants next to components, and
     // route files export route objects — both are incompatible with the
     // components-only constraint fast refresh wants.
