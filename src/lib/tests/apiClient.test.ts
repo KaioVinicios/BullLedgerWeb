@@ -3,14 +3,13 @@ import { http, HttpResponse } from "msw";
 
 import { server } from "@/mocks/server";
 import { CSRF_HEADER, createApiClient } from "@/lib/apiClient";
-
-const API = "https://api.test.bullledger.local";
+import { TEST_API_URL } from "@/mocks/env";
 
 /** Records every request MSW sees, so assertions read the real wire. */
 function recorder() {
   const seen: Request[] = [];
   server.use(
-    http.all(`${API}/*`, ({ request }) => {
+    http.all(`${TEST_API_URL}/*`, ({ request }) => {
       seen.push(request.clone());
       return HttpResponse.json({ status: 200, data: {} });
     }),
@@ -24,7 +23,7 @@ afterEach(() => {
 
 describe("createApiClient", () => {
   it("sends cookies with every request", async () => {
-    const client = createApiClient(API);
+    const client = createApiClient(TEST_API_URL);
 
     expect(client.defaults.withCredentials).toBe(true);
   });
@@ -33,7 +32,7 @@ describe("createApiClient", () => {
     document.cookie = "csrftoken=tok-123";
     const seen = recorder();
 
-    await createApiClient(API).post("/api/accounts/", {});
+    await createApiClient(TEST_API_URL).post("/api/accounts/", {});
 
     expect(seen[0]?.headers.get(CSRF_HEADER)).toBe("tok-123");
   });
@@ -41,7 +40,7 @@ describe("createApiClient", () => {
   it("omits X-CSRFToken when no cookie exists", async () => {
     const seen = recorder();
 
-    await createApiClient(API).post("/api/accounts/", {});
+    await createApiClient(TEST_API_URL).post("/api/accounts/", {});
 
     expect(seen[0]?.headers.get(CSRF_HEADER)).toBeNull();
   });
@@ -49,15 +48,17 @@ describe("createApiClient", () => {
   it("resolves paths against the base URL", async () => {
     const seen = recorder();
 
-    await createApiClient(API).get("/api/accounts/");
+    await createApiClient(TEST_API_URL).get("/api/accounts/");
 
-    expect(seen[0]?.url).toBe(`${API}/api/accounts/`);
+    expect(seen[0]?.url).toBe(`${TEST_API_URL}/api/accounts/`);
   });
 
   it("sends a JSON body as JSON", async () => {
     const seen = recorder();
 
-    await createApiClient(API).post("/api/accounts/", { name: "Nubank" });
+    await createApiClient(TEST_API_URL).post("/api/accounts/", {
+      name: "Nubank",
+    });
 
     expect(seen[0]?.headers.get("content-type")).toContain("application/json");
     await expect(seen[0]?.json()).resolves.toEqual({ name: "Nubank" });

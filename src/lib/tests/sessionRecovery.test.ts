@@ -4,14 +4,14 @@ import type { AxiosInstance } from "axios";
 
 import { server } from "@/mocks/server";
 import { CSRF_HEADER, createApiClient } from "@/lib/apiClient";
+import { TEST_API_URL } from "@/mocks/env";
 import {
   REFRESH_PATH,
   type SessionRecoveryOptions,
   attachSessionRecovery,
 } from "@/lib/sessionRecovery";
 
-const API = "https://api.test.bullledger.local";
-const REFRESH_URL = `${API}${REFRESH_PATH}`;
+const REFRESH_URL = `${TEST_API_URL}${REFRESH_PATH}`;
 
 /**
  * Builds a recovered client whose refresh goes through a separate plain
@@ -20,8 +20,8 @@ const REFRESH_URL = `${API}${REFRESH_PATH}`;
 function makeClient(
   overrides: Partial<SessionRecoveryOptions> = {},
 ): AxiosInstance {
-  const client = createApiClient(API);
-  const refreshClient = createApiClient(API);
+  const client = createApiClient(TEST_API_URL);
+  const refreshClient = createApiClient(TEST_API_URL);
 
   attachSessionRecovery(client, {
     refresh: () => refreshClient.post(REFRESH_PATH, {}),
@@ -39,7 +39,7 @@ describe("attachSessionRecovery", () => {
     let refreshCalls = 0;
 
     server.use(
-      http.get(`${API}/api/accounts/`, () => {
+      http.get(`${TEST_API_URL}/api/accounts/`, () => {
         accountsCalls += 1;
         return accountsCalls === 1
           ? HttpResponse.json({ status: 401 }, { status: 401 })
@@ -62,7 +62,7 @@ describe("attachSessionRecovery", () => {
     let refreshCalls = 0;
 
     server.use(
-      http.get(`${API}/api/accounts/`, () =>
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
         HttpResponse.json({ status: 401 }, { status: 401 }),
       ),
       http.post(REFRESH_URL, () => {
@@ -81,7 +81,7 @@ describe("attachSessionRecovery", () => {
     let lost = 0;
 
     server.use(
-      http.get(`${API}/api/accounts/`, () =>
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
         HttpResponse.json({ status: 401 }, { status: 401 }),
       ),
       http.post(REFRESH_URL, () => HttpResponse.json({}, { status: 401 })),
@@ -100,7 +100,7 @@ describe("attachSessionRecovery", () => {
     let refreshCalls = 0;
 
     server.use(
-      http.get(`${API}/api/:resource/`, ({ params }) => {
+      http.get(`${TEST_API_URL}/api/:resource/`, ({ params }) => {
         const resource = String(params.resource);
         if (seenFirst.has(resource)) {
           return HttpResponse.json({ status: 200, data: { count: 0 } });
@@ -130,7 +130,7 @@ describe("attachSessionRecovery", () => {
     let refreshCalls = 0;
 
     server.use(
-      http.get(`${API}/api/accounts/`, () =>
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
         HttpResponse.json({ status: 401 }, { status: 401 }),
       ),
       http.post(REFRESH_URL, () => {
@@ -150,7 +150,7 @@ describe("attachSessionRecovery", () => {
     const bodies: unknown[] = [];
 
     server.use(
-      http.post(`${API}/api/accounts/`, async ({ request }) => {
+      http.post(`${TEST_API_URL}/api/accounts/`, async ({ request }) => {
         attempts += 1;
         bodies.push(await request.json());
         return attempts === 1
@@ -169,7 +169,7 @@ describe("attachSessionRecovery", () => {
     let refreshCalls = 0;
 
     server.use(
-      http.get(`${API}/api/accounts/`, () =>
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
         HttpResponse.json({ status: 500 }, { status: 500 }),
       ),
       http.post(REFRESH_URL, () => {

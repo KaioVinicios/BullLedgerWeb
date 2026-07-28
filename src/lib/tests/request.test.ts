@@ -5,9 +5,9 @@ import { server } from "@/mocks/server";
 import { ApiClientError } from "@/lib/apiError";
 import { createApiClient } from "@/lib/apiClient";
 import { request, unwrap } from "@/lib/request";
+import { TEST_API_URL } from "@/mocks/env";
 
-const API = "https://api.test.bullledger.local";
-const client = createApiClient(API);
+const client = createApiClient(TEST_API_URL);
 
 describe("unwrap", () => {
   it("returns the data property of an enveloped body", () => {
@@ -36,19 +36,19 @@ describe("unwrap", () => {
 describe("request", () => {
   it("returns unwrapped data on success", async () => {
     server.use(
-      http.get(`${API}/ok`, () =>
+      http.get(`${TEST_API_URL}/ok`, () =>
         HttpResponse.json({ status: 200, data: { id: "a" } }),
       ),
     );
 
-    await expect(request(client.get(`${API}/ok`))).resolves.toEqual({
+    await expect(request(client.get(`${TEST_API_URL}/ok`))).resolves.toEqual({
       id: "a",
     });
   });
 
   it("normalizes a validation error, keeping field keys intact", async () => {
     server.use(
-      http.get(`${API}/invalid`, () =>
+      http.get(`${TEST_API_URL}/invalid`, () =>
         HttpResponse.json(
           {
             status: 400,
@@ -60,7 +60,7 @@ describe("request", () => {
       ),
     );
 
-    const promise = request(client.get(`${API}/invalid`));
+    const promise = request(client.get(`${TEST_API_URL}/invalid`));
 
     await expect(promise).rejects.toBeInstanceOf(ApiClientError);
     await expect(promise).rejects.toMatchObject({
@@ -70,9 +70,11 @@ describe("request", () => {
   });
 
   it("reports a network failure as a network error", async () => {
-    server.use(http.get(`${API}/down`, () => HttpResponse.error()));
+    server.use(http.get(`${TEST_API_URL}/down`, () => HttpResponse.error()));
 
-    await expect(request(client.get(`${API}/down`))).rejects.toMatchObject({
+    await expect(
+      request(client.get(`${TEST_API_URL}/down`)),
+    ).rejects.toMatchObject({
       kind: "network",
       status: 0,
     });
@@ -80,13 +82,13 @@ describe("request", () => {
 
   it("treats a non-conforming error body as malformed", async () => {
     server.use(
-      http.get(`${API}/debug-page`, () =>
+      http.get(`${TEST_API_URL}/debug-page`, () =>
         HttpResponse.html("<h1>Traceback</h1>", { status: 500 }),
       ),
     );
 
     await expect(
-      request(client.get(`${API}/debug-page`)),
+      request(client.get(`${TEST_API_URL}/debug-page`)),
     ).rejects.toMatchObject({
       kind: "malformed",
       messageKey: "errors:unexpected",

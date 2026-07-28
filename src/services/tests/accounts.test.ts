@@ -4,8 +4,7 @@ import { http, HttpResponse } from "msw";
 import { server } from "@/mocks/server";
 import { ApiClientError } from "@/lib/apiError";
 import { createAccount, listAccounts } from "@/services/accounts";
-
-const API = "https://api.test.bullledger.local";
+import { TEST_API_URL } from "@/mocks/env";
 
 const account = {
   id: "6f1b5f6e-6d3a-4a0e-9f6d-2c1b7a4e8d90",
@@ -19,7 +18,7 @@ const account = {
 describe("listAccounts", () => {
   it("returns the page from inside the envelope", async () => {
     server.use(
-      http.get(`${API}/api/accounts/`, () =>
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
         HttpResponse.json({
           status: 200,
           data: { count: 1, next: null, previous: null, results: [account] },
@@ -37,7 +36,7 @@ describe("listAccounts", () => {
     let url: URL | undefined;
 
     server.use(
-      http.get(`${API}/api/accounts/`, ({ request }) => {
+      http.get(`${TEST_API_URL}/api/accounts/`, ({ request }) => {
         url = new URL(request.url);
         return HttpResponse.json({
           status: 200,
@@ -54,7 +53,7 @@ describe("listAccounts", () => {
 
   it("throws a normalized auth error on 401", async () => {
     server.use(
-      http.get(`${API}/api/accounts/`, () =>
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
         HttpResponse.json(
           {
             status: 401,
@@ -66,7 +65,7 @@ describe("listAccounts", () => {
           { status: 401 },
         ),
       ),
-      http.post(`${API}/api/auth/token/refresh/`, () =>
+      http.post(`${TEST_API_URL}/api/auth/token/refresh/`, () =>
         HttpResponse.json({}, { status: 401 }),
       ),
     );
@@ -81,7 +80,7 @@ describe("listAccounts", () => {
 describe("createAccount", () => {
   it("returns the created account from inside the envelope", async () => {
     server.use(
-      http.post(`${API}/api/accounts/`, () =>
+      http.post(`${TEST_API_URL}/api/accounts/`, () =>
         HttpResponse.json({ status: 201, data: account }, { status: 201 }),
       ),
     );
@@ -98,7 +97,7 @@ describe("createAccount", () => {
 
   it("surfaces field errors on 400 with their keys intact", async () => {
     server.use(
-      http.post(`${API}/api/accounts/`, () =>
+      http.post(`${TEST_API_URL}/api/accounts/`, () =>
         HttpResponse.json(
           {
             status: 400,

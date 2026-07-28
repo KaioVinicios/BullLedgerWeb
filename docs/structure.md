@@ -55,6 +55,8 @@ TanStack Form compositions: field components with built-in validation wiring, an
 ### `guards/`
 Components or higher-order wrappers that protect routes. Works alongside TanStack Router's `beforeLoad` to redirect unauthenticated or unauthorized users.
 
+Each guard is a `beforeLoad` function reading `context.queryClient` — the router carries the query client in its context, so a guard can resolve the session before the first protected render without any component having mounted. Guards share one `currentUserQuery` options object from `services/auth.ts`; they never define their own fetch, or the guard and the UI could disagree about who is signed in.
+
 ### `hooks/`
 Custom React hooks shared across multiple pages or components. Hooks specific to a single component stay colocated with that component.
 
@@ -74,10 +76,12 @@ i18n/
 ### `lib/`
 Configuration and thin wrappers around third-party libraries (TanStack Query client, axios instance, etc.). Not business logic — just setup code.
 
-The axios instance in `apiClient.ts` carries every transport concern: cookies, CSRF, and — through `sessionRecovery.ts` — refreshing and replaying once on a 401. Nothing outside `lib/` calls axios directly.
+The axios instance in `apiClient.ts` carries every transport concern: cookies, CSRF — token acquisition and per-method policy in `csrf.ts` — and, through `sessionRecovery.ts`, refreshing and replaying once on a 401. Nothing outside `lib/` calls axios directly.
 
 ### `mocks/`
 MSW request handlers and the `setupServer` instance used by Vitest. Test-only — never imported by application code.
+
+`env.ts` holds `TEST_API_URL`, the origin every test runs against. `vite.config.ts` imports it to set `VITE_API_URL`, and handlers build their URLs from it, so the two can never drift. It is the one file here that application config imports, which is why it must stay dependency-free — `vite.config.ts` reaches it by relative path, before the `@/` alias exists.
 
 ### `pages/`
 One file (or folder) per route. Page components compose smaller components and hooks but contain no reusable logic of their own.
@@ -128,3 +132,7 @@ Two things deliberately sit outside this rule:
 
 - **`src/setupTests.ts`** — Vitest configuration, not a test. `vite.config.ts` points at it by path.
 - **`e2e/`** — Playwright specs, at the repo root. Vitest is configured to exclude the directory so the two runners never collide.
+
+  One file per user journey, named for the journey (`auth-register.spec.ts`) and not for the component it happens to exercise — the journeys themselves are listed in `docs/v1-e2e-todo.md`. Shared machinery lives in `e2e/support/`, which Playwright's default `testMatch` ignores, so nothing there is ever collected as a spec. `e2e/tsconfig.json` sits inside the directory rather than at the root because Playwright resolves path aliases from the tsconfig nearest the spec; the root one is a solution file carrying no compiler options.
+
+  Specs may import from `src/` through the `@/` alias, and should: routes come from `PATHS`, endpoints from `ENDPOINTS`, and asserted copy from the shipped locale JSON. Only side-effect-free modules qualify — importing `@/i18n/config` would run `i18n.init()` in Node, which is why the two language constants live in `@/i18n/language`.
