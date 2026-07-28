@@ -12,4 +12,19 @@
  */
 export const ENDPOINTS = {
   accounts: "/api/accounts/",
+
+  // Auth. Two paths are deliberately absent for the same reason — `lib/` must
+  // not import from `services/` without inverting the layering, and both are
+  // transport concerns no feature ever calls: `POST /api/auth/token/refresh/`
+  // is REFRESH_PATH in `src/lib/sessionRecovery.ts`, and
+  // `GET /api/auth/csrf/` is CSRF_PATH in `src/lib/csrf.ts`.
+  authUser: "/api/auth/user/",
+  authLogin: "/api/auth/login/",
+  authLogout: "/api/auth/logout/",
+  authRegistration: "/api/auth/registration/",
+  authGoogle: "/api/auth/google/",
+  authVerifyEmail: "/api/auth/registration/verify-email/",
+  authResendEmail: "/api/auth/registration/resend-email/",
+  authPasswordReset: "/api/auth/password/reset/",
+  authPasswordResetConfirm: "/api/auth/password/reset/confirm/",
 } as const;
