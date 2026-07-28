@@ -451,6 +451,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+  /api/auth/csrf/:
+    get:
+      operationId: api_auth_csrf_retrieve
+      description: Sets the `csrftoken` cookie and returns no body. Call it once before
+        the first unsafe request; every `POST`, `PUT`, `PATCH`, and `DELETE` must
+        then echo that cookie's value in the `X-CSRFToken` header. Safe methods need
+        nothing.
+      summary: Issue a CSRF cookie
+      tags:
+      - Auth
+      security:
+      - {}
+      responses:
+        '204':
+          description: No response body
   /api/auth/google/:
     post:
       operationId: api_auth_google_create
@@ -568,7 +583,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+              $ref: '#/components/schemas/SPAPasswordResetConfirmRequest'
         required: true
       security:
       - jwtCookieAuth: []
@@ -2485,7 +2500,18 @@ components:
               type: string
           description: Field name to messages. Nested fields use dotted keys; problems
             with no field use "detail".
+        codes:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Same shape and keys as `errors`, but the stable machine-readable
+            code behind each message — translate by this, never by matching the English
+            text in `errors`, which a library upgrade can reword without notice. A
+            message raised without a specific code falls back to "invalid".
       required:
+      - codes
       - errors
       - message
       - status
@@ -4607,29 +4633,6 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Target'
-    PasswordResetConfirmRequest:
-      type: object
-      description: Serializer for confirming a password reset attempt.
-      properties:
-        new_password1:
-          type: string
-          minLength: 1
-          maxLength: 128
-        new_password2:
-          type: string
-          minLength: 1
-          maxLength: 128
-        uid:
-          type: string
-          minLength: 1
-        token:
-          type: string
-          minLength: 1
-      required:
-      - new_password1
-      - new_password2
-      - token
-      - uid
     PatchedAccountArchetypeTargetUpdateRequest:
       type: object
       properties:
@@ -5352,6 +5355,35 @@ components:
           readOnly: true
       required:
       - detail
+    SPAPasswordResetConfirmRequest:
+      type: object
+      description: |-
+        Attaches a stable code to an expired or already-used reset link.
+
+        dj-rest-auth rejects a bad uid or a bad/spent token with the same bare
+        `"Invalid value"` on either field, `code=None` both times — so, like
+        login and registration, this needs relabeling rather than a fresh raise
+        to keep matching the library's own decode/verify logic (design §9).
+      properties:
+        new_password1:
+          type: string
+          minLength: 1
+          maxLength: 128
+        new_password2:
+          type: string
+          minLength: 1
+          maxLength: 128
+        uid:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+      required:
+      - new_password1
+      - new_password2
+      - token
+      - uid
     SPAPasswordResetRequest:
       type: object
       description: Serializer for requesting a password reset e-mail.

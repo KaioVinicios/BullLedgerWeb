@@ -180,6 +180,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/csrf/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Issue a CSRF cookie
+         * @description Sets the `csrftoken` cookie and returns no body. Call it once before the first unsafe request; every `POST`, `PUT`, `PATCH`, and `DELETE` must then echo that cookie's value in the `X-CSRFToken` header. Safe methods need nothing.
+         */
+        get: operations["api_auth_csrf_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/google/": {
         parameters: {
             query?: never;
@@ -1140,6 +1160,10 @@ export interface components {
             message: string;
             /** @description Field name to messages. Nested fields use dotted keys; problems with no field use "detail". */
             errors: {
+                [key: string]: string[];
+            };
+            /** @description Same shape and keys as `errors`, but the stable machine-readable code behind each message — translate by this, never by matching the English text in `errors`, which a library upgrade can reword without notice. A message raised without a specific code falls back to "invalid". */
+            codes: {
                 [key: string]: string[];
             };
         };
@@ -2201,13 +2225,6 @@ export interface components {
                 results: components["schemas"]["Target"][];
             };
         };
-        /** @description Serializer for confirming a password reset attempt. */
-        PasswordResetConfirmRequest: {
-            new_password1: string;
-            new_password2: string;
-            uid: string;
-            token: string;
-        };
         PatchedAccountArchetypeTargetUpdateRequest: {
             /**
              * Format: decimal
@@ -2560,6 +2577,20 @@ export interface components {
         };
         RestAuthDetail: {
             readonly detail: string;
+        };
+        /**
+         * @description Attaches a stable code to an expired or already-used reset link.
+         *
+         *     dj-rest-auth rejects a bad uid or a bad/spent token with the same bare
+         *     `"Invalid value"` on either field, `code=None` both times — so, like
+         *     login and registration, this needs relabeling rather than a fresh raise
+         *     to keep matching the library's own decode/verify logic (design §9).
+         */
+        SPAPasswordResetConfirmRequest: {
+            new_password1: string;
+            new_password2: string;
+            uid: string;
+            token: string;
         };
         /** @description Serializer for requesting a password reset e-mail. */
         SPAPasswordResetRequest: {
@@ -3278,6 +3309,24 @@ export interface operations {
             };
         };
     };
+    api_auth_csrf_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     api_auth_google_create: {
         parameters: {
             query?: never;
@@ -3375,7 +3424,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PasswordResetConfirmRequest"];
+                "application/json": components["schemas"]["SPAPasswordResetConfirmRequest"];
             };
         };
         responses: {
