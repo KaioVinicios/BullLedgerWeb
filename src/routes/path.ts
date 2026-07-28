@@ -14,4 +14,9 @@ export const PATHS = {
   LOGIN: "/login",
   TERMS: "/terms",
   PRIVACY: "/privacy",
+  APP: "/app",
+  VERIFY_EMAIL: "/verify-email/$key",
+  RESEND_VERIFICATION: "/resend-verification",
+  RESET_PASSWORD: "/reset-password",
+  RESET_PASSWORD_CONFIRM: "/reset-password/$uid/$token",
 } as const;

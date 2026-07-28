@@ -48,7 +48,9 @@ export function TrustPanel({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
-        "relative overflow-hidden border-l bg-muted/40 px-8 py-12 xl:px-10",
+        // The panel owns its own breakpoint: it is a companion to the form,
+        // never a competitor, so it exists only where there is room beside it.
+        "relative hidden overflow-hidden border-l bg-muted/40 px-8 py-12 lg:flex xl:px-10",
         className,
       )}
     >

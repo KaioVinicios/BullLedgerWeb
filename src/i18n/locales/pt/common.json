@@ -14,6 +14,11 @@
     "showPassword": "Mostrar senha",
     "hidePassword": "Ocultar senha"
   },
+  "app": {
+    "signedInTitle": "Você está conectado",
+    "logout": "Sair",
+    "loggingOut": "Saindo…"
+  },
   "home": {
     "tagline": "Acompanhe seus investimentos com clareza: posições, transações e desempenho em um só lugar.",
     "notOpen": "A BullLedger ainda está em construção e não está aberta.",

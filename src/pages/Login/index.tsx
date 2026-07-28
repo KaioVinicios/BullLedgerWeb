@@ -1,23 +1,49 @@
-import { useMemo } from "react";
-import { Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { IconLoader2 } from "@tabler/icons-react";
-import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { FormError } from "@/components/FormError";
 import { PasswordField } from "@/forms/PasswordField";
 import { TextField } from "@/forms/TextField";
+import {
+  translateServerErrors,
+  type PartitionedServerErrors,
+} from "@/forms/serverErrors";
+import { env } from "@/config/env";
+import { ApiClientError } from "@/lib/apiError";
 import { AuthShell } from "@/pages/Auth/AuthShell";
 import { authLink } from "@/pages/Auth/authLink";
-import { GoogleButton } from "@/pages/Auth/GoogleButton";
+import { GoogleSignIn } from "@/pages/Auth/GoogleSignIn";
 import { PATHS } from "@/routes/path";
+import { loginRoute } from "@/routes/router";
+import { authKeys, login } from "@/services/auth";
+
+const NO_SERVER_ERRORS: PartitionedServerErrors = {
+  fieldErrors: {},
+  formErrors: [],
+};
+
+// The divider only reads as a divider when there is something above it to
+// divide from. Without Google configured, "or sign in with email" would sit
+// over an empty gap.
+const googleEnabled = Boolean(env.VITE_GOOGLE_CLIENT_ID);
 
 export function LoginPage() {
   const { t } = useTranslation("auth");
+  // A second scoped `t`: the auth-scoped one cannot reach another namespace.
+  const { t: tError } = useTranslation("errors");
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const search = loginRoute.useSearch();
+  const [serverErrors, setServerErrors] =
+    useState<PartitionedServerErrors>(NO_SERVER_ERRORS);
 
   const loginSchema = useMemo(
     () =>
@@ -29,14 +55,40 @@ export function LoginPage() {
     [t],
   );
 
+  const mutation = useMutation({
+    mutationFn: login,
+    onSuccess: async (data) => {
+      // Login answers with the full user, so the cache is seeded directly and
+      // the app needs no second round trip to know who just arrived.
+      queryClient.setQueryData(authKeys.user(), data.user);
+      // `href` rather than `to`: the destination is a runtime string the
+      // router cannot know at compile time. `redirectSchema` has already
+      // proven it is same-origin, which is what makes this safe.
+      await navigate({ href: search.redirect ?? PATHS.APP });
+    },
+    onError: (error) => {
+      setServerErrors(
+        error instanceof ApiClientError
+          ? translateServerErrors(error, tError)
+          : { fieldErrors: {}, formErrors: [tError("unexpected")] },
+      );
+    },
+  });
+
   const form = useForm({
     defaultValues: { email: "", password: "", rememberMe: false },
     validators: { onSubmit: loginSchema },
-    onSubmit: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1100));
-      toast.info(t("success.loginTitle"), {
-        description: t("success.loginDescription"),
-      });
+    onSubmit: async ({ value }) => {
+      setServerErrors(NO_SERVER_ERRORS);
+      try {
+        await mutation.mutateAsync({
+          email: value.email,
+          password: value.password,
+        });
+      } catch {
+        // Already rendered by onError; swallowed so the rejection does not
+        // escape as an unhandled promise.
+      }
     },
   });
 
@@ -50,22 +102,21 @@ export function LoginPage() {
       </div>
 
       <div className="mt-8 space-y-5">
-        <GoogleButton
-          label={t("google.continue")}
-          onClick={() =>
-            toast.info(t("google.notConnectedTitle"), {
-              description: t("google.signinNotConnected"),
-            })
+        <GoogleSignIn
+          onError={(message) =>
+            setServerErrors({ fieldErrors: {}, formErrors: [message] })
           }
         />
 
-        <div className="flex items-center gap-3">
-          <span className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">
-            {t("divider.loginEmail")}
-          </span>
-          <span className="h-px flex-1 bg-border" />
-        </div>
+        {googleEnabled && (
+          <div className="flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">
+              {t("divider.loginEmail")}
+            </span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+        )}
 
         <form
           noValidate
@@ -84,7 +135,10 @@ export function LoginPage() {
                 autoComplete="email"
                 inputMode="email"
                 placeholder={t("fields.emailPlaceholder")}
-                errors={field.state.meta.errors}
+                errors={[
+                  ...field.state.meta.errors,
+                  ...(serverErrors.fieldErrors.email ?? []),
+                ]}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -99,7 +153,10 @@ export function LoginPage() {
                 label={t("fields.password")}
                 autoComplete="current-password"
                 placeholder={t("fields.passwordPlaceholder")}
-                errors={field.state.meta.errors}
+                errors={[
+                  ...field.state.meta.errors,
+                  ...(serverErrors.fieldErrors.password ?? []),
+                ]}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -107,26 +164,34 @@ export function LoginPage() {
             )}
           </form.Field>
 
-          <form.Field name="rememberMe">
-            {(field) => (
-              <div className="flex items-center gap-2.5 pt-1">
-                <Checkbox
-                  id={field.name}
-                  checked={field.state.value}
-                  onCheckedChange={(checked) =>
-                    field.handleChange(checked === true)
-                  }
-                  onBlur={field.handleBlur}
-                />
-                <Label
-                  htmlFor={field.name}
-                  className="font-normal text-muted-foreground"
-                >
-                  {t("login.rememberMe")}
-                </Label>
-              </div>
-            )}
-          </form.Field>
+          <div className="flex items-center justify-between gap-3 pt-1">
+            <form.Field name="rememberMe">
+              {(field) => (
+                <div className="flex items-center gap-2.5">
+                  <Checkbox
+                    id={field.name}
+                    checked={field.state.value}
+                    onCheckedChange={(checked) =>
+                      field.handleChange(checked === true)
+                    }
+                    onBlur={field.handleBlur}
+                  />
+                  <Label
+                    htmlFor={field.name}
+                    className="font-normal text-muted-foreground"
+                  >
+                    {t("login.rememberMe")}
+                  </Label>
+                </div>
+              )}
+            </form.Field>
+
+            <Link to={PATHS.RESET_PASSWORD} className={authLink}>
+              {t("login.forgotPassword")}
+            </Link>
+          </div>
+
+          <FormError errors={serverErrors.formErrors} />
 
           <form.Subscribe selector={(state) => state.isSubmitting}>
             {(isSubmitting) => (

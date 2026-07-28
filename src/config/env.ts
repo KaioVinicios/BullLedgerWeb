@@ -36,4 +36,20 @@ export function parseEnv(source: unknown): Env {
   return result.data;
 }
 
-export const env = parseEnv(import.meta.env);
+/**
+ * Each variable is named individually rather than handing over the whole
+ * `import.meta.env`.
+ *
+ * This is a build-time concern, not a runtime one. Vite replaces
+ * `import.meta.env` with an object literal containing **every** `VITE_`-prefixed
+ * variable in the environment, so passing the whole object inlines all of them
+ * into the shipped bundle — including any that happen to be secret. Zod
+ * stripping unknown keys does not help: the inlining has already happened by
+ * the time `parse` runs.
+ *
+ * Naming each key means a variable reaches the browser only if it appears here.
+ */
+export const env = parseEnv({
+  VITE_API_URL: import.meta.env.VITE_API_URL,
+  VITE_GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+});
