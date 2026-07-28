@@ -2,15 +2,19 @@ import axios, { type AxiosInstance } from "axios";
 
 import { env } from "@/config/env";
 import {
+  CSRF_COOKIE,
+  CSRF_HEADER,
+  CSRF_PATH,
+  attachCsrfAcquisition,
+  createCsrfAcquisition,
+} from "@/lib/csrf";
+import {
   REFRESH_PATH,
   attachSessionRecovery,
   notifySessionLost,
 } from "@/lib/sessionRecovery";
 
-/** Django's CSRF cookie. Deliberately not httpOnly, so axios can read it. */
-export const CSRF_COOKIE = "csrftoken";
-/** Django's CSRF header. Axios defaults to `X-XSRF-TOKEN`, which is wrong here. */
-export const CSRF_HEADER = "X-CSRFToken";
+export { CSRF_COOKIE, CSRF_HEADER } from "@/lib/csrf";
 
 /**
  * Builds an axios instance carrying every transport concern except session
@@ -23,11 +27,9 @@ export const CSRF_HEADER = "X-CSRFToken";
  * origin in development, with no dev proxy. Without it the header would be
  * silently dropped on exactly the requests that need it.
  *
- * Sending the token is defensive: the OpenAPI schema documents no CSRF scheme
- * and no observed response sets the cookie, so axios sends the header when the
- * cookie exists and omits it when it does not. That is correct whether or not
- * the server enforces CSRF, and needs no change once the answer is confirmed.
- * See the open items in the Phase 1 design.
+ * The API enforces CSRF on every cookie-authenticated unsafe request, so the
+ * header is a requirement rather than a courtesy. Acquiring the cookie it is
+ * read from is `@/lib/csrf`'s job.
  */
 export function createApiClient(baseURL: string): AxiosInstance {
   return axios.create({
@@ -40,16 +42,33 @@ export function createApiClient(baseURL: string): AxiosInstance {
   });
 }
 
-/**
- * The application's client. A second, plain instance issues the refresh so
- * that call can never re-enter the interceptor that triggered it.
- */
+/** The application's client — every feature call goes through this one. */
 export const api = createApiClient(env.VITE_API_URL);
 
-const refreshClient = createApiClient(env.VITE_API_URL);
+/**
+ * A second instance for the two calls that keep the session alive: the refresh
+ * and the CSRF acquisition. Neither may run through `api`'s recovery
+ * interceptor — that is what makes recursion structurally impossible rather
+ * than merely guarded against.
+ */
+const sessionClient = createApiClient(env.VITE_API_URL);
+
+/**
+ * The app's CSRF token acquisition: called once at startup (see `main.tsx`)
+ * and awaited again before every unsafe request.
+ */
+export const ensureCsrfToken = createCsrfAcquisition(() =>
+  sessionClient.get(CSRF_PATH),
+);
+
+// Both instances, because refresh is itself a cookie-authenticated POST the
+// API refuses without a token. The acquisition's own GET is a safe method, so
+// it passes through its interceptor untouched and cannot await itself.
+attachCsrfAcquisition(api, ensureCsrfToken);
+attachCsrfAcquisition(sessionClient, ensureCsrfToken);
 
 attachSessionRecovery(api, {
-  refresh: () => refreshClient.post(REFRESH_PATH, {}),
+  refresh: () => sessionClient.post(REFRESH_PATH, {}),
   onSessionLost: notifySessionLost,
   csrfHeader: CSRF_HEADER,
 });

@@ -1,7 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 
 import { ApiClientError } from "@/lib/apiError";
-import { setOnSessionLost } from "@/lib/sessionRecovery";
 
 /** Only a genuinely transient failure is worth sending again. */
 const RETRYABLE_KINDS: ReadonlySet<string> = new Set(["network", "server"]);
@@ -31,13 +30,3 @@ export function createQueryClient(): QueryClient {
 }
 
 export const queryClient = createQueryClient();
-
-/**
- * The one seam between transport and cache: a refresh that fails means the
- * session is gone, and every cached figure with it.
- */
-export function wireSessionRecovery(client: QueryClient): void {
-  setOnSessionLost(() => {
-    client.clear();
-  });
-}

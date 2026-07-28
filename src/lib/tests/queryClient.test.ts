@@ -4,15 +4,10 @@ import { http, HttpResponse } from "msw";
 
 import { server } from "@/mocks/server";
 import { ApiClientError, type ApiErrorKind } from "@/lib/apiError";
-import { createQueryClient, wireSessionRecovery } from "@/lib/queryClient";
-import {
-  REFRESH_PATH,
-  notifySessionLost,
-  setOnSessionLost,
-} from "@/lib/sessionRecovery";
+import { createQueryClient } from "@/lib/queryClient";
+import { REFRESH_PATH, setOnSessionLost } from "@/lib/sessionRecovery";
 import { listAccounts } from "@/services/accounts";
-
-const API = "https://api.test.bullledger.local";
+import { TEST_API_URL } from "@/mocks/env";
 
 function errorOfKind(kind: ApiErrorKind, status: number): ApiClientError {
   return new ApiClientError({ status, kind, message: `a ${kind} failure` });
@@ -126,7 +121,7 @@ describe("query and transport together", () => {
     let refreshCalls = 0;
 
     server.use(
-      http.get(`${API}/api/accounts/`, () => {
+      http.get(`${TEST_API_URL}/api/accounts/`, () => {
         accountsCalls += 1;
         return HttpResponse.json(
           {
@@ -139,7 +134,7 @@ describe("query and transport together", () => {
           { status: 401 },
         );
       }),
-      http.post(`${API}${REFRESH_PATH}`, () => {
+      http.post(`${TEST_API_URL}${REFRESH_PATH}`, () => {
         refreshCalls += 1;
         return HttpResponse.json({});
       }),
@@ -163,17 +158,5 @@ describe("query and transport together", () => {
   });
 });
 
-describe("wireSessionRecovery", () => {
-  it("drops every cached figure when the session is lost", () => {
-    const client = createQueryClient();
-    client.setQueryData(["accounts"], { count: 1 });
-    wireSessionRecovery(client);
-
-    expect(client.getQueryData(["accounts"])).toEqual({ count: 1 });
-
-    // Exactly what the interceptor calls when a refresh fails.
-    notifySessionLost();
-
-    expect(client.getQueryData(["accounts"])).toBeUndefined();
-  });
-});
+// The session-lost seam moved to `src/routes/endSession.ts`, which clears the
+// cache *and* navigates. Its tests live in `src/routes/tests/endSession.test.tsx`.
