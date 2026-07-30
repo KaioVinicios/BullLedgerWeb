@@ -1,18 +1,16 @@
 import { useTranslation } from "react-i18next";
 import { IconLanguage } from "@tabler/icons-react";
 
+import { LanguageOptions } from "@/components/LanguageOptions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 export function LanguageToggle() {
-  const { t, i18n } = useTranslation();
-  const current = i18n.resolvedLanguage ?? i18n.language;
+  const { t } = useTranslation();
 
   return (
     <DropdownMenu>
@@ -22,17 +20,7 @@ export function LanguageToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuRadioGroup
-          value={current}
-          onValueChange={(value) => void i18n.changeLanguage(value)}
-        >
-          <DropdownMenuRadioItem value="en">
-            {t("language.en")}
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="pt">
-            {t("language.pt")}
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
+        <LanguageOptions />
       </DropdownMenuContent>
     </DropdownMenu>
   );
