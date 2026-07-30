@@ -1,20 +1,22 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { RouterHistory } from "@tanstack/react-router";
 import {
-  Outlet,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   Link,
 } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { PageSkeleton } from "@/components/PageSkeleton";
+import { AppError } from "@/components/shell/AppError";
+import { AppNotFound } from "@/components/shell/AppNotFound";
+import { AppShell } from "@/components/shell/AppShell";
 import { Button } from "@/components/ui/button";
 import { requireAuth } from "@/guards/requireAuth";
 import { requireGuest } from "@/guards/requireGuest";
 import { queryClient } from "@/lib/queryClient";
-import { AppPage } from "@/pages/App";
 import { HomePage } from "@/pages/HomePage";
-import { DesignSystemPage } from "@/pages/DesignSystem";
 import { RegisterPage } from "@/pages/Register";
 import { LoginPage } from "@/pages/Login";
 import { LegalPage } from "@/pages/Legal";
@@ -23,7 +25,7 @@ import { ResendVerificationPage } from "@/pages/ResendVerification";
 import { ResetPasswordPage } from "@/pages/ResetPassword";
 import { ResetPasswordConfirmPage } from "@/pages/ResetPassword/Confirm";
 import { authSearchSchema } from "@/schemas/redirect";
-import { PATHS } from "@/routes/path";
+import { APP_SEGMENTS, PATHS } from "@/routes/path";
 import { rootRoute } from "@/routes/root";
 
 const indexRoute = createRoute({
@@ -35,7 +37,10 @@ const indexRoute = createRoute({
 const designSystemRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: PATHS.DESIGN_SYSTEM,
-  component: DesignSystemPage,
+  component: lazyRouteComponent(
+    () => import("@/pages/DesignSystem"),
+    "DesignSystemPage",
+  ),
 });
 
 export const registerRoute = createRoute({
@@ -98,21 +103,123 @@ const privacyRoute = createRoute({
 
 /**
  * The authenticated surface. Protection is structural: one guarded layout
- * route, so every screen Phase 3 nests underneath inherits it and no page ever
- * repeats the check. Phase 3 replaces what these two render — the routes
- * themselves stay.
+ * route, so every screen nested underneath inherits it and no page ever
+ * repeats the check.
  */
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: PATHS.APP,
   beforeLoad: requireAuth,
-  component: () => <Outlet />,
+  component: AppShell,
+  // Not-found belongs here: an unmatched child still matches this route, so
+  // this renders into the Outlet with the sidebar and header around it. The
+  // root route keeps its own shell-less not-found for public 404s.
+  notFoundComponent: AppNotFound,
+  // Errors are the opposite case, and the reason `appScreenOptions` below
+  // carries its own. A route's errorComponent *replaces that route's match*,
+  // so an AppError here would take the shell down with the screen that threw.
+  // This copy is the last resort for a failure in the shell itself, where
+  // rendering shell-less is the only option left.
+  errorComponent: AppError,
 });
+
+/**
+ * What every screen under the shell shares: its own chunk's skeleton while
+ * that chunk loads, and an error surface that renders *inside* the shell
+ * because the boundary sits on the screen rather than on the layout.
+ */
+const appScreenOptions = {
+  pendingComponent: PageSkeleton,
+  errorComponent: AppError,
+} as const;
 
 const appIndexRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/",
-  component: AppPage,
+  component: lazyRouteComponent(
+    () => import("@/pages/Overview"),
+    "OverviewPage",
+  ),
+  ...appScreenOptions,
+});
+
+/**
+ * One route per resource, each in its own chunk. `lazyRouteComponent` keeps
+ * the manual tree and the one-folder-per-screen layout intact — no `.lazy.tsx`
+ * files — and TanStack shows `pendingComponent` while the chunk downloads,
+ * which is what makes the skeleton real before any of these screens fetches
+ * anything.
+ */
+const institutionsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.INSTITUTIONS,
+  component: lazyRouteComponent(
+    () => import("@/pages/Institutions"),
+    "InstitutionsPage",
+  ),
+  ...appScreenOptions,
+});
+
+const accountsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.ACCOUNTS,
+  component: lazyRouteComponent(
+    () => import("@/pages/Accounts"),
+    "AccountsPage",
+  ),
+  ...appScreenOptions,
+});
+
+const assetsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.ASSETS,
+  component: lazyRouteComponent(() => import("@/pages/Assets"), "AssetsPage"),
+  ...appScreenOptions,
+});
+
+const ledgerRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.LEDGER,
+  component: lazyRouteComponent(() => import("@/pages/Ledger"), "LedgerPage"),
+  ...appScreenOptions,
+});
+
+const pricingRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.PRICING,
+  component: lazyRouteComponent(() => import("@/pages/Pricing"), "PricingPage"),
+  ...appScreenOptions,
+});
+
+const targetsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.TARGETS,
+  component: lazyRouteComponent(() => import("@/pages/Targets"), "TargetsPage"),
+  ...appScreenOptions,
+});
+
+const profileRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.PROFILE,
+  component: lazyRouteComponent(() => import("@/pages/Profile"), "ProfilePage"),
+  ...appScreenOptions,
+});
+
+const helpRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.HELP,
+  component: lazyRouteComponent(() => import("@/pages/Help"), "HelpPage"),
+  ...appScreenOptions,
+});
+
+const feedbackRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.FEEDBACK,
+  component: lazyRouteComponent(
+    () => import("@/pages/Feedback"),
+    "FeedbackPage",
+  ),
+  ...appScreenOptions,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -126,7 +233,18 @@ const routeTree = rootRoute.addChildren([
   resetPasswordConfirmRoute,
   termsRoute,
   privacyRoute,
-  appRoute.addChildren([appIndexRoute]),
+  appRoute.addChildren([
+    appIndexRoute,
+    institutionsRoute,
+    accountsRoute,
+    assetsRoute,
+    ledgerRoute,
+    pricingRoute,
+    targetsRoute,
+    profileRoute,
+    helpRoute,
+    feedbackRoute,
+  ]),
 ]);
 
 export function createAppRouter(options: {
@@ -138,6 +256,10 @@ export function createAppRouter(options: {
     context: { queryClient: options.queryClient },
     history: options.history,
     defaultNotFoundComponent: NotFound,
+    // Long enough that a fast chunk never flashes a skeleton, and once one is
+    // shown it stays long enough to read as loading rather than as a glitch.
+    defaultPendingMs: 300,
+    defaultPendingMinMs: 400,
   });
 }
 
