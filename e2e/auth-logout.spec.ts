@@ -1,4 +1,4 @@
-import common from "@/i18n/locales/en/common.json" with { type: "json" };
+import app from "@/i18n/locales/en/app.json" with { type: "json" };
 import { PATHS } from "@/routes/path";
 import { ENDPOINTS } from "@/services/endpoints";
 
@@ -24,7 +24,9 @@ test("signs out, clears the session, and locks the app behind login again", asyn
     if (sent.url().endsWith(ENDPOINTS.authUser)) sessionChecks.push(sent.url());
   });
 
-  await page.getByRole("button", { name: common.app.logout }).click();
+  // Logout lives in the account menu now, so leaving takes two steps.
+  await page.getByRole("button", { name: user.email }).click();
+  await page.getByRole("menuitem", { name: app.accountMenu.logout }).click();
 
   // A public route, and specifically not back where they were: someone who
   // asked to leave should not be bounced into a return path.

@@ -1,4 +1,4 @@
-import common from "@/i18n/locales/en/common.json" with { type: "json" };
+import app from "@/i18n/locales/en/app.json" with { type: "json" };
 import { PATHS } from "@/routes/path";
 
 import { expect, test } from "./support/fixtures";
@@ -27,6 +27,6 @@ test("returns to the intended destination after the login it forced", async ({
   // Back where they were headed, not at a generic home.
   await expect(page).toHaveURL(PATHS.APP);
   await expect(
-    page.getByRole("heading", { name: common.app.signedInTitle }),
+    page.getByRole("heading", { name: app.screens.overview.title }),
   ).toBeVisible();
 });

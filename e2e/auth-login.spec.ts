@@ -1,4 +1,4 @@
-import common from "@/i18n/locales/en/common.json" with { type: "json" };
+import app from "@/i18n/locales/en/app.json" with { type: "json" };
 import errors from "@/i18n/locales/en/errors.json" with { type: "json" };
 import { PATHS } from "@/routes/path";
 
@@ -29,7 +29,7 @@ test("signs in with email and password", async ({ page, request }) => {
 
   await expect(page).toHaveURL(PATHS.APP);
   await expect(
-    page.getByRole("heading", { name: common.app.signedInTitle }),
+    page.getByRole("heading", { name: app.screens.overview.title }),
   ).toBeVisible();
   await expect(page.getByText(user.email)).toBeVisible();
   expect(documentRequests).toEqual([]);

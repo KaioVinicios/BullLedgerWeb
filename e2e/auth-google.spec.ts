@@ -1,5 +1,5 @@
+import app from "@/i18n/locales/en/app.json" with { type: "json" };
 import auth from "@/i18n/locales/en/auth.json" with { type: "json" };
-import common from "@/i18n/locales/en/common.json" with { type: "json" };
 import { PATHS } from "@/routes/path";
 import { ENDPOINTS } from "@/services/endpoints";
 
@@ -72,7 +72,7 @@ test("forwards Google's authorization code and lands in the app", async ({
 
   await expect(page).toHaveURL(PATHS.APP);
   await expect(
-    page.getByRole("heading", { name: common.app.signedInTitle }),
+    page.getByRole("heading", { name: app.screens.overview.title }),
   ).toBeVisible();
   await expect(page.getByText(user.email)).toBeVisible();
 
