@@ -12,16 +12,18 @@ planned against the same API.
 
 Early, and building in phases. Shipped so far:
 
-| Phase                    | What it covers                                                                                                 |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| 0 — Client foundations   | Vite, Tailwind + shadcn/ui, routing, theming, i18n (en/pt), design-system showcase                             |
-| 1 — Transport & contract | axios client, CSRF, 401 refresh-and-replay, error normalization, generated API types, money/decimal primitives |
-| 2 — Session & identity   | Register, log in, log out, Google sign-in, email verification, password reset, route guards, session recovery  |
+| Phase                    | What it covers                                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| 0 — Client foundations   | Vite, Tailwind + shadcn/ui, routing, theming, i18n (en/pt), design-system showcase                                       |
+| 1 — Transport & contract | axios client, CSRF, 401 refresh-and-replay, error normalization, generated API types, money/decimal primitives           |
+| 2 — Session & identity   | Register, log in, log out, Google sign-in, email verification, password reset, route guards, session recovery            |
+| 3 — Application shell    | Guarded `/app` layout, sidebar navigation, account menu, in-shell not-found and error surfaces, per-route code splitting |
 
-Next up is **Phase 3, the application shell** — nav, header, and account menu. Until it
-lands, `/app` is a placeholder that proves the session works. The phase plans
-(`docs/v1-todo.md`, `docs/v1-e2e-todo.md`) are local working documents and are not
-committed.
+Next up is **Phase 4, profile and preferences** — the reporting currency and inflation
+reference, and making a currency change re-render every projection together. The eight
+screens the shell navigates to are titled placeholders until the phases that own them
+land. The phase plans (`docs/v1-todo.md`, `docs/v1-e2e-todo.md`) are local working
+documents and are not committed.
 
 ## Stack
 
@@ -138,7 +140,7 @@ Two constraints that look like quirks and are not:
 ```
 src/
 ├── assets/       # Static files imported by components
-├── components/   # Reusable UI; ui/ is shadcn-generated, never hand-edited
+├── components/   # Reusable UI; shell/ is the authenticated frame, ui/ is shadcn's
 ├── config/       # env validation and app-wide constants
 ├── forms/        # TanStack Form field compositions
 ├── guards/       # Route protection (beforeLoad functions)

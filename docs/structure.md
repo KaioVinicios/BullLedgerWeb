@@ -36,10 +36,18 @@ src/
 Images, SVGs, fonts, and any static file imported directly into components.
 
 ### `components/`
-Generic, reusable UI components that are not tied to a specific page or business domain (e.g. `DataTable`, `Modal`, `Avatar`). The `ui/` subfolder is managed by shadcn — do not edit those files manually.
+Generic, reusable UI components that are not tied to a specific page or business domain (e.g. `DataTable`, `Modal`, `Avatar`). The `ui/` subfolder is managed by shadcn — do not edit those files manually, and where an edit is unavoidable, record it in a `LOCAL EDITS` comment at the top of the file so a regeneration knows what to reapply (`ui/sidebar.tsx` carries two).
+
+`shell/` holds the authenticated application frame — sidebar, header, account menu, and the in-shell not-found and error surfaces. It is reusable chrome rather than any one route's page, which is why it lives here and not in `pages/`. Page-composition primitives shared by every screen (`PageHeader`, `EmptyState`, `PageSkeleton`) sit directly in `components/`: screens compose them, and the shell does not own them.
+
+`AppSidebarFooter.tsx` is the sidebar's second landmark: the destinations that belong to the product rather than to the portfolio (Help, Feedback), the legal links, and the build stamp. The legal links are plain anchors opening the canonical public documents in a new tab, never mirrored under `/app`. `activeStyles.ts` holds the classes that say "current" — shared by the primary navigation and the footer, so the sidebar has one vocabulary for that state rather than two that drift.
+
+**Adding a shadcn component:** run `bunx shadcn add <name>` and then check `git status`. The CLI resolves `components.json`'s `@/` aliases through `compilerOptions.paths`, and the root `tsconfig.json` is a solution file that carries none — so it writes to a literal `@/` directory at the repo root instead of `src/`. Move the files you wanted into place and delete `@/`. This is a safety net as much as a nuisance: several of the `ui/` files carry hand-tuned contrast fixes that a resolved overwrite would silently revert.
 
 ### `config/`
-Centralizes environment variables and app-wide constants so components never read `import.meta.env` directly.
+Centralizes environment variables and app-wide constants so components never read `import.meta.env` directly. `navigation.ts` is the sidebar's model — sections of `{ path, labelKey, icon }`, deliberately data rather than JSX so it can be asserted directly and rendered in a test without a router.
+
+`version.ts` reads the build stamp `vite.config.ts` injects, and applies the same rule to it: the `__APP_VERSION__` global is read here and nowhere else. Its `buildStamp()` decides what to show — the short SHA in a production build, a "development build" note otherwise, and nothing at all when git was unreadable at build time. That decision lives in a function rather than in JSX so all three outcomes are testable; under Vitest `import.meta.env.DEV` is always true.
 
 ```ts
 // config/env.ts
@@ -76,6 +84,8 @@ i18n/
 ### `lib/`
 Configuration and thin wrappers around third-party libraries (TanStack Query client, axios instance, etc.). Not business logic — just setup code.
 
+`sidebarState.ts` reads back the collapse cookie shadcn's `SidebarProvider` writes but never reads — upstream a server reads it and passes `defaultOpen`, and a SPA has no server to do that.
+
 The axios instance in `apiClient.ts` carries every transport concern: cookies, CSRF — token acquisition and per-method policy in `csrf.ts` — and, through `sessionRecovery.ts`, refreshing and replaying once on a 401. Nothing outside `lib/` calls axios directly.
 
 ### `mocks/`
@@ -107,6 +117,8 @@ Zustand store slices, one file per domain (e.g. `store/auth.ts`). Keep stores th
 
 ### `types/`
 Shared TypeScript interfaces and type aliases that are used across multiple modules. Types specific to a single file stay colocated.
+
+`version.d.ts` declares the `__APP_VERSION__` global. It is a declaration rather than a module because Vite's `define` is a textual substitution — there is nothing to import from.
 
 ### `utils/`
 Pure functions with no side effects: formatters, parsers, date helpers, math. No React, no API calls.
