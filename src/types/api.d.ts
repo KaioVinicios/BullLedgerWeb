@@ -371,9 +371,20 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * @description Verifies the email associated with the provided key.
+         * @description Treats a key for an already-verified email as success, not a 404.
          *
-         *     Accepts the following POST parameter: key.
+         *     allauth's `EmailConfirmationHMAC.from_key()` only matches an
+         *     `EmailAddress` with `verified=False`, so a key minted for an address
+         *     verified through another path — Google sign-in auto-connecting via
+         *     `SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT` (the verified-email
+         *     case reported in testing), or a second click on a link a corporate
+         *     security scanner already visited — 404s exactly like a genuinely
+         *     expired or spent link. There is nothing left to confirm, which is the
+         *     request succeeding, not failing (design §10).
+         *
+         *     The signature is decoded independently of `from_key`'s `verified=False`
+         *     filter to tell the two cases apart; a genuinely bad or expired signature
+         *     still 404s untouched.
          */
         post: operations["api_auth_registration_verify_email_create"];
         delete?: never;
@@ -3497,13 +3508,12 @@ export interface operations {
             };
         };
         responses: {
+            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["RestAuthDetail"];
-                };
+                content?: never;
             };
         };
     };

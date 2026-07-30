@@ -65,8 +65,13 @@ export const logout = () =>
 export const googleLogin = (body: SocialLoginRequest) =>
   request(api.post<SocialLogin>(ENDPOINTS.authGoogle, body));
 
+/**
+ * Answers 200 with no body — the key either had something left to confirm or
+ * had already been confirmed, and both are the same outcome to a caller. Only
+ * the settled/failed distinction is meaningful here, so nothing is returned.
+ */
 export const verifyEmail = (body: VerifyEmailRequest) =>
-  request(api.post<RestAuthDetail>(ENDPOINTS.authVerifyEmail, body));
+  request(api.post<void>(ENDPOINTS.authVerifyEmail, body));
 
 export const resendVerificationEmail = (body: ResendEmailVerificationRequest) =>
   request(api.post<RestAuthDetail>(ENDPOINTS.authResendEmail, body));

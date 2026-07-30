@@ -164,7 +164,9 @@ describe("verifyEmail", () => {
         `${TEST_API_URL}/api/auth/registration/verify-email/`,
         async ({ request }) => {
           body = await request.json();
-          return HttpResponse.json({ detail: "ok" });
+          // 200 with no body: the endpoint reports only that there is nothing
+          // left to confirm.
+          return new HttpResponse(null, { status: 200 });
         },
       ),
     );
