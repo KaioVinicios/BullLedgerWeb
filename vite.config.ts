@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { execSync } from "node:child_process";
 import path from "node:path";
 import { defineConfig } from "vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
@@ -9,8 +10,27 @@ import tailwindcss from "@tailwindcss/vite";
 // so it does not resolve while the config itself is loading.
 import { TEST_API_URL } from "./src/mocks/env";
 
+// The build stamp the sidebar footer shows. A short SHA identifies the code
+// exactly, which is what a bug report needs and what package.json's 0.0.0
+// cannot give. Resolved once at config load; empty when git is unavailable,
+// because the footer renders nothing rather than an empty stamp.
+function resolveBuildSha(): string {
+  try {
+    return execSync("git rev-parse --short HEAD", {
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .toString()
+      .trim();
+  } catch {
+    return "";
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(resolveBuildSha()),
+  },
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
