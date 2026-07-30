@@ -1,0 +1,111 @@
+{
+  "skipToContent": "Pular para o conteúdo",
+  "loading": "Carregando…",
+  "sidebar": {
+    "label": "Principal",
+    "toggle": "Alternar navegação",
+    "drawerTitle": "Navegação",
+    "drawerDescription": "Links para todas as áreas do BullLedger."
+  },
+  "sections": {
+    "structure": "Estrutura",
+    "activity": "Atividade"
+  },
+  "nav": {
+    "overview": "Visão geral",
+    "institutions": "Instituições",
+    "accounts": "Contas",
+    "assets": "Ativos",
+    "ledger": "Lançamentos",
+    "pricing": "Preços",
+    "targets": "Metas"
+  },
+  "accountMenu": {
+    "signedInAs": "Conectado como",
+    "profile": "Perfil",
+    "theme": "Tema",
+    "language": "Idioma",
+    "logout": "Sair",
+    "loggingOut": "Saindo…"
+  },
+  "footer": {
+    "label": "Suporte",
+    "links": {
+      "help": "Ajuda",
+      "feedback": "Feedback"
+    },
+    "legal": {
+      "terms": "Termos",
+      "privacy": "Privacidade"
+    },
+    "newTab": "abre em nova aba",
+    "version": "Build {{version}}",
+    "versionDev": "Build de desenvolvimento"
+  },
+  "screens": {
+    "overview": {
+      "title": "Visão geral",
+      "description": "O que você tem, e quanto vale."
+    },
+    "institutions": {
+      "title": "Instituições",
+      "description": "Os bancos, corretoras, exchanges e previdências onde você mantém contas."
+    },
+    "accounts": {
+      "title": "Contas",
+      "description": "Onde você mantém o que possui."
+    },
+    "assets": {
+      "title": "Ativos",
+      "description": "Os instrumentos contra os quais você registra lançamentos."
+    },
+    "ledger": {
+      "title": "Lançamentos",
+      "description": "Todos os lançamentos registrados, na ordem em que aconteceram."
+    },
+    "pricing": {
+      "title": "Preços",
+      "description": "Os preços e taxas de câmbio usados nos seus números."
+    },
+    "targets": {
+      "title": "Metas",
+      "description": "As taxas com as quais você compara um investimento."
+    },
+    "profile": {
+      "title": "Perfil",
+      "description": "Sua moeda de relatório e referência de inflação."
+    },
+    "help": {
+      "title": "Ajuda",
+      "description": "Guias para registrar o que você tem e ler quanto vale."
+    },
+    "feedback": {
+      "title": "Feedback",
+      "description": "Conte o que está quebrado, confuso ou faltando."
+    }
+  },
+  "comingSoon": {
+    "title": "Ainda não há nada aqui",
+    "overview": "Os totais da sua carteira aparecerão aqui assim que você registrar algo.",
+    "institutions": "Os bancos, corretoras e exchanges que você adicionar aparecerão aqui.",
+    "accounts": "As contas que você criar aparecerão aqui.",
+    "assets": "Os ativos que você registrar aparecerão aqui.",
+    "ledger": "Os lançamentos que você registrar aparecerão aqui.",
+    "pricing": "Os preços e taxas de câmbio que você informar aparecerão aqui.",
+    "targets": "As metas que você definir aparecerão aqui.",
+    "profile": "Suas preferências de relatório poderão ser editadas aqui.",
+    "help": "Os guias serão publicados aqui conforme cada parte do produto ficar pronta.",
+    "feedback": "Um canal para relatos e sugestões vai abrir aqui antes do lançamento."
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "Não há nada neste endereço.",
+    "action": "Voltar para a visão geral"
+  },
+  "error": {
+    "title": "Algo deu errado",
+    "description": "Esta tela não carregou. Tentar de novo pode ser o suficiente.",
+    "retry": "Tentar de novo",
+    "action": "Voltar para a visão geral"
+  }
+}

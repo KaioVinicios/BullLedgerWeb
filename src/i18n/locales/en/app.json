@@ -1,0 +1,111 @@
+{
+  "skipToContent": "Skip to content",
+  "loading": "Loading…",
+  "sidebar": {
+    "label": "Main",
+    "toggle": "Toggle navigation",
+    "drawerTitle": "Navigation",
+    "drawerDescription": "Links to every area of BullLedger."
+  },
+  "sections": {
+    "structure": "Structure",
+    "activity": "Activity"
+  },
+  "nav": {
+    "overview": "Overview",
+    "institutions": "Institutions",
+    "accounts": "Accounts",
+    "assets": "Assets",
+    "ledger": "Ledger",
+    "pricing": "Pricing",
+    "targets": "Targets"
+  },
+  "accountMenu": {
+    "signedInAs": "Signed in as",
+    "profile": "Profile",
+    "theme": "Theme",
+    "language": "Language",
+    "logout": "Log out",
+    "loggingOut": "Logging out…"
+  },
+  "footer": {
+    "label": "Support",
+    "links": {
+      "help": "Help",
+      "feedback": "Feedback"
+    },
+    "legal": {
+      "terms": "Terms",
+      "privacy": "Privacy"
+    },
+    "newTab": "opens in a new tab",
+    "version": "Build {{version}}",
+    "versionDev": "Development build"
+  },
+  "screens": {
+    "overview": {
+      "title": "Overview",
+      "description": "What you hold, and what it's worth."
+    },
+    "institutions": {
+      "title": "Institutions",
+      "description": "The banks, brokerages, exchanges, and pension providers you hold accounts with."
+    },
+    "accounts": {
+      "title": "Accounts",
+      "description": "Where you hold what you hold."
+    },
+    "assets": {
+      "title": "Assets",
+      "description": "The instruments you record movements against."
+    },
+    "ledger": {
+      "title": "Ledger",
+      "description": "Every movement you've recorded, in the order it happened."
+    },
+    "pricing": {
+      "title": "Pricing",
+      "description": "The prices and exchange rates your figures are read at."
+    },
+    "targets": {
+      "title": "Targets",
+      "description": "The rates you're measuring a holding against."
+    },
+    "profile": {
+      "title": "Profile",
+      "description": "Your reporting currency and inflation reference."
+    },
+    "help": {
+      "title": "Help",
+      "description": "Guides for recording what you hold and reading what it's worth."
+    },
+    "feedback": {
+      "title": "Feedback",
+      "description": "Tell us what's broken, confusing, or missing."
+    }
+  },
+  "comingSoon": {
+    "title": "Nothing here yet",
+    "overview": "Your portfolio's totals will appear here once you've recorded something.",
+    "institutions": "The banks, brokerages, and exchanges you add will be listed here.",
+    "accounts": "The accounts you create will be listed here.",
+    "assets": "The assets you register will be listed here.",
+    "ledger": "The movements you record will be listed here.",
+    "pricing": "The prices and exchange rates you enter will be listed here.",
+    "targets": "The targets you set will be listed here.",
+    "profile": "Your reporting preferences will be editable here.",
+    "help": "Guides will be published here as each part of the product lands.",
+    "feedback": "A channel for reports and suggestions will open here before launch."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "There's nothing at this address.",
+    "action": "Back to overview"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "This screen didn't load. Trying again may be all it takes.",
+    "retry": "Try again",
+    "action": "Back to overview"
+  }
+}
