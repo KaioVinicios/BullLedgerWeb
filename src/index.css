@@ -50,7 +50,11 @@
   --radius: 0.875rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.681 0.162 75.834);
+  /* The active-item rail marker. Not the lighter gold the shadcn theme seeded
+     here: at oklch(0.681 …) it measured 2.81:1 on --sidebar and 2.66:1 on
+     --sidebar-accent, under the 3:1 a state indicator owes. Same problem
+     --primary-emphasis exists to solve, same answer — 4.72:1 and 4.47:1. */
+  --sidebar-primary: var(--primary-emphasis);
   --sidebar-primary-foreground: oklch(0.987 0.026 102.212);
   --sidebar-accent: oklch(0.967 0.001 286.375);
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
@@ -194,5 +198,21 @@
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+
+  /* PRODUCT.md asks for a reduced-motion alternative to every animation, and
+     the base layer is the only place that can promise it for motion we did
+     not author — the sidebar's width transition, the mobile drawer, and the
+     toast all ship their own. Near-zero rather than `none` on purpose: Radix
+     unmounts on animationend, and an animation that never runs never ends. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
