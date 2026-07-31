@@ -2819,6 +2819,8 @@ export interface operations {
             query?: {
                 /** @description Pass `true` to also return archived rows (hidden by default). */
                 include_archived?: boolean;
+                /** @description Sort the list by the given field; prefix with `-` for descending. Unknown values are ignored and the default order applies. */
+                ordering?: "name" | "-name" | "created_at" | "-created_at";
                 /** @description A page number within the paginated result set. */
                 page?: number;
             };
@@ -3070,8 +3072,12 @@ export interface operations {
     api_assets_list: {
         parameters: {
             query?: {
+                /** @description Return only assets of this archetype. An unknown value is rejected with a 400 keyed on `archetype` — it never falls back to the unfiltered list. */
+                archetype?: "CASH_DEPOSIT" | "CRYPTO" | "EXCHANGE_SECURITY" | "FIXED_INCOME" | "NAV_FUND";
                 /** @description Pass `true` to also return archived rows (hidden by default). */
                 include_archived?: boolean;
+                /** @description Sort the list by the given field; prefix with `-` for descending. Unknown values are ignored and the default order applies. */
+                ordering?: "name" | "-name" | "created_at" | "-created_at";
                 /** @description A page number within the paginated result set. */
                 page?: number;
             };
@@ -3088,6 +3094,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedAssetList"];
+                };
+            };
+            /** @description Validation failed — `errors` names the offending fields. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
                 };
             };
             /** @description No valid session cookie. */
@@ -3838,6 +3853,8 @@ export interface operations {
             query?: {
                 /** @description Pass `true` to also return archived rows (hidden by default). */
                 include_archived?: boolean;
+                /** @description Sort the list by the given field; prefix with `-` for descending. Unknown values are ignored and the default order applies. */
+                ordering?: "name" | "-name" | "created_at" | "-created_at";
                 /** @description A page number within the paginated result set. */
                 page?: number;
             };
