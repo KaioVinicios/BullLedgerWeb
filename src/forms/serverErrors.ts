@@ -55,6 +55,37 @@ export function partitionServerErrors(
  * exactly, so the same partitioning runs over both and zips them back
  * together.
  */
+/**
+ * Moves any field error the form has no input for into the form-level list.
+ *
+ * Found live in Phase 5: the API rejected a certificate with an error keyed
+ * on `issuer` before the form carried that field, and the message rendered
+ * nowhere — the user watched a submit do nothing. A form claims the names it
+ * renders (a claim covers its dotted children, so `face_value` claims
+ * `face_value.amount`); whatever is left lands in the banner, prefixed with
+ * the server's own key so the sentence still names its subject.
+ */
+export function claimFieldErrors(
+  errors: PartitionedServerErrors,
+  claimed: readonly string[],
+): PartitionedServerErrors {
+  const isClaimed = (key: string) =>
+    claimed.some((name) => key === name || key.startsWith(`${name}.`));
+
+  const fieldErrors: Record<string, string[]> = {};
+  const formErrors = [...errors.formErrors];
+
+  for (const [key, values] of Object.entries(errors.fieldErrors)) {
+    if (isClaimed(key)) {
+      fieldErrors[key] = values;
+    } else {
+      formErrors.push(...values.map((message) => `${key}: ${message}`));
+    }
+  }
+
+  return { fieldErrors, formErrors };
+}
+
 export function translateServerErrors(
   error: ApiClientError,
   t: (key: ErrorsKey) => string,

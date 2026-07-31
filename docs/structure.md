@@ -72,6 +72,22 @@ React Context providers for cross-cutting concerns that don't fit Zustand (e.g. 
 ### `forms/`
 TanStack Form compositions: field components with built-in validation wiring, and reusable form sections. Business forms like `LoginForm` or `TransactionForm` live here.
 
+One field component per input shape, each the single owner of its label ↔ control ↔ hint ↔
+error wiring: `TextField`, `PasswordField`, `SelectField` (the enum twin — a form stacking
+ten enum fields must not invent its aria plumbing ten times), `MoneyField`, and
+`PercentField`. The last two keep their value a **string** in form state and convert only
+at submit — `parseMoneyInput` to integer minor units, Big.js for the percent's ÷100 — so
+the money path never touches a float between the keyboard and the wire. Their unit (`BRL`,
+`%`) rides beside the input as a non-interactive marker: it is part of reading the value,
+not of typing it.
+
+`serverErrors.ts` splits a rejection into per-field and form-level messages, and
+`claimFieldErrors` is what keeps a message from landing nowhere. A form passes the field
+names it renders; anything else — a key the API added, a rule the form has no input for —
+moves to the form-level banner prefixed with the server's own key. It exists because the
+Phase 5 live walk found a 400 keyed on `issuer` rendering into a void, which reads to the
+user as a submit button that does nothing.
+
 ### `guards/`
 Components or higher-order wrappers that protect routes. Works alongside TanStack Router's `beforeLoad` to redirect unauthenticated or unauthorized users.
 

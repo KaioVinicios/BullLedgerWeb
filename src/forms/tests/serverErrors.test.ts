@@ -6,6 +6,7 @@ import {
   apiClientErrorFromTransport,
 } from "@/lib/apiError";
 import {
+  claimFieldErrors,
   partitionServerErrors,
   translateServerErrors,
 } from "@/forms/serverErrors";
@@ -246,5 +247,42 @@ describe("translateServerErrors", () => {
       "This field may not be blank.",
       "Esta senha é muito comum. Escolha uma mais forte.",
     ]);
+  });
+});
+
+describe("claimFieldErrors", () => {
+  it("keeps claimed keys — dotted children included — and banners the rest", () => {
+    const result = claimFieldErrors(
+      {
+        fieldErrors: {
+          name: ["Too long."],
+          "face_value.amount": ["Must be positive."],
+          issuer: ["A certificate must be issued by an institution."],
+        },
+        formErrors: ["Some general problem."],
+      },
+      ["name", "face_value"],
+    );
+
+    expect(result.fieldErrors).toEqual({
+      name: ["Too long."],
+      "face_value.amount": ["Must be positive."],
+    });
+    // Prefixed with the server's own key, so the sentence names its subject
+    // — the live-walk case where a rejection rendered nowhere.
+    expect(result.formErrors).toEqual([
+      "Some general problem.",
+      "issuer: A certificate must be issued by an institution.",
+    ]);
+  });
+
+  it("does not let a claim swallow a merely similar key", () => {
+    const result = claimFieldErrors(
+      { fieldErrors: { issuer_name: ["Too long."] }, formErrors: [] },
+      ["issuer"],
+    );
+
+    expect(result.fieldErrors).toEqual({});
+    expect(result.formErrors).toEqual(["issuer_name: Too long."]);
   });
 });
