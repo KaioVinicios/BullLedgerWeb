@@ -104,6 +104,22 @@ TanStack Router route definitions. The route tree and lazy-loaded route files li
 ### `schemas/`
 Zod schemas used for form validation and API response parsing. Shared schemas (e.g. `addressSchema`) live here; schemas used only in one form can stay colocated.
 
+`apiEnums.ts` is the runtime half of the generated types. `src/types/api.d.ts` is
+`type`-only, so a form rendering one input per enum value has nothing to iterate; this file
+restates those values as arrays, and makes the restatement safe in both directions —
+`satisfies` rejects a value the schema dropped, and an `AllOf` check rejects a list missing
+one the schema gained. Two derived maps live here rather than in a component because they
+*are* domain rules: `REGISTRATIONS_BY_COUNTRY`, which makes the invalid country↔wrapper
+pairing in `business-rules.md` unofferable by construction, and `CURRENCY_BY_COUNTRY`,
+which is a default and never a lock.
+
+`resourceList.ts` holds the URL search state every structure list shares. Every field is
+optional in the *output* as well as the input, deliberately: a required output would force
+a `search` prop onto every `<Link>` into a list screen, including the sidebar's. Absence
+means the default, the read site applies `?? 1` / `?? false`, and `stripSearchParams` keeps
+explicitly-written defaults out of the address bar so the two spellings of "resting state"
+collapse into one URL.
+
 ### `services/`
 Functions that call the API, one file per domain (e.g. `services/transactions.ts`). No UI logic, no state — just fetch/mutate calls that return typed data.
 
