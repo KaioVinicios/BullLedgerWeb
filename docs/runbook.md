@@ -45,10 +45,10 @@ comes from `GET /api/auth/user/` — cached under the `["auth","user"]` query ke
 read through `useCurrentUser()`. Protection is structural: `/app` and everything
 under it sit behind one guarded layout route, so no page repeats the check.
 
-`POST /api/auth/login/` currently returns HTTP 500 on the deployed API
-(`no such table: account_emailaddress`), so no live session can be established.
-Every auth behaviour is covered by MSW tests instead; the live walk is an open
-item, not a client defect.
+Auth works end to end against a locally running API, and the E2E suite has
+established real sessions on every run since 2026-07-27. The 500 this section
+used to warn about (`no such table: account_emailaddress`) was a deployment
+without migrations, not a code fault — see `docs/v1-todo.md` Phase 1.
 
 Google sign-in stays hidden until `VITE_GOOGLE_CLIENT_ID` is set — the button and
 its divider both, rather than a disabled control that could only fail.
