@@ -1,11 +1,13 @@
 import { useTranslation } from "react-i18next";
 
+import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { cn } from "@/lib/utils";
 import { formatMoney, type Money } from "@/utils/money";
 
 interface SignedFigureProps {
   value: Money;
-  locale: string;
+  /** See `MoneyValue`: an override, not a requirement. */
+  locale?: string;
   className?: string;
 }
 
@@ -25,13 +27,17 @@ interface SignedFigureProps {
  */
 export function SignedFigure({ value, locale, className }: SignedFigureProps) {
   const { t } = useTranslation();
+  const activeLocale = useFormatLocale();
 
   const { amount, currency } = value;
   const direction = Math.sign(amount);
 
   // Format the magnitude and own the sign, so `+` and `-` are symmetrical
   // and neither depends on what a locale's formatter chooses to emit.
-  const magnitude = formatMoney({ amount: Math.abs(amount), currency }, locale);
+  const magnitude = formatMoney(
+    { amount: Math.abs(amount), currency },
+    locale ?? activeLocale,
+  );
 
   const sign = direction > 0 ? "+" : direction < 0 ? "-" : "";
   const label = direction > 0 ? t("figure.gain") : t("figure.loss");

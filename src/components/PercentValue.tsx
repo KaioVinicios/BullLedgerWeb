@@ -1,10 +1,12 @@
+import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { cn } from "@/lib/utils";
 import { formatPercent } from "@/utils/decimal";
 
 interface PercentValueProps {
   /** A decimal-string fraction as the API sends it: `0.1375` means 13.75%. */
   value: string;
-  locale: string;
+  /** See `MoneyValue`: an override, not a requirement. */
+  locale?: string;
   className?: string;
 }
 
@@ -16,9 +18,11 @@ interface PercentValueProps {
  * the screen.
  */
 export function PercentValue({ value, locale, className }: PercentValueProps) {
+  const activeLocale = useFormatLocale();
+
   return (
     <span className={cn("font-mono tabular-nums", className)}>
-      {formatPercent(value, locale)}
+      {formatPercent(value, locale ?? activeLocale)}
     </span>
   );
 }

@@ -68,6 +68,8 @@ Each guard is a `beforeLoad` function reading `context.queryClient` — the rout
 ### `hooks/`
 Custom React hooks shared across multiple pages or components. Hooks specific to a single component stay colocated with that component.
 
+`useFormatLocale.ts` returns the BCP 47 tag every figure formats with, read through `useTranslation` so a language switch re-renders the figures rather than leaving them in the language the user just left. `MoneyValue`, `PercentValue`, and `SignedFigure` call it themselves and take `locale` only as an override — a required prop would tax Phase 8, which is almost entirely figures, with a value identical at every call site.
+
 ### `i18n/`
 react-i18next initialization and all translation files organized by language and namespace.
 
@@ -126,6 +128,8 @@ Pure functions with no side effects: formatters, parsers, date helpers, math. No
 ## Tests
 
 Tests live in a `tests/` folder inside the directory they cover, never beside the file under test.
+
+`formatLocale.ts` maps each interface language to the tag `Intl` formats with (`en → en-US`, `pt → pt-BR`). Like `language.ts` it must stay side-effect free, because Playwright imports it in Node. It is a fixed map rather than `navigator.language` so the same language always formats identically across the browser, Vitest, and Playwright — reading the browser's region would make every locale-sensitive assertion depend on a setting the test has to pin first.
 
 ```
 src/utils/
