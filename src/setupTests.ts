@@ -1,6 +1,11 @@
 import { afterAll, afterEach, beforeAll } from "vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
+
+// `findBy*` waits 1s by default — enough alone, not with sixty files
+// competing for the same cores. The screens are not slower; the machine is
+// busier, and a timeout that measures load is a flake, not a signal.
+configure({ asyncUtilTimeout: 4000 });
 
 // Real translations, not the key-passthrough fallback: without init, `t()`
 // echoes the key, and a test asserting on translated copy would pass because
@@ -37,6 +42,14 @@ globalThis.ResizeObserver ??= class {
   unobserve() {}
   disconnect() {}
 };
+
+// jsdom implements none of the pointer-capture API, and Radix's Select calls
+// it from its pointer handlers — opening one in a test throws without these.
+// scrollIntoView is the same story when the opened list positions itself.
+Element.prototype.hasPointerCapture ??= () => false;
+Element.prototype.setPointerCapture ??= () => {};
+Element.prototype.releasePointerCapture ??= () => {};
+Element.prototype.scrollIntoView ??= () => {};
 
 // `onUnhandledRequest: "error"` makes an unmocked request a test failure
 // rather than a silent real network call.
