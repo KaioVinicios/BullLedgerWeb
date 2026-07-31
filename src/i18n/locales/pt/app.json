@@ -73,7 +73,7 @@
     },
     "profile": {
       "title": "Perfil",
-      "description": "Sua moeda de relatório e referência de inflação."
+      "description": "Sua conta e como os valores são apresentados a você."
     },
     "help": {
       "title": "Ajuda",
@@ -93,9 +93,330 @@
     "ledger": "Os lançamentos que você registrar aparecerão aqui.",
     "pricing": "Os preços e taxas de câmbio que você informar aparecerão aqui.",
     "targets": "As metas que você definir aparecerão aqui.",
-    "profile": "Suas preferências de relatório poderão ser editadas aqui.",
     "help": "Os guias serão publicados aqui conforme cada parte do produto ficar pronta.",
     "feedback": "Um canal para relatos e sugestões vai abrir aqui antes do lançamento."
+  },
+  "profile": {
+    "identity": {
+      "title": "Conta",
+      "description": "Como você está conectado.",
+      "email": "E-mail",
+      "firstName": "Nome",
+      "lastName": "Sobrenome"
+    },
+    "reporting": {
+      "title": "Relatórios",
+      "description": "Como os valores são exibidos para você.",
+      "lens": "Muda como os valores são exibidos. Nada do que você registrou muda.",
+      "currency": "Moeda de referência",
+      "inflation": "Referência de inflação",
+      "inflationHint": "Ajusta o ganho para termos de poder de compra. O ganho nominal é sempre exibido.",
+      "index": {
+        "BR": "IPCA",
+        "CA": "CPI",
+        "US": "PCE"
+      },
+      "noInflation": "Nenhuma — não exibir retorno real"
+    },
+    "actions": {
+      "save": "Salvar",
+      "saving": "Salvando…",
+      "discard": "Descartar"
+    },
+    "saved": {
+      "identity": "Seu nome foi atualizado.",
+      "reporting": "Agora os valores são exibidos em {{currency}}. Nada do que você registrou mudou."
+    }
+  },
+  "structure": {
+    "showArchived": "Mostrar arquivadas",
+    "archivedBadge": "Arquivada",
+    "actions": "Ações",
+    "openMenu": "Ações para {{name}}",
+    "edit": "Editar",
+    "archive": "Arquivar",
+    "restore": "Restaurar",
+    "loadFailed": "Esta lista não carregou.",
+    "retry": "Tentar de novo",
+    "created": "{{name}} criada.",
+    "saved": "{{name}} salva.",
+    "archived": "{{name}} arquivada. Você pode restaurá-la pela visão de arquivadas.",
+    "restored": "{{name}} restaurada.",
+    "archiveFailed": "O arquivamento não foi concluído. Tente de novo.",
+    "restoreFailed": "A restauração não foi concluída. Tente de novo.",
+    "pagination": {
+      "label": "Paginação",
+      "previous": "Anterior",
+      "next": "Próxima",
+      "status": "Página {{page}} de {{pageCount}}"
+    },
+    "archiveDialog": {
+      "title": "Arquivar {{name}}?",
+      "description": "Registros arquivados somem das listas e seletores, mas nada é excluído: todos os movimentos e o histórico sobrevivem, e você pode restaurar quando quiser.",
+      "cancel": "Cancelar",
+      "confirm": "Arquivar"
+    }
+  },
+  "institutions": {
+    "add": "Adicionar instituição",
+    "empty": {
+      "title": "Nenhuma instituição ainda",
+      "description": "Registre os bancos, corretoras, exchanges e carteiras que guardam suas contas — as contas vêm em seguida."
+    },
+    "columns": {
+      "name": "Nome",
+      "kinds": "Tipos",
+      "country": "País"
+    },
+    "form": {
+      "createTitle": "Nova instituição",
+      "createDescription": "Um banco, corretora, exchange, previdência — ou uma carteira que você mesmo custodia.",
+      "editTitle": "Editar instituição",
+      "editDescription": "Mude como esta instituição é registrada. As contas dela permanecem vinculadas.",
+      "name": "Nome",
+      "kinds": "Tipos",
+      "kindsHint": "Tudo o que esta instituição é para você. Marque todos que se aplicam.",
+      "country": "País",
+      "website": "Site",
+      "logo": "URL do logotipo",
+      "optional": "Opcional",
+      "selfCustody": "Carteira de autocustódia",
+      "selfCustodyHint": "Uma carteira cripto que você mesmo controla. As contas dela não precisam de uma instituição por trás.",
+      "cancel": "Cancelar",
+      "create": "Criar instituição",
+      "save": "Salvar alterações",
+      "errors": {
+        "name": "Dê um nome a ela.",
+        "kinds": "Marque pelo menos um tipo.",
+        "url": "Informe uma URL completa, como https://exemplo.com."
+      }
+    }
+  },
+  "accounts": {
+    "add": "Adicionar conta",
+    "noInstitution": "Sem instituição",
+    "empty": {
+      "title": "Nenhuma conta ainda",
+      "description": "Crie as contas que você possui — uma conta em corretora, um TFSA, uma carteira — e registre movimentos nelas."
+    },
+    "columns": {
+      "name": "Nome",
+      "institution": "Instituição",
+      "registration": "Registro",
+      "currency": "Moeda"
+    },
+    "form": {
+      "createTitle": "Nova conta",
+      "createDescription": "Uma conta pertence a um país, carrega um registro válido nele e mantém a escrituração em uma moeda base.",
+      "editTitle": "Editar conta",
+      "editDescription": "Mude como esta conta é registrada. Os movimentos dela permanecem intactos.",
+      "name": "Nome",
+      "institution": "Instituição",
+      "noInstitution": "Nenhuma — autocustódia",
+      "institutionHint": "A conta de uma carteira de autocustódia não precisa de instituição por trás.",
+      "country": "País",
+      "currency": "Moeda base",
+      "registration": "Registro",
+      "accountNumber": "Número da conta",
+      "optional": "Opcional",
+      "accountAdvantageNote": "Nos EUA e no Canadá, a vantagem fiscal pertence à própria conta. O BullLedger registra isso como informação — nunca calcula imposto devido.",
+      "contributionRoom": "Espaço de contribuição",
+      "contributionRoomHint": "Opcional. Seu espaço disponível, apenas como informação — comparado aos limites anuais, nunca imposto.",
+      "instrumentAdvantageNote": "No Brasil, a vantagem fiscal pertence ao instrumento (LCI, LCA, Poupança), não à conta — você a define ao registrar um ativo.",
+      "prevNote": "Previdência é um híbrido: esta conta {{plan}} carrega os próprios termos fiscais, e os fundos dentro dela são registrados como ativos.",
+      "deductible": "Contribuições são dedutíveis",
+      "deductibleHint": "Contribuições em PGBL podem ser deduzidas da renda tributável; em VGBL, não.",
+      "taxRegime": "Regime tributário",
+      "taxedOn": "Tributação sobre",
+      "cancel": "Cancelar",
+      "create": "Criar conta",
+      "save": "Salvar alterações",
+      "errors": {
+        "name": "Dê um nome a ela.",
+        "money": "Informe um valor, como 1234,56."
+      }
+    }
+  },
+  "assets": {
+    "add": "Adicionar ativo",
+    "filter": {
+      "label": "Tipo",
+      "all": "Todos os tipos"
+    },
+    "empty": {
+      "title": "Nenhum ativo ainda",
+      "description": "Registre os instrumentos que você possui — ações, títulos, fundos, poupança, cripto — e registre movimentos neles."
+    },
+    "noMatches": {
+      "title": "Nada deste tipo",
+      "description": "Nenhum ativo corresponde ao tipo selecionado.",
+      "clear": "Mostrar todos os tipos"
+    },
+    "columns": {
+      "name": "Nome",
+      "archetype": "Tipo",
+      "identifier": "Símbolo",
+      "currency": "Moeda"
+    },
+    "form": {
+      "createTitle": "Novo ativo",
+      "createDescription": "Escolha o tipo de instrumento; os campos que se aplicam a ele vêm em seguida.",
+      "editTitle": "Editar ativo",
+      "editDescription": "Mude como este ativo é registrado. Os movimentos dele permanecem intactos.",
+      "archetype": "Tipo",
+      "archetypeLocked": "O tipo de um ativo não muda — um tipo diferente é um ativo diferente.",
+      "archetypeHint": {
+        "CASH_DEPOSIT": "Saldos de poupança, depósito ou conta remunerada.",
+        "FIXED_INCOME": "CDBs, LCIs, tesouro, bonds — papel com vencimento.",
+        "EXCHANGE_SECURITY": "Ações, ETFs, REITs, FIIs — qualquer coisa com ticker.",
+        "NAV_FUND": "Fundos precificados por cota (NAV).",
+        "CRYPTO": "Moedas e tokens, em exchange ou autocustódia."
+      },
+      "name": "Nome",
+      "currency": "Moeda nativa",
+      "currencyHint": "A moeda em que este ativo é precificado e registrado.",
+      "country": "País",
+      "optional": "Opcional",
+      "rateType": "Tipo de taxa",
+      "rateIndex": "Indexador",
+      "compounding": "Capitalização",
+      "liquidity": "Liquidez",
+      "depositInsurance": "Garantia de depósito",
+      "rateValue": "Taxa",
+      "rateValueHint": "Opcional. O que o instrumento rende — 13,75 para 13,75%, ou o percentual do indexador acima.",
+      "couponRateHint": "O que ele paga periodicamente. Zero quando não paga nada até o vencimento.",
+      "instrumentKind": "Instrumento",
+      "issuerType": "Tipo de emissor",
+      "issuer": "Instituição emissora",
+      "issuerHint": "Um certificado precisa nomear uma das suas instituições como emissora.",
+      "noIssuer": "Nenhuma — não é uma das suas instituições",
+      "issuerName": "Nome do emissor",
+      "maturityDate": "Data de vencimento",
+      "issueDate": "Data de emissão",
+      "couponRate": "Taxa do cupom",
+      "couponFrequency": "Frequência do cupom",
+      "faceValue": "Valor de face",
+      "taxAdvantaged": "Instrumento com vantagem fiscal",
+      "taxAdvantagedHint": "Isenções brasileiras no nível do instrumento — LCI, LCA, Poupança. Registrado apenas como informação.",
+      "earlyRedemption": "Pode ser resgatado antes do vencimento",
+      "securityType": "Tipo de papel",
+      "exchange": "Bolsa",
+      "ticker": "Ticker",
+      "isin": "ISIN",
+      "paysDistributions": "Paga dividendos ou proventos",
+      "fundCategory": "Categoria do fundo",
+      "unitPrice": "Valor da cota",
+      "managementFee": "Taxa de administração",
+      "performanceFee": "Taxa de performance",
+      "redemptionPeriod": "Prazo de resgate",
+      "redemptionPeriodHint": "Como o fundo declara, ex.: D+30.",
+      "symbol": "Símbolo",
+      "chain": "Rede",
+      "decimals": "Casas decimais",
+      "decimalsHint": "Quantas casas decimais as quantidades carregam — 18 para a maioria das moedas.",
+      "priceCurrency": "Moeda de preço",
+      "wrapperNote": "Procurando seu 401(k), IRA, RRSP, TFSA ou FHSA? Envelopes fiscais são registros de conta, nunca ativos — defina-os ao criar uma conta.",
+      "cancel": "Cancelar",
+      "create": "Criar ativo",
+      "save": "Salvar alterações",
+      "errors": {
+        "name": "Dê um nome a ele.",
+        "percent": "Informe uma taxa, como 13,75.",
+        "percentRequired": "Informe a taxa do cupom, como 13,75.",
+        "decimal": "Informe um número, como 104,5321.",
+        "money": "Informe um valor, como 1000,00.",
+        "maturityDate": "Defina a data de vencimento.",
+        "issuerRequired": "Escolha a instituição emissora — um certificado precisa de uma.",
+        "ticker": "Informe o ticker.",
+        "fundCategory": "Nomeie a categoria do fundo.",
+        "symbol": "Informe o símbolo.",
+        "decimals": "Número inteiro entre 0 e 18."
+      }
+    }
+  },
+  "enums": {
+    "kind": {
+      "BANK": "Banco",
+      "BROKERAGE": "Corretora",
+      "EXCHANGE": "Exchange",
+      "PENSION_PROVIDER": "Previdência"
+    },
+    "selfCustody": "Autocustódia",
+    "archetype": {
+      "CASH_DEPOSIT": "Depósito remunerado",
+      "FIXED_INCOME": "Renda fixa",
+      "EXCHANGE_SECURITY": "Ativo de bolsa",
+      "NAV_FUND": "Fundo (cota)",
+      "CRYPTO": "Cripto"
+    },
+    "rateType": {
+      "FIXED": "Prefixada",
+      "FLOATING": "Pós-fixada",
+      "INFLATION_LINKED": "Atrelada à inflação"
+    },
+    "rateIndex": {
+      "CDI": "CDI",
+      "SELIC": "SELIC",
+      "IPCA": "IPCA",
+      "IGPM": "IGP-M",
+      "NONE": "Nenhum"
+    },
+    "compounding": {
+      "DAILY": "Diária",
+      "MONTHLY": "Mensal"
+    },
+    "depositInsurance": {
+      "FGC": "FGC (Brasil)",
+      "FDIC": "FDIC (EUA)",
+      "CDIC": "CDIC (Canadá)",
+      "NONE": "Nenhuma"
+    },
+    "liquidity": {
+      "IMMEDIATE": "Imediata",
+      "AT_MATURITY": "No vencimento"
+    },
+    "instrumentKind": {
+      "CERTIFICATE": "Certificado",
+      "BOND": "Bond"
+    },
+    "issuerType": {
+      "GOVERNMENT": "Governo",
+      "CORPORATE": "Corporativo",
+      "MUNICIPAL": "Municipal",
+      "BANK": "Banco"
+    },
+    "couponFrequency": {
+      "NONE": "Nenhuma",
+      "SEMIANNUAL": "Semestral",
+      "ANNUAL": "Anual"
+    },
+    "securityType": {
+      "STOCK": "Ação",
+      "ETF": "ETF",
+      "REIT": "REIT",
+      "FII": "FII"
+    },
+    "registration": {
+      "BR_TAXABLE": "Tributável",
+      "BR_PREV_PGBL": "Previdência PGBL",
+      "BR_PREV_VGBL": "Previdência VGBL",
+      "US_TAXABLE": "Tributável",
+      "US_401K": "401(k)",
+      "US_IRA_TRADITIONAL": "IRA tradicional",
+      "US_IRA_ROTH": "IRA Roth",
+      "CA_NON_REGISTERED": "Não registrada",
+      "CA_RRSP": "RRSP",
+      "CA_TFSA": "TFSA",
+      "CA_FHSA": "FHSA"
+    },
+    "taxRegime": {
+      "PROGRESSIVE": "Progressivo",
+      "REGRESSIVE": "Regressivo"
+    },
+    "taxedOn": {
+      "WHOLE_AMOUNT": "Valor integral",
+      "GAINS_ONLY": "Apenas ganhos"
+    }
   },
   "notFound": {
     "title": "Página não encontrada",

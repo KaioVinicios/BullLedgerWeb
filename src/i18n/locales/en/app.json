@@ -73,7 +73,7 @@
     },
     "profile": {
       "title": "Profile",
-      "description": "Your reporting currency and inflation reference."
+      "description": "Your account, and how figures are reported to you."
     },
     "help": {
       "title": "Help",
@@ -93,9 +93,330 @@
     "ledger": "The movements you record will be listed here.",
     "pricing": "The prices and exchange rates you enter will be listed here.",
     "targets": "The targets you set will be listed here.",
-    "profile": "Your reporting preferences will be editable here.",
     "help": "Guides will be published here as each part of the product lands.",
     "feedback": "A channel for reports and suggestions will open here before launch."
+  },
+  "profile": {
+    "identity": {
+      "title": "Account",
+      "description": "How you're signed in.",
+      "email": "Email",
+      "firstName": "First name",
+      "lastName": "Last name"
+    },
+    "reporting": {
+      "title": "Reporting",
+      "description": "How figures are shown to you.",
+      "lens": "Changes how figures are displayed. Nothing you recorded changes.",
+      "currency": "Reporting currency",
+      "inflation": "Inflation reference",
+      "inflationHint": "Deflates gain into purchasing-power terms. Nominal gain is always shown.",
+      "index": {
+        "BR": "IPCA",
+        "CA": "CPI",
+        "US": "PCE"
+      },
+      "noInflation": "None — don't show real return"
+    },
+    "actions": {
+      "save": "Save",
+      "saving": "Saving…",
+      "discard": "Discard"
+    },
+    "saved": {
+      "identity": "Your name has been updated.",
+      "reporting": "Now reporting in {{currency}}. Nothing you recorded has changed."
+    }
+  },
+  "structure": {
+    "showArchived": "Show archived",
+    "archivedBadge": "Archived",
+    "actions": "Actions",
+    "openMenu": "Actions for {{name}}",
+    "edit": "Edit",
+    "archive": "Archive",
+    "restore": "Restore",
+    "loadFailed": "This list didn't load.",
+    "retry": "Try again",
+    "created": "{{name}} created.",
+    "saved": "{{name}} saved.",
+    "archived": "{{name}} archived. You can restore it from the archived view.",
+    "restored": "{{name}} restored.",
+    "archiveFailed": "Archiving didn't go through. Try again.",
+    "restoreFailed": "Restoring didn't go through. Try again.",
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous",
+      "next": "Next",
+      "status": "Page {{page}} of {{pageCount}}"
+    },
+    "archiveDialog": {
+      "title": "Archive {{name}}?",
+      "description": "Archived records disappear from lists and pickers, but nothing is deleted: every movement and all history survive, and you can restore it at any time.",
+      "cancel": "Cancel",
+      "confirm": "Archive"
+    }
+  },
+  "institutions": {
+    "add": "Add institution",
+    "empty": {
+      "title": "No institutions yet",
+      "description": "Register the banks, brokerages, exchanges, and wallets that hold your accounts — accounts come next."
+    },
+    "columns": {
+      "name": "Name",
+      "kinds": "Kinds",
+      "country": "Country"
+    },
+    "form": {
+      "createTitle": "New institution",
+      "createDescription": "A bank, brokerage, exchange, pension provider — or a wallet you custody yourself.",
+      "editTitle": "Edit institution",
+      "editDescription": "Change how this institution is recorded. Its accounts stay attached.",
+      "name": "Name",
+      "kinds": "Kinds",
+      "kindsHint": "Everything this institution is to you. Pick all that apply.",
+      "country": "Country",
+      "website": "Website",
+      "logo": "Logo URL",
+      "optional": "Optional",
+      "selfCustody": "Self-custody wallet",
+      "selfCustodyHint": "A crypto wallet you control yourself. Its accounts don't need an institution behind them.",
+      "cancel": "Cancel",
+      "create": "Create institution",
+      "save": "Save changes",
+      "errors": {
+        "name": "Give it a name.",
+        "kinds": "Pick at least one kind.",
+        "url": "Enter a full URL, like https://example.com."
+      }
+    }
+  },
+  "accounts": {
+    "add": "Add account",
+    "noInstitution": "No institution",
+    "empty": {
+      "title": "No accounts yet",
+      "description": "Create the accounts you hold — a brokerage account, a TFSA, a wallet — and record movements against them."
+    },
+    "columns": {
+      "name": "Name",
+      "institution": "Institution",
+      "registration": "Registration",
+      "currency": "Currency"
+    },
+    "form": {
+      "createTitle": "New account",
+      "createDescription": "An account lives in a country, carries a registration valid there, and keeps its books in one base currency.",
+      "editTitle": "Edit account",
+      "editDescription": "Change how this account is recorded. Its movements stay untouched.",
+      "name": "Name",
+      "institution": "Institution",
+      "noInstitution": "None — self-custody",
+      "institutionHint": "A self-custody wallet's account needs no institution behind it.",
+      "country": "Country",
+      "currency": "Base currency",
+      "registration": "Registration",
+      "accountNumber": "Account number",
+      "optional": "Optional",
+      "accountAdvantageNote": "In the US and Canada, the tax advantage attaches to the account itself. BullLedger records this as information — it never computes tax owed.",
+      "contributionRoom": "Contribution room",
+      "contributionRoomHint": "Optional. Your available room, as information only — checked against the yearly limits, never enforced.",
+      "instrumentAdvantageNote": "In Brazil, tax advantages attach to the instrument (LCI, LCA, Poupança), not the account — you set those when registering an asset.",
+      "prevNote": "Previdência is a hybrid: this {{plan}} account carries its own tax terms, and the funds you hold inside it are registered as assets.",
+      "deductible": "Contributions are deductible",
+      "deductibleHint": "PGBL contributions can be deducted from taxable income; VGBL's cannot.",
+      "taxRegime": "Tax regime",
+      "taxedOn": "Taxed on",
+      "cancel": "Cancel",
+      "create": "Create account",
+      "save": "Save changes",
+      "errors": {
+        "name": "Give it a name.",
+        "money": "Enter an amount, like 1234.56."
+      }
+    }
+  },
+  "assets": {
+    "add": "Add asset",
+    "filter": {
+      "label": "Type",
+      "all": "All types"
+    },
+    "empty": {
+      "title": "No assets yet",
+      "description": "Register the instruments you hold — stocks, bonds, funds, savings, crypto — and record movements against them."
+    },
+    "noMatches": {
+      "title": "Nothing of this type",
+      "description": "No assets match the selected type.",
+      "clear": "Show all types"
+    },
+    "columns": {
+      "name": "Name",
+      "archetype": "Type",
+      "identifier": "Symbol",
+      "currency": "Currency"
+    },
+    "form": {
+      "createTitle": "New asset",
+      "createDescription": "Pick what kind of instrument this is; the fields that apply to it follow.",
+      "editTitle": "Edit asset",
+      "editDescription": "Change how this asset is recorded. Its movements stay untouched.",
+      "archetype": "Type",
+      "archetypeLocked": "An asset's type can't change — a different type is a different asset.",
+      "archetypeHint": {
+        "CASH_DEPOSIT": "Savings, deposit, or cash account balances that accrue.",
+        "FIXED_INCOME": "CDBs, LCIs, treasuries, bonds — paper with a maturity.",
+        "EXCHANGE_SECURITY": "Stocks, ETFs, REITs, FIIs — anything with a ticker.",
+        "NAV_FUND": "Funds priced by unit value (NAV).",
+        "CRYPTO": "Coins and tokens, exchange-held or self-custodied."
+      },
+      "name": "Name",
+      "currency": "Native currency",
+      "currencyHint": "The currency this asset is priced and recorded in.",
+      "country": "Country",
+      "optional": "Optional",
+      "rateType": "Rate type",
+      "rateIndex": "Rate index",
+      "compounding": "Compounding",
+      "liquidity": "Liquidity",
+      "depositInsurance": "Deposit insurance",
+      "rateValue": "Rate",
+      "rateValueHint": "Optional. What the instrument yields — 13.75 for 13.75%, or the percentage of the index above.",
+      "couponRateHint": "What it pays out periodically. Zero when it pays nothing until maturity.",
+      "instrumentKind": "Instrument",
+      "issuerType": "Issuer type",
+      "issuer": "Issuing institution",
+      "issuerHint": "A certificate must name one of your institutions as its issuer.",
+      "noIssuer": "None — not one of your institutions",
+      "issuerName": "Issuer name",
+      "maturityDate": "Maturity date",
+      "issueDate": "Issue date",
+      "couponRate": "Coupon rate",
+      "couponFrequency": "Coupon frequency",
+      "faceValue": "Face value",
+      "taxAdvantaged": "Tax-advantaged instrument",
+      "taxAdvantagedHint": "Brazilian instrument-level exemptions — LCI, LCA, Poupança. Recorded as information only.",
+      "earlyRedemption": "Can be redeemed before maturity",
+      "securityType": "Security type",
+      "exchange": "Exchange",
+      "ticker": "Ticker",
+      "isin": "ISIN",
+      "paysDistributions": "Pays dividends or distributions",
+      "fundCategory": "Fund category",
+      "unitPrice": "Unit price",
+      "managementFee": "Management fee",
+      "performanceFee": "Performance fee",
+      "redemptionPeriod": "Redemption period",
+      "redemptionPeriodHint": "As the fund states it, e.g. D+30.",
+      "symbol": "Symbol",
+      "chain": "Chain",
+      "decimals": "Decimals",
+      "decimalsHint": "How many decimal places quantities carry — 18 for most coins.",
+      "priceCurrency": "Price currency",
+      "wrapperNote": "Looking for your 401(k), IRA, RRSP, TFSA, or FHSA? Tax wrappers are account registrations, never assets — set them when creating an account.",
+      "cancel": "Cancel",
+      "create": "Create asset",
+      "save": "Save changes",
+      "errors": {
+        "name": "Give it a name.",
+        "percent": "Enter a rate, like 13.75.",
+        "percentRequired": "Enter the coupon rate, like 13.75.",
+        "decimal": "Enter a number, like 104.5321.",
+        "money": "Enter an amount, like 1000.00.",
+        "maturityDate": "Set the maturity date.",
+        "issuerRequired": "Pick the issuing institution — a certificate needs one.",
+        "ticker": "Enter the ticker.",
+        "fundCategory": "Name the fund category.",
+        "symbol": "Enter the symbol.",
+        "decimals": "Whole number between 0 and 18."
+      }
+    }
+  },
+  "enums": {
+    "kind": {
+      "BANK": "Bank",
+      "BROKERAGE": "Brokerage",
+      "EXCHANGE": "Exchange",
+      "PENSION_PROVIDER": "Pension provider"
+    },
+    "selfCustody": "Self-custody",
+    "archetype": {
+      "CASH_DEPOSIT": "Cash deposit",
+      "FIXED_INCOME": "Fixed income",
+      "EXCHANGE_SECURITY": "Exchange security",
+      "NAV_FUND": "NAV fund",
+      "CRYPTO": "Crypto"
+    },
+    "rateType": {
+      "FIXED": "Fixed",
+      "FLOATING": "Floating",
+      "INFLATION_LINKED": "Inflation-linked"
+    },
+    "rateIndex": {
+      "CDI": "CDI",
+      "SELIC": "SELIC",
+      "IPCA": "IPCA",
+      "IGPM": "IGP-M",
+      "NONE": "None"
+    },
+    "compounding": {
+      "DAILY": "Daily",
+      "MONTHLY": "Monthly"
+    },
+    "depositInsurance": {
+      "FGC": "FGC (Brazil)",
+      "FDIC": "FDIC (US)",
+      "CDIC": "CDIC (Canada)",
+      "NONE": "None"
+    },
+    "liquidity": {
+      "IMMEDIATE": "Immediate",
+      "AT_MATURITY": "At maturity"
+    },
+    "instrumentKind": {
+      "CERTIFICATE": "Certificate",
+      "BOND": "Bond"
+    },
+    "issuerType": {
+      "GOVERNMENT": "Government",
+      "CORPORATE": "Corporate",
+      "MUNICIPAL": "Municipal",
+      "BANK": "Bank"
+    },
+    "couponFrequency": {
+      "NONE": "None",
+      "SEMIANNUAL": "Semiannual",
+      "ANNUAL": "Annual"
+    },
+    "securityType": {
+      "STOCK": "Stock",
+      "ETF": "ETF",
+      "REIT": "REIT",
+      "FII": "FII"
+    },
+    "registration": {
+      "BR_TAXABLE": "Taxable",
+      "BR_PREV_PGBL": "Previdência PGBL",
+      "BR_PREV_VGBL": "Previdência VGBL",
+      "US_TAXABLE": "Taxable",
+      "US_401K": "401(k)",
+      "US_IRA_TRADITIONAL": "Traditional IRA",
+      "US_IRA_ROTH": "Roth IRA",
+      "CA_NON_REGISTERED": "Non-registered",
+      "CA_RRSP": "RRSP",
+      "CA_TFSA": "TFSA",
+      "CA_FHSA": "FHSA"
+    },
+    "taxRegime": {
+      "PROGRESSIVE": "Progressive",
+      "REGRESSIVE": "Regressive"
+    },
+    "taxedOn": {
+      "WHOLE_AMOUNT": "Whole amount",
+      "GAINS_ONLY": "Gains only"
+    }
   },
   "notFound": {
     "title": "Page not found",
