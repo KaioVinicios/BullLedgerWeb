@@ -129,6 +129,17 @@ One file (or folder) per route. Page components compose smaller components and h
 ### `routes/`
 TanStack Router route definitions. The route tree and lazy-loaded route files live here. Keep routing config separate from page UI.
 
+`path.ts` carries two tables for the same reason it always did — TanStack composes a
+child's path onto its parent's, so the tree needs bare segments while `<Link to>` needs
+whole paths. `APP_CHILD_SEGMENTS` extends that to the create/edit trios, deriving each
+child from its parent's segment so a renamed resource cannot leave its children behind, and
+edit routes use a `$id` param rather than interpolation.
+
+Each edit route resolves its record in a `loader` before the screen renders, sharing one
+`queryOptions` object with the form — the reason `profileQuery` is shared by its loader and
+its screen. A form that mounts empty and resets when data lands is where dirty-state bugs
+live.
+
 ### `schemas/`
 Zod schemas used for form validation and API response parsing. Shared schemas (e.g. `addressSchema`) live here; schemas used only in one form can stay colocated.
 

@@ -33,6 +33,21 @@ export const APP_SEGMENTS = {
   FEEDBACK: "feedback",
 } as const;
 
+/**
+ * Child segments of the structure resources: create and edit screens, again
+ * as the bare segments the route tree needs. Derived from `APP_SEGMENTS` so
+ * a renamed resource cannot leave its children behind, and edit routes use a
+ * TanStack `$id` param, never interpolation.
+ */
+export const APP_CHILD_SEGMENTS = {
+  INSTITUTIONS_NEW: `${APP_SEGMENTS.INSTITUTIONS}/new`,
+  INSTITUTIONS_EDIT: `${APP_SEGMENTS.INSTITUTIONS}/$id/edit`,
+  ACCOUNTS_NEW: `${APP_SEGMENTS.ACCOUNTS}/new`,
+  ACCOUNTS_EDIT: `${APP_SEGMENTS.ACCOUNTS}/$id/edit`,
+  ASSETS_NEW: `${APP_SEGMENTS.ASSETS}/new`,
+  ASSETS_EDIT: `${APP_SEGMENTS.ASSETS}/$id/edit`,
+} as const;
+
 export const PATHS = {
   HOME: "/",
   DESIGN_SYSTEM: "/design-system",
@@ -42,8 +57,14 @@ export const PATHS = {
   PRIVACY: "/privacy",
   APP,
   INSTITUTIONS: `${APP}/${APP_SEGMENTS.INSTITUTIONS}`,
+  INSTITUTIONS_NEW: `${APP}/${APP_CHILD_SEGMENTS.INSTITUTIONS_NEW}`,
+  INSTITUTIONS_EDIT: `${APP}/${APP_CHILD_SEGMENTS.INSTITUTIONS_EDIT}`,
   ACCOUNTS: `${APP}/${APP_SEGMENTS.ACCOUNTS}`,
+  ACCOUNTS_NEW: `${APP}/${APP_CHILD_SEGMENTS.ACCOUNTS_NEW}`,
+  ACCOUNTS_EDIT: `${APP}/${APP_CHILD_SEGMENTS.ACCOUNTS_EDIT}`,
   ASSETS: `${APP}/${APP_SEGMENTS.ASSETS}`,
+  ASSETS_NEW: `${APP}/${APP_CHILD_SEGMENTS.ASSETS_NEW}`,
+  ASSETS_EDIT: `${APP}/${APP_CHILD_SEGMENTS.ASSETS_EDIT}`,
   LEDGER: `${APP}/${APP_SEGMENTS.LEDGER}`,
   PRICING: `${APP}/${APP_SEGMENTS.PRICING}`,
   TARGETS: `${APP}/${APP_SEGMENTS.TARGETS}`,

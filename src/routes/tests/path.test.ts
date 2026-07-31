@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { APP_SEGMENTS, PATHS } from "@/routes/path";
+import { APP_CHILD_SEGMENTS, APP_SEGMENTS, PATHS } from "@/routes/path";
 
 describe("the authenticated route surface", () => {
   it.each(Object.entries(APP_SEGMENTS))(
@@ -23,6 +23,34 @@ describe("the authenticated route surface", () => {
     // here would produce /app/app/accounts at runtime.
     for (const segment of Object.values(APP_SEGMENTS)) {
       expect(segment.startsWith("/")).toBe(false);
+    }
+  });
+
+  it.each(Object.entries(APP_CHILD_SEGMENTS))(
+    "derives PATHS.%s from its child segment",
+    (name, segment) => {
+      const key = name as keyof typeof APP_CHILD_SEGMENTS;
+      expect(PATHS[key]).toBe(`${PATHS.APP}/${segment}`);
+    },
+  );
+
+  it("derives every child segment from its parent's segment", () => {
+    // A renamed resource must carry its create/edit children with it; a child
+    // segment that does not extend a parent segment has drifted.
+    const parents = Object.values(APP_SEGMENTS);
+    for (const segment of Object.values(APP_CHILD_SEGMENTS)) {
+      expect(segment.startsWith("/")).toBe(false);
+      expect(parents.some((parent) => segment.startsWith(`${parent}/`))).toBe(
+        true,
+      );
+    }
+  });
+
+  it("keeps edit params as TanStack segments, never interpolation", () => {
+    for (const name of Object.keys(APP_CHILD_SEGMENTS)) {
+      if (!name.endsWith("_EDIT")) continue;
+      const key = name as keyof typeof APP_CHILD_SEGMENTS;
+      expect(APP_CHILD_SEGMENTS[key]).toContain("/$id/");
     }
   });
 

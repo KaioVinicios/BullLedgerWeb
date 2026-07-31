@@ -5,6 +5,7 @@ import {
   createRouter,
   lazyRouteComponent,
   Link,
+  stripSearchParams,
 } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
@@ -25,8 +26,17 @@ import { ResendVerificationPage } from "@/pages/ResendVerification";
 import { ResetPasswordPage } from "@/pages/ResetPassword";
 import { ResetPasswordConfirmPage } from "@/pages/ResetPassword/Confirm";
 import { authSearchSchema } from "@/schemas/redirect";
-import { APP_SEGMENTS, PATHS } from "@/routes/path";
+import {
+  assetListSearchSchema,
+  resourceListDefaults,
+  resourceListSearchSchema,
+} from "@/schemas/resourceList";
+import { APP_CHILD_SEGMENTS, APP_SEGMENTS, PATHS } from "@/routes/path";
 import { rootRoute } from "@/routes/root";
+import { accountQuery } from "@/services/accounts";
+import { assetQuery } from "@/services/assets";
+import { institutionQuery } from "@/services/institutions";
+import { profileQuery } from "@/services/profile";
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -150,9 +160,20 @@ const appIndexRoute = createRoute({
  * which is what makes the skeleton real before any of these screens fetches
  * anything.
  */
+/**
+ * The list screens validate their URL state — page, archived visibility,
+ * ordering, and on assets the archetype filter — with `.catch` fallbacks, so
+ * a stale or hand-edited link renders defaults instead of a route error.
+ * `stripSearchParams` keeps those defaults out of the address bar: a URL only
+ * says what differs from the resting state. Spelled per route rather than
+ * shared, because each route's generics must infer their own middleware
+ * array.
+ */
 const institutionsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: APP_SEGMENTS.INSTITUTIONS,
+  validateSearch: resourceListSearchSchema,
+  search: { middlewares: [stripSearchParams(resourceListDefaults)] },
   component: lazyRouteComponent(
     () => import("@/pages/Institutions"),
     "InstitutionsPage",
@@ -160,9 +181,35 @@ const institutionsRoute = createRoute({
   ...appScreenOptions,
 });
 
+const institutionNewRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.INSTITUTIONS_NEW,
+  component: lazyRouteComponent(
+    () => import("@/pages/Institutions/New"),
+    "InstitutionNewPage",
+  ),
+  ...appScreenOptions,
+});
+
+const institutionEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.INSTITUTIONS_EDIT,
+  // Resolved before the screen renders, so the form mounts with real server
+  // values as its defaults — the same reason the profile route loads.
+  loader: ({ context, params }) =>
+    context.queryClient.ensureQueryData(institutionQuery(params.id)),
+  component: lazyRouteComponent(
+    () => import("@/pages/Institutions/Edit"),
+    "InstitutionEditPage",
+  ),
+  ...appScreenOptions,
+});
+
 const accountsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: APP_SEGMENTS.ACCOUNTS,
+  validateSearch: resourceListSearchSchema,
+  search: { middlewares: [stripSearchParams(resourceListDefaults)] },
   component: lazyRouteComponent(
     () => import("@/pages/Accounts"),
     "AccountsPage",
@@ -170,10 +217,56 @@ const accountsRoute = createRoute({
   ...appScreenOptions,
 });
 
+const accountNewRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.ACCOUNTS_NEW,
+  component: lazyRouteComponent(
+    () => import("@/pages/Accounts/New"),
+    "AccountNewPage",
+  ),
+  ...appScreenOptions,
+});
+
+const accountEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.ACCOUNTS_EDIT,
+  loader: ({ context, params }) =>
+    context.queryClient.ensureQueryData(accountQuery(params.id)),
+  component: lazyRouteComponent(
+    () => import("@/pages/Accounts/Edit"),
+    "AccountEditPage",
+  ),
+  ...appScreenOptions,
+});
+
 const assetsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: APP_SEGMENTS.ASSETS,
+  validateSearch: assetListSearchSchema,
+  search: { middlewares: [stripSearchParams(resourceListDefaults)] },
   component: lazyRouteComponent(() => import("@/pages/Assets"), "AssetsPage"),
+  ...appScreenOptions,
+});
+
+const assetNewRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.ASSETS_NEW,
+  component: lazyRouteComponent(
+    () => import("@/pages/Assets/New"),
+    "AssetNewPage",
+  ),
+  ...appScreenOptions,
+});
+
+const assetEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.ASSETS_EDIT,
+  loader: ({ context, params }) =>
+    context.queryClient.ensureQueryData(assetQuery(params.id)),
+  component: lazyRouteComponent(
+    () => import("@/pages/Assets/Edit"),
+    "AssetEditPage",
+  ),
   ...appScreenOptions,
 });
 
@@ -201,6 +294,11 @@ const targetsRoute = createRoute({
 const profileRoute = createRoute({
   getParentRoute: () => appRoute,
   path: APP_SEGMENTS.PROFILE,
+  // Resolved before the screen renders, so both forms mount with real server
+  // values as their defaults. A form that mounts empty and resets when data
+  // lands is where dirty-state bugs live — and `pendingComponent` already
+  // covers the wait, so this costs no second loading surface.
+  loader: ({ context }) => context.queryClient.ensureQueryData(profileQuery),
   component: lazyRouteComponent(() => import("@/pages/Profile"), "ProfilePage"),
   ...appScreenOptions,
 });
@@ -236,8 +334,14 @@ const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
     appIndexRoute,
     institutionsRoute,
+    institutionNewRoute,
+    institutionEditRoute,
     accountsRoute,
+    accountNewRoute,
+    accountEditRoute,
     assetsRoute,
+    assetNewRoute,
+    assetEditRoute,
     ledgerRoute,
     pricingRoute,
     targetsRoute,

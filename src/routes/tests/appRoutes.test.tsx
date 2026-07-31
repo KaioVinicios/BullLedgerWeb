@@ -1,3 +1,4 @@
+// Path should not be hardcoded.
 import { describe, expect, it } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -43,6 +44,26 @@ describe("the authenticated route surface", () => {
   ])("renders %s with its own heading", async (path, heading) => {
     server.use(
       http.get(`${TEST_API_URL}/api/auth/user/`, () => HttpResponse.json(user)),
+      // The profile route loads this before it renders. Harmless for the other
+      // rows, which never request it.
+      http.get(`${TEST_API_URL}/api/profile/`, () =>
+        HttpResponse.json({
+          status: 200,
+          data: {
+            id: "6f1c0e6e-0000-4000-8000-000000000000",
+            reporting_currency: "BRL",
+            inflation_reference_country: "BR",
+          },
+        }),
+      ),
+      // The institutions screen is a real list now and fetches on mount; an
+      // empty page keeps this spec about routing, not about list content.
+      http.get(`${TEST_API_URL}/api/institutions/`, () =>
+        HttpResponse.json({
+          status: 200,
+          data: { count: 0, next: null, previous: null, results: [] },
+        }),
+      ),
     );
 
     mount(path);
