@@ -38,7 +38,19 @@ Images, SVGs, fonts, and any static file imported directly into components.
 ### `components/`
 Generic, reusable UI components that are not tied to a specific page or business domain (e.g. `DataTable`, `Modal`, `Avatar`). The `ui/` subfolder is managed by shadcn — do not edit those files manually, and where an edit is unavoidable, record it in a `LOCAL EDITS` comment at the top of the file so a regeneration knows what to reapply (`ui/sidebar.tsx` carries two).
 
-`shell/` holds the authenticated application frame — sidebar, header, account menu, and the in-shell not-found and error surfaces. It is reusable chrome rather than any one route's page, which is why it lives here and not in `pages/`. Page-composition primitives shared by every screen (`PageHeader`, `EmptyState`, `PageSkeleton`) sit directly in `components/`: screens compose them, and the shell does not own them.
+`shell/` holds the authenticated application frame — sidebar, header, account menu, and the in-shell not-found and error surfaces. It is reusable chrome rather than any one route's page, which is why it lives here and not in `pages/`. Page-composition primitives shared by every screen (`PageHeader`, `EmptyState`, `PageSkeleton`, `PageContainer`) sit directly in `components/`: screens compose them, and the shell does not own them.
+
+`PageContainer` is where a screen's width is decided, and the only place a width belongs. Two values: `full` (the default — the content region *is* the measure, for tables, projections, and dashboards) and `form` (the content has an optimal measure of its own, for forms, settings, and prose). Wrap the whole screen including its `PageHeader`, so the heading and its action share the content's edge. The column is left-aligned rather than centred on purpose: centring would move the content's left edge horizontally on every navigation between a narrow screen and a wide one, and a fixed left edge is worth more than symmetric whitespace.
+
+The resource-list pattern lives here too, as four small pieces every structure screen
+composes rather than a `ResourceTable` component that would have to grow a prop for every
+difference: `ListPagination` (renders nothing on a single page), `ListSkeleton`,
+`ListError`, and `ShowArchivedToggle`. `SortableColumnHeader` owns one `ordering` value and
+cycles ascending → descending → the server's default, so the default order stays reachable
+without editing the address bar. `ArchiveConfirmDialog` is the one confirmation all three
+resources share — worded as archival, never deletion, and keeping the default button
+variant rather than destructive red, because painting reversible tidying as destruction
+would make the dialog argue with its own copy.
 
 `AppSidebarFooter.tsx` is the sidebar's second landmark: the destinations that belong to the product rather than to the portfolio (Help, Feedback), the legal links, and the build stamp. The legal links are plain anchors opening the canonical public documents in a new tab, never mirrored under `/app`. `activeStyles.ts` holds the classes that say "current" — shared by the primary navigation and the footer, so the sidebar has one vocabulary for that state rather than two that drift.
 

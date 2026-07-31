@@ -53,5 +53,6 @@ export function usePaginatedQuery<T>(options: PaginatedQueryOptions<T>) {
     isPending: query.isPending,
     isFetching: query.isFetching,
     error: query.error,
+    refetch: query.refetch,
   };
 }
