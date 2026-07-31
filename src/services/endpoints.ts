@@ -12,6 +12,18 @@
  */
 export const ENDPOINTS = {
   accounts: "/api/accounts/",
+  account: (id: string) => `/api/accounts/${id}/`,
+  accountArchive: (id: string) => `/api/accounts/${id}/archive/`,
+  accountUnarchive: (id: string) => `/api/accounts/${id}/unarchive/`,
+  institutions: "/api/institutions/",
+  institution: (id: string) => `/api/institutions/${id}/`,
+  institutionArchive: (id: string) => `/api/institutions/${id}/archive/`,
+  institutionUnarchive: (id: string) => `/api/institutions/${id}/unarchive/`,
+  assets: "/api/assets/",
+  asset: (id: string) => `/api/assets/${id}/`,
+  assetArchive: (id: string) => `/api/assets/${id}/archive/`,
+  assetUnarchive: (id: string) => `/api/assets/${id}/unarchive/`,
+  profile: "/api/profile/",
 
   // Auth. Two paths are deliberately absent for the same reason — `lib/` must
   // not import from `services/` without inverting the layering, and both are

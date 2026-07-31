@@ -3,7 +3,13 @@ import { http, HttpResponse } from "msw";
 
 import { server } from "@/mocks/server";
 import { ApiClientError } from "@/lib/apiError";
-import { createAccount, listAccounts } from "@/services/accounts";
+import {
+  archiveAccount,
+  createAccount,
+  listAccounts,
+  unarchiveAccount,
+  updateAccount,
+} from "@/services/accounts";
 import { TEST_API_URL } from "@/mocks/env";
 
 const account = {
@@ -121,5 +127,53 @@ describe("createAccount", () => {
       (error: ApiClientError) =>
         error.fieldErrors("registration")[0] === "Not valid for country BR.",
     );
+  });
+});
+
+describe("updateAccount", () => {
+  it("PATCHes the detail path and unwraps the envelope", async () => {
+    let patched: unknown;
+
+    server.use(
+      http.patch(
+        `${TEST_API_URL}/api/accounts/${account.id}/`,
+        async ({ request }) => {
+          patched = await request.json();
+          return HttpResponse.json({
+            status: 200,
+            data: { ...account, name: "Nubank PJ" },
+          });
+        },
+      ),
+    );
+
+    const updated = await updateAccount(account.id, { name: "Nubank PJ" });
+
+    expect(patched).toEqual({ name: "Nubank PJ" });
+    expect(updated.name).toBe("Nubank PJ");
+  });
+});
+
+describe("archiveAccount / unarchiveAccount", () => {
+  it("POSTs to the dedicated sub-paths and unwraps the updated resource", async () => {
+    const archivedAt = "2026-07-31T12:00:00Z";
+
+    server.use(
+      http.post(`${TEST_API_URL}/api/accounts/${account.id}/archive/`, () =>
+        HttpResponse.json({
+          status: 200,
+          data: { ...account, archived_at: archivedAt },
+        }),
+      ),
+      http.post(`${TEST_API_URL}/api/accounts/${account.id}/unarchive/`, () =>
+        HttpResponse.json({ status: 200, data: account }),
+      ),
+    );
+
+    const archived = await archiveAccount(account.id);
+    expect(archived.archived_at).toBe(archivedAt);
+
+    const restored = await unarchiveAccount(account.id);
+    expect(restored.archived_at).toBeNull();
   });
 });

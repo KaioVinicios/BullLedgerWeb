@@ -158,6 +158,21 @@ export const listAccounts = (query: AccountListQuery) =>
   request(api.get<PaginatedAccountList>(ENDPOINTS.accounts, { params: query }));
 ```
 
+A **list query's type comes from the operation**, never from a hand-written interface:
+`operations["api_assets_list"]["parameters"]["query"]`. That is what makes a parameter the
+schema does not declare unsendable, and one it gains available the moment types are
+regenerated — the `archetype` filter and `ordering` entered the client that way, with no
+service edit beyond the type alias.
+
+**Archival is `POST /{id}/archive/`, not `DELETE`.** The dedicated endpoint answers with the
+updated resource, and `unarchive` is its symmetric twin — an archived row the UI can show
+but not restore is a dead end. The invalidation rule is one line per mutation: the
+resource's own root always, plus `PORTFOLIO_KEY` when archiving an account or an asset,
+because that changes what the projections aggregate. A rename does not touch projections;
+they carry ids, and the names come from the resource cache that was just invalidated.
+
+`profile.ts` is the one resource that is a singleton — `/api/profile/` carries no id and always resolves to the caller's own profile — so it defines its key inline instead of through `createResourceKeys`, which would give it a `list()` and a `detail()` that can never be called. The identity write (`updateCurrentUser`) lives in `auth.ts` beside `currentUserQuery` rather than in its own module, because it is the same resource; splitting a read from its write is how a client ends up with two disagreeing ideas of what a user is.
+
 ### `store/`
 Zustand store slices, one file per domain (e.g. `store/auth.ts`). Keep stores thin: derived state belongs in selectors or hooks, not in the store itself.
 

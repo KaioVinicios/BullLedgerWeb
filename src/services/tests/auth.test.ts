@@ -14,6 +14,7 @@ import {
   register,
   requestPasswordReset,
   resendVerificationEmail,
+  updateCurrentUser,
   verifyEmail,
 } from "@/services/auth";
 
@@ -242,5 +243,29 @@ describe("password reset", () => {
       new_password1: "hunter3333",
       new_password2: "hunter3333",
     });
+  });
+
+  it("updates the signed-in user's name", async () => {
+    let sent: unknown;
+
+    server.use(
+      http.patch(`${TEST_API_URL}/api/auth/user/`, async ({ request }) => {
+        sent = await request.json();
+        return HttpResponse.json({
+          pk: 1,
+          email: "ana@example.com",
+          first_name: "Ana",
+          last_name: "Ribeiro",
+        });
+      }),
+    );
+
+    // No envelope: this is a dj-rest-auth endpoint answering its own stock
+    // body, and `unwrap` passes a body without a `data` key straight through.
+    await expect(
+      updateCurrentUser({ first_name: "Ana", last_name: "Ribeiro" }),
+    ).resolves.toMatchObject({ first_name: "Ana", last_name: "Ribeiro" });
+
+    expect(sent).toEqual({ first_name: "Ana", last_name: "Ribeiro" });
   });
 });

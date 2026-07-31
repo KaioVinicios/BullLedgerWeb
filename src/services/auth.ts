@@ -18,6 +18,8 @@ export type SPAPasswordResetRequest =
   components["schemas"]["SPAPasswordResetRequest"];
 export type SPAPasswordResetConfirmRequest =
   components["schemas"]["SPAPasswordResetConfirmRequest"];
+export type UpdateCurrentUserRequest =
+  components["schemas"]["PatchedEmailUserDetailsRequest"];
 
 type CookieJWT = components["schemas"]["CookieJWT"];
 type EmailRegister = components["schemas"]["EmailRegister"];
@@ -36,6 +38,17 @@ export const authKeys = {
 
 export const getCurrentUser = () =>
   request(api.get<CurrentUser>(ENDPOINTS.authUser));
+
+/**
+ * `first_name` and `last_name` are the only writable fields the schema
+ * exposes — `pk` and `email` are `readonly`.
+ *
+ * Lives beside `currentUserQuery` rather than in its own module because it is
+ * the same resource. Splitting the read from the write is how a client ends up
+ * with two disagreeing ideas of what a user is.
+ */
+export const updateCurrentUser = (body: UpdateCurrentUserRequest) =>
+  request(api.patch<CurrentUser>(ENDPOINTS.authUser, body));
 
 /**
  * The single definition of how the session is fetched, shared by the

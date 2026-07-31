@@ -1,19 +1,31 @@
+import { queryOptions } from "@tanstack/react-query";
+
 import { api } from "@/lib/apiClient";
 import { request } from "@/lib/request";
 import { ENDPOINTS } from "@/services/endpoints";
 import { createResourceKeys } from "@/services/queryKeys";
-import type { components } from "@/types/api";
+import type { components, operations } from "@/types/api";
 
 export type Account = components["schemas"]["Account"];
 export type AccountRequest = components["schemas"]["AccountRequest"];
+export type AccountUpdate = components["schemas"]["PatchedAccountRequest"];
 
 type PaginatedAccountList = components["schemas"]["PaginatedAccountList"];
 type AccountCreateEnvelope = components["schemas"]["AccountCreateEnvelope"];
+type AccountGetEnvelope = components["schemas"]["AccountGetEnvelope"];
+type AccountPatchEnvelope = components["schemas"]["AccountPatchEnvelope"];
+type AccountArchiveEnvelope = components["schemas"]["AccountArchiveEnvelope"];
+type AccountUnarchiveEnvelope =
+  components["schemas"]["AccountUnarchiveEnvelope"];
 
-export interface AccountListQuery {
-  page?: number;
-  include_archived?: boolean;
-}
+/**
+ * Taken from the operation rather than hand-written so a parameter the
+ * schema does not declare cannot be sent, and one it gains is picked up by
+ * regenerating types.
+ */
+export type AccountListQuery = NonNullable<
+  operations["api_accounts_list"]["parameters"]["query"]
+>;
 
 export const accountKeys = createResourceKeys<AccountListQuery>("accounts");
 
@@ -33,3 +45,26 @@ export const listAccounts = (query: AccountListQuery) =>
 
 export const createAccount = (body: AccountRequest) =>
   request(api.post<AccountCreateEnvelope>(ENDPOINTS.accounts, body));
+
+export const getAccount = (id: string) =>
+  request(api.get<AccountGetEnvelope>(ENDPOINTS.account(id)));
+
+export const updateAccount = (id: string, body: AccountUpdate) =>
+  request(api.patch<AccountPatchEnvelope>(ENDPOINTS.account(id), body));
+
+/**
+ * Archival is a POST to a dedicated sub-path, never a DELETE: the endpoint
+ * answers with the updated resource, and restoring is a first-class action.
+ */
+export const archiveAccount = (id: string) =>
+  request(api.post<AccountArchiveEnvelope>(ENDPOINTS.accountArchive(id)));
+
+export const unarchiveAccount = (id: string) =>
+  request(api.post<AccountUnarchiveEnvelope>(ENDPOINTS.accountUnarchive(id)));
+
+/** Shared by the edit route's loader and the form; see `institutionQuery`. */
+export const accountQuery = (id: string) =>
+  queryOptions({
+    queryKey: accountKeys.detail(id),
+    queryFn: () => getAccount(id),
+  });
