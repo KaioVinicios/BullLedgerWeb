@@ -208,6 +208,13 @@ Shared TypeScript interfaces and type aliases that are used across multiple modu
 ### `utils/`
 Pure functions with no side effects: formatters, parsers, date helpers, math. No React, no API calls.
 
+`movementWire.ts` is the single place the UI's language becomes the wire's. Every numeric
+field in the ledger asks for a **magnitude** — "total paid", "units disposed" — and
+`toMovementRequest` applies the sign the movement's shape requires, so no screen ever asks
+a user for a negative number and no screen has to remember to negate one. It returns `null`
+rather than a rounded guess when an amount cannot be held exactly, because passing
+`parseMoneyInput`'s refusal through is the only honest option on the money path.
+
 ## Tests
 
 Tests live in a `tests/` folder inside the directory they cover, never beside the file under test.

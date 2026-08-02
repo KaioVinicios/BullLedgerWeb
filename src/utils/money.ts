@@ -1,4 +1,5 @@
 import type { components } from "@/types/api";
+import { SCALE } from "@/utils/decimal";
 import { formatNumericString } from "@/utils/intl";
 
 export type Money = components["schemas"]["Money"];
@@ -38,6 +39,28 @@ export function formatMoney(money: Money, locale: string): string {
     formatter,
     minorUnitsToDecimalString(money.amount),
   );
+}
+
+/**
+ * Formats a unit price: money by denomination, a decimal string by precision.
+ *
+ * `formatMoney` cannot do this. A price per unit carries up to twelve decimal
+ * places (`SCALE.unitPrice`) while a currency's own default is two, so pouring
+ * one through the money formatter would truncate a real figure. It stays a
+ * string the whole way, exactly like `formatDecimal`.
+ */
+export function formatUnitPrice(
+  value: string,
+  currency: Currency,
+  locale: string,
+): string {
+  const formatter = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: SCALE.unitPrice,
+  });
+
+  return formatNumericString(formatter, value);
 }
 
 /** Discovers a locale's group and decimal separators from Intl itself. */

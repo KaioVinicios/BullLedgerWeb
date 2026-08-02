@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatMoney,
+  formatUnitPrice,
   minorUnitsToDecimalString,
   parseMoneyInput,
 } from "@/utils/money";
@@ -52,6 +53,22 @@ describe("formatMoney", () => {
     );
 
     expect(formatted).toContain("9,007,199,254,740.99");
+  });
+});
+
+describe("formatUnitPrice", () => {
+  it("keeps a currency's own two places when that is all there is", () => {
+    expect(formatUnitPrice("19.40", "BRL", "en-US")).toContain("19.40");
+  });
+
+  it("keeps the places a price actually carries, past the currency's own", () => {
+    // A fund quoted to six places is a real figure, not a rounding artefact —
+    // `formatMoney` would truncate it to two.
+    expect(formatUnitPrice("1.234567", "USD", "en-US")).toContain("1.234567");
+  });
+
+  it("groups in the reader's locale", () => {
+    expect(formatUnitPrice("1234.5", "BRL", "pt-BR")).toContain("1.234,5");
   });
 });
 
