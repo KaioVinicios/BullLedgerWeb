@@ -154,6 +154,17 @@ one the schema gained. Two derived maps live here rather than in a component bec
 pairing in `business-rules.md` unofferable by construction, and `CURRENCY_BY_COUNTRY`,
 which is a default and never a lock.
 
+`movementSpec.ts` is derivation over a table the client **fetches** rather than declares —
+the one place in `schemas/` that owns no data of its own. OpenAPI cannot express an
+archetype × movement-type matrix in its type system, so the API publishes the table as data
+at `GET /api/movement-types/`, and this file answers questions about it: which types an
+asset may take, which shape each carries, whether it accepts a fee, a unit price, or a lot.
+Every function takes the table as its first argument instead of reading a module-level copy,
+which is what keeps it testable against a captured fixture with no network, no query client,
+and no React. The one rule the table cannot express lives here too, and says so:
+`quantityRequired` encodes the server's `movement_quantity_required`, which lets only a
+lump-principal `FIXED_INCOME` position omit its units.
+
 `resourceList.ts` holds the URL search state every structure list shares. Every field is
 optional in the *output* as well as the input, deliberately: a required output would force
 a `search` prop onto every `<Link>` into a list screen, including the sidebar's. Absence

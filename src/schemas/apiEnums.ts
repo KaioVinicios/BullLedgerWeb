@@ -161,6 +161,41 @@ export const TAXED_ON = [
 const _taxedOnExhaustive: AllOf<TaxedOn, typeof TAXED_ON> = TAXED_ON;
 void _taxedOnExhaustive;
 
+export type MovementType = components["schemas"]["TypeEnum"];
+
+/**
+ * The taxonomy as a runtime list, for the ledger's type filter and its Zod
+ * search schema — the generated types are `type`-only and a `z.enum` needs
+ * values.
+ *
+ * This is an enum list, not the matrix: *which* types a given archetype accepts
+ * is the server's to say, and `GET /api/movement-types/` says it
+ * (`schemas/movementSpec.ts` derives from that). What lives here is only the
+ * set of legal values, guarded in both directions like every other list above.
+ */
+export const MOVEMENT_TYPES = [
+  "DEPOSIT",
+  "WITHDRAWAL",
+  "TRANSFER_IN",
+  "TRANSFER_OUT",
+  "BUY",
+  "SELL",
+  "DIVIDEND",
+  "DISTRIBUTION",
+  "INTEREST",
+  "COUPON",
+  "MATURITY",
+  "REDEMPTION",
+  "FEE",
+  "TAX",
+  "SPLIT",
+  "BONUS",
+] as const satisfies readonly MovementType[];
+
+const _movementTypesExhaustive: AllOf<MovementType, typeof MOVEMENT_TYPES> =
+  MOVEMENT_TYPES;
+void _movementTypesExhaustive;
+
 // ——— Asset-archetype field enums ———
 
 export type RateType = components["schemas"]["RateTypeEnum"];
