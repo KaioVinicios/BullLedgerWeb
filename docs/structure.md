@@ -123,6 +123,13 @@ The axios instance in `apiClient.ts` carries every transport concern: cookies, C
 ### `mocks/`
 MSW request handlers and the `setupServer` instance used by Vitest. Test-only — never imported by application code.
 
+`movementTypes.ts` is **captured, not authored** — the real `GET /api/movement-types/`
+payload from a running API, committed so every test filters, reveals, and signs against the
+same table the server validates with. A hand-written fixture would be the client restating
+the matrix again, which is the thing the endpoint was requested to remove; the
+`MovementTypeSpec[]` annotation is the guard that stops it compiling if the server's shape
+drifts. Recapture it whenever that table changes.
+
 `env.ts` holds `TEST_API_URL`, the origin every test runs against. `vite.config.ts` imports it to set `VITE_API_URL`, and handlers build their URLs from it, so the two can never drift. It is the one file here that application config imports, which is why it must stay dependency-free — `vite.config.ts` reaches it by relative path, before the `@/` alias exists.
 
 ### `pages/`
@@ -194,6 +201,27 @@ but not restore is a dead end. The invalidation rule is one line per mutation: t
 resource's own root always, plus `PORTFOLIO_KEY` when archiving an account or an asset,
 because that changes what the projections aggregate. A rename does not touch projections;
 they carry ids, and the names come from the resource cache that was just invalidated.
+
+`movementTypes.ts` is the one query **not** built on `createResourceKeys`, and deliberately:
+the server's spec table is static per deploy — it changes with a release, never with the
+user's data — so it is fetched once per session under its own `["movement-types"]` key with
+`staleTime: Infinity`. No mutation anywhere can invalidate it, which is exactly why it must
+not sit under a resource root that `invalidateLedger` sweeps.
+
+`portfolio.ts` arrives ahead of the phase that owns it. Phase 8 builds the projection
+screens; Phase 6 needs one read from them, and pulling it forward is what makes the exit
+lot selector honest — `/api/lots/` knows a lot's label and nothing else, while
+`holdingQuery` carries each lot's status and remainder, so an insolvent lot can be
+unofferable rather than merely rejected. It is keyed under `PORTFOLIO_KEY`, so every ledger
+write already invalidates it with no separate rule.
+
+`movements.ts` is the ledger's write surface, and what it *lacks* is the schema's decision
+rather than an omission: there is no update and no delete, because `/api/movements/{id}/`
+is GET-only. A movement is an immutable fact, so correcting one is `replace` — which voids
+the original and records a successor — and removing one is `void`. `isTransferLeg` lives
+here because the answer is not the obvious field: the API pairs a transfer's legs
+one-directionally, so the departing leg's own `transfer_of` is null and only the type
+identifies both.
 
 `profile.ts` is the one resource that is a singleton — `/api/profile/` carries no id and always resolves to the caller's own profile — so it defines its key inline instead of through `createResourceKeys`, which would give it a `list()` and a `detail()` that can never be called. The identity write (`updateCurrentUser`) lives in `auth.ts` beside `currentUserQuery` rather than in its own module, because it is the same resource; splitting a read from its write is how a client ends up with two disagreeing ideas of what a user is.
 

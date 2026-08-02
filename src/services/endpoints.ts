@@ -23,6 +23,23 @@ export const ENDPOINTS = {
   asset: (id: string) => `/api/assets/${id}/`,
   assetArchive: (id: string) => `/api/assets/${id}/archive/`,
   assetUnarchive: (id: string) => `/api/assets/${id}/unarchive/`,
+
+  // The ledger. Note what is absent: there is no PUT, PATCH, or DELETE on a
+  // movement. `/api/movements/{id}/` is GET-only, because a movement is an
+  // immutable fact — correcting one is `replace` (which voids the original and
+  // records a successor) and removing one is `void`. Transfers have their own
+  // path because they are two legs written atomically; the collection endpoint
+  // rejects TRANSFER_IN/TRANSFER_OUT outright.
+  movements: "/api/movements/",
+  movement: (id: string) => `/api/movements/${id}/`,
+  movementVoid: (id: string) => `/api/movements/${id}/void/`,
+  movementReplace: (id: string) => `/api/movements/${id}/replace/`,
+  movementTransfer: "/api/movements/transfer/",
+  movementTypes: "/api/movement-types/",
+  lots: "/api/lots/",
+  holding: (accountId: string, assetId: string) =>
+    `/api/portfolio/holdings/${accountId}/${assetId}/`,
+
   profile: "/api/profile/",
 
   // Auth. Two paths are deliberately absent for the same reason — `lib/` must
