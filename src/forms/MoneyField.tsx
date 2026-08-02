@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 
 import { TextField } from "@/forms/TextField";
 import type { Currency } from "@/utils/money";
@@ -12,6 +12,12 @@ type MoneyFieldProps = {
   value: string;
   onBlur: () => void;
   onChange: (value: string) => void;
+  /**
+   * For a caller that has to put the cursor back — the ledger's "record and
+   * add another" returns focus here, because the amount is where the next row
+   * starts being typed.
+   */
+  ref?: Ref<HTMLInputElement>;
 };
 
 /**
@@ -31,9 +37,11 @@ export function MoneyField({
   value,
   onBlur,
   onChange,
+  ref,
 }: MoneyFieldProps) {
   return (
     <TextField
+      ref={ref}
       name={name}
       label={label}
       inputMode="decimal"
