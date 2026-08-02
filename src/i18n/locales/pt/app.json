@@ -61,7 +61,7 @@
     },
     "ledger": {
       "title": "Lançamentos",
-      "description": "Todos os lançamentos registrados, na ordem em que aconteceram."
+      "description": "Tudo o que você registrou, do mais recente ao mais antigo."
     },
     "pricing": {
       "title": "Preços",
@@ -90,7 +90,6 @@
     "institutions": "Os bancos, corretoras e exchanges que você adicionar aparecerão aqui.",
     "accounts": "As contas que você criar aparecerão aqui.",
     "assets": "Os ativos que você registrar aparecerão aqui.",
-    "ledger": "Os lançamentos que você registrar aparecerão aqui.",
     "pricing": "Os preços e taxas de câmbio que você informar aparecerão aqui.",
     "targets": "As metas que você definir aparecerão aqui.",
     "help": "Os guias serão publicados aqui conforme cada parte do produto ficar pronta.",
@@ -334,6 +333,163 @@
       }
     }
   },
+  "ledger": {
+    "record": "Registrar lançamento",
+    "transfer": "Registrar transferência",
+    "lots": "Aportes",
+    "backToLedger": "Voltar aos lançamentos",
+    "showVoided": "Mostrar anulados",
+    "voidedBadge": "Anulado",
+    "withFee": "Inclui taxa",
+    "transferLeg": "Parte de uma transferência",
+    "corrects": "Corrige um lançamento anterior",
+    "correctedBy": "Corrigido por um lançamento posterior",
+    "columns": {
+      "date": "Data",
+      "type": "Tipo",
+      "account": "Conta",
+      "asset": "Ativo",
+      "quantity": "Quantidade",
+      "amount": "Valor"
+    },
+    "filters": {
+      "account": "Conta",
+      "asset": "Ativo",
+      "type": "Tipo",
+      "from": "De",
+      "to": "Até",
+      "all": "Todos"
+    },
+    "empty": {
+      "title": "Nada registrado ainda",
+      "description": "Os lançamentos são de onde todo o resto vem. Registre o que aconteceu e os números seguem."
+    },
+    "noMatches": {
+      "title": "Nenhum lançamento com esses filtros",
+      "description": "Amplie o período ou limpe os filtros para ver tudo.",
+      "clear": "Limpar filtros"
+    },
+    "form": {
+      "createTitle": "Registrar lançamento",
+      "createDescription": "O que aconteceu, onde e quando. O BullLedger registra; ele nunca executa.",
+      "correctTitle": "Corrigir lançamento",
+      "correctDescription": "O original é anulado e esta correção é registrada no lugar dele.",
+      "account": "Conta",
+      "asset": "Ativo",
+      "noAsset": "Sem ativo — o caixa da própria conta",
+      "assetHint": "Deixe vazio para depósito, saque, taxa ou imposto na própria conta.",
+      "type": "O que aconteceu",
+      "occurredOn": "Data do acontecido",
+      "occurredOnHint": "A data real do evento, que não é necessariamente hoje. Registrar com data retroativa é normal.",
+      "amountPaid": "Total pago",
+      "amountReceived": "Total recebido",
+      "amountCharged": "Valor cobrado",
+      "amountFeesIncluded": "Exatamente o que saiu ou entrou na conta, taxas incluídas.",
+      "quantityAcquired": "Unidades adquiridas",
+      "quantityDisposed": "Unidades vendidas",
+      "quantityGranted": "Unidades recebidas",
+      "quantityChanged": "Unidades alteradas",
+      "quantityOptional": "Opcional — um título de principal único não tem unidades.",
+      "direction": "Direção",
+      "directionGained": "Ganhas",
+      "directionLost": "Perdidas",
+      "unitPrice": "Preço por unidade",
+      "fee": "Taxa",
+      "feeHint": "A parte do valor acima que era taxa. Ela acompanha esta operação em vez de ser um lançamento à parte.",
+      "fxRate": "Câmbio na data",
+      "fxRateHint": "Em branco, vale a taxa do dia. O que você digitar é registrado exatamente como digitado.",
+      "fxSameCurrency": "Mesma moeda da conta, então o câmbio é 1.",
+      "lot": "Sair de",
+      "lotHint": "De qual aporte esta saída vem.",
+      "lotPlaceholder": "Escolha um aporte",
+      "lotRemaining": "{{label}} — restam {{remaining}}",
+      "lotEmpty": "Esta posição não tem aporte aberto de onde sair.",
+      "lotOverdrawn": "Esse aporte tem apenas {{remaining}}.",
+      "position": "Posição atual: {{quantity}}",
+      "identityMatch": "{{quantity}} × {{price}} = {{gross}}",
+      "identityMismatch": "{{quantity}} × {{price}} dá {{gross}}, que não é o que este valor resulta. Vale conferir — pode estar certo mesmo assim.",
+      "note": "Observação",
+      "optional": "Opcional",
+      "create": "Registrar",
+      "createAndAnother": "Registrar e adicionar outro",
+      "save": "Registrar a correção",
+      "cancel": "Cancelar",
+      "errors": {
+        "account": "Escolha a conta onde isso aconteceu.",
+        "type": "Escolha o que aconteceu.",
+        "date": "Informe a data do acontecido, como AAAA-MM-DD.",
+        "amount": "Informe um valor, com no máximo duas casas decimais.",
+        "quantity": "Informe uma quantidade.",
+        "unitPrice": "Informe o preço por unidade.",
+        "fee": "Informe uma taxa, com no máximo duas casas decimais.",
+        "fxRate": "Informe uma taxa de câmbio.",
+        "lot": "Escolha de qual aporte isso sai."
+      }
+    },
+    "correct": {
+      "banner": "Registrar esta correção anula o lançamento original e grava um novo ligado a ele. Nada é apagado — o original continua legível em \"Mostrar anulados\".",
+      "readOnlyVoided": "Este lançamento foi anulado em {{date}}. Lançamentos anulados são mantidos como histórico e não podem ser corrigidos.",
+      "readOnlyTransferLeg": "Esta é uma perna de transferência, e uma perna não pode ser corrigida sozinha. Anule a transferência e registre de novo.",
+      "recorded": "Registrado em",
+      "voidedOn": "Anulado em",
+      "openOriginal": "Abrir o original"
+    },
+    "void": {
+      "action": "Anular",
+      "title": "Anular este lançamento?",
+      "description": "Ele deixa de contar em todo saldo, posição e resultado. O registro em si é mantido e continua legível em \"Mostrar anulados\".",
+      "transferDescription": "Esta é uma perna de transferência, então as duas pernas são anuladas juntas. Os dois registros são mantidos.",
+      "confirm": "Anular",
+      "cancel": "Manter",
+      "succeeded": "Lançamento anulado.",
+      "failed": "Não foi possível anular o lançamento."
+    },
+    "transferForm": {
+      "title": "Registrar transferência",
+      "description": "Valor movendo entre duas contas suas.",
+      "source": "De",
+      "destination": "Para",
+      "asset": "Ativo",
+      "noAsset": "Dinheiro",
+      "quantity": "Quantidade transferida",
+      "amount": "Valor transferido",
+      "sourceLot": "Sair de",
+      "note": "Observação",
+      "create": "Registrar a transferência",
+      "basisNote": "Transferência não é venda. Ela leva o custo de aquisição junto e não gera ganho nem perda.",
+      "recorded": "Transferência registrada.",
+      "errors": {
+        "sameAccount": "Escolha duas contas diferentes.",
+        "destination": "Escolha a conta de destino.",
+        "quantity": "Informe a quantidade transferida.",
+        "amount": "Informe o valor transferido."
+      }
+    },
+    "lotsScreen": {
+      "title": "Aportes",
+      "description": "Como cada aporte de uma posição rendeu, e quanto resta dele.",
+      "selectHolding": "Escolha uma conta e um ativo para ver como os aportes foram agrupados.",
+      "readOnly": "Somente leitura. Aportes nascem do que você registra; não se editam aqui.",
+      "empty": "Esta posição ainda não tem aportes.",
+      "status": {
+        "OPEN": "Aberto",
+        "CLOSED": "Fechado"
+      },
+      "columns": {
+        "label": "Aporte",
+        "status": "Situação",
+        "remaining": "Restante",
+        "invested": "Investido",
+        "income": "Rendimentos",
+        "realized": "Realizado",
+        "unrealized": "Não realizado",
+        "return": "Retorno"
+      }
+    },
+    "recorded": "Lançamento registrado.",
+    "corrected": "Correção registrada.",
+    "loadFailed": "Não foi possível carregar os lançamentos."
+  },
   "enums": {
     "kind": {
       "BANK": "Banco",
@@ -348,6 +504,32 @@
       "EXCHANGE_SECURITY": "Ativo de bolsa",
       "NAV_FUND": "Fundo (cota)",
       "CRYPTO": "Cripto"
+    },
+    "movementType": {
+      "DEPOSIT": "Depósito",
+      "WITHDRAWAL": "Saque",
+      "TRANSFER_IN": "Transferência recebida",
+      "TRANSFER_OUT": "Transferência enviada",
+      "BUY": "Compra",
+      "SELL": "Venda",
+      "DIVIDEND": "Dividendo",
+      "DISTRIBUTION": "Rendimento",
+      "INTEREST": "Juros",
+      "COUPON": "Cupom",
+      "MATURITY": "Vencimento",
+      "REDEMPTION": "Resgate",
+      "FEE": "Taxa",
+      "TAX": "Imposto",
+      "SPLIT": "Desdobramento",
+      "BONUS": "Bonificação"
+    },
+    "movementCategory": {
+      "CASH_FLOW": "Caixa",
+      "TRADE": "Negociação",
+      "INCOME": "Rendimentos",
+      "LIFECYCLE": "Ciclo de vida",
+      "COST": "Custos",
+      "CORPORATE_ACTION": "Eventos societários"
     },
     "rateType": {
       "FIXED": "Prefixada",

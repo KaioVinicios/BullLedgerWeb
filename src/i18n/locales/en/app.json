@@ -61,7 +61,7 @@
     },
     "ledger": {
       "title": "Ledger",
-      "description": "Every movement you've recorded, in the order it happened."
+      "description": "Everything you have recorded, newest first."
     },
     "pricing": {
       "title": "Pricing",
@@ -90,7 +90,6 @@
     "institutions": "The banks, brokerages, and exchanges you add will be listed here.",
     "accounts": "The accounts you create will be listed here.",
     "assets": "The assets you register will be listed here.",
-    "ledger": "The movements you record will be listed here.",
     "pricing": "The prices and exchange rates you enter will be listed here.",
     "targets": "The targets you set will be listed here.",
     "help": "Guides will be published here as each part of the product lands.",
@@ -334,6 +333,163 @@
       }
     }
   },
+  "ledger": {
+    "record": "Record a movement",
+    "transfer": "Record a transfer",
+    "lots": "Lots",
+    "backToLedger": "Back to the ledger",
+    "showVoided": "Show voided",
+    "voidedBadge": "Voided",
+    "withFee": "Includes a fee",
+    "transferLeg": "Part of a transfer",
+    "corrects": "Corrects an earlier movement",
+    "correctedBy": "Corrected by a later movement",
+    "columns": {
+      "date": "Date",
+      "type": "Type",
+      "account": "Account",
+      "asset": "Asset",
+      "quantity": "Quantity",
+      "amount": "Amount"
+    },
+    "filters": {
+      "account": "Account",
+      "asset": "Asset",
+      "type": "Type",
+      "from": "From",
+      "to": "To",
+      "all": "All"
+    },
+    "empty": {
+      "title": "Nothing recorded yet",
+      "description": "The ledger is where everything else comes from. Record what happened and the figures follow."
+    },
+    "noMatches": {
+      "title": "No movements match these filters",
+      "description": "Widen the dates, or clear the filters to see the whole ledger.",
+      "clear": "Clear filters"
+    },
+    "form": {
+      "createTitle": "Record a movement",
+      "createDescription": "What happened, where, and when. BullLedger records it; it never places it.",
+      "correctTitle": "Correct a movement",
+      "correctDescription": "The original is voided and this correction is recorded in its place.",
+      "account": "Account",
+      "asset": "Asset",
+      "noAsset": "No asset — the account's own cash",
+      "assetHint": "Leave this empty for a deposit, withdrawal, fee, or tax on the account itself.",
+      "type": "What happened",
+      "occurredOn": "Date it happened",
+      "occurredOnHint": "The real-world date of the event, which is not necessarily today. Back-dating is normal.",
+      "amountPaid": "Total paid",
+      "amountReceived": "Total received",
+      "amountCharged": "Amount charged",
+      "amountFeesIncluded": "Exactly what left or entered the account, fees included.",
+      "quantityAcquired": "Units acquired",
+      "quantityDisposed": "Units disposed",
+      "quantityGranted": "Units granted",
+      "quantityChanged": "Units changed",
+      "quantityOptional": "Optional — a lump-principal certificate has no units.",
+      "direction": "Direction",
+      "directionGained": "Gained",
+      "directionLost": "Lost",
+      "unitPrice": "Price per unit",
+      "fee": "Fee",
+      "feeHint": "The part of the amount above that was a fee. It rides on this trade rather than being its own movement.",
+      "fxRate": "Exchange rate on that date",
+      "fxRateHint": "Leave blank to use the rate of the day. Anything you type is recorded exactly as typed.",
+      "fxSameCurrency": "Same currency as the account, so the rate is 1.",
+      "lot": "Draw from",
+      "lotHint": "Which contribution this exit comes out of.",
+      "lotPlaceholder": "Choose a contribution",
+      "lotRemaining": "{{label}} — {{remaining}} left",
+      "lotEmpty": "This holding has no open contribution to draw from.",
+      "lotOverdrawn": "That contribution only holds {{remaining}}.",
+      "position": "Currently held: {{quantity}}",
+      "identityMatch": "{{quantity}} × {{price}} = {{gross}}",
+      "identityMismatch": "{{quantity}} × {{price}} is {{gross}}, which is not what this amount works out to. Worth a second look — it may still be right.",
+      "note": "Note",
+      "optional": "Optional",
+      "create": "Record",
+      "createAndAnother": "Record and add another",
+      "save": "Record the correction",
+      "cancel": "Cancel",
+      "errors": {
+        "account": "Choose the account this happened in.",
+        "type": "Choose what happened.",
+        "date": "Enter the date it happened, as YYYY-MM-DD.",
+        "amount": "Enter an amount, with at most two decimal places.",
+        "quantity": "Enter a quantity.",
+        "unitPrice": "Enter the price per unit.",
+        "fee": "Enter a fee, with at most two decimal places.",
+        "fxRate": "Enter an exchange rate.",
+        "lot": "Choose which contribution this comes out of."
+      }
+    },
+    "correct": {
+      "banner": "Recording this correction voids the original movement and writes a new one linked to it. Nothing is erased — the original stays readable under \"Show voided\".",
+      "readOnlyVoided": "This movement was voided on {{date}}. Voided movements are kept as history and cannot be corrected.",
+      "readOnlyTransferLeg": "This is one leg of a transfer, and a leg cannot be corrected on its own. Void the transfer and record it again.",
+      "recorded": "Recorded on",
+      "voidedOn": "Voided on",
+      "openOriginal": "Open the original"
+    },
+    "void": {
+      "action": "Void",
+      "title": "Void this movement?",
+      "description": "It stops counting toward every balance, position, and gain. The record itself is kept, and stays readable under \"Show voided\".",
+      "transferDescription": "This is one leg of a transfer, so both legs are voided together. Both records are kept.",
+      "confirm": "Void it",
+      "cancel": "Keep it",
+      "succeeded": "Movement voided.",
+      "failed": "The movement could not be voided."
+    },
+    "transferForm": {
+      "title": "Record a transfer",
+      "description": "Value moving between two of your own accounts.",
+      "source": "From",
+      "destination": "To",
+      "asset": "Asset",
+      "noAsset": "Cash",
+      "quantity": "Quantity moved",
+      "amount": "Amount moved",
+      "sourceLot": "Draw from",
+      "note": "Note",
+      "create": "Record the transfer",
+      "basisNote": "A transfer is not a sale. It carries its cost basis across, and produces no gain or loss.",
+      "recorded": "Transfer recorded.",
+      "errors": {
+        "sameAccount": "Choose two different accounts.",
+        "destination": "Choose the account it went to.",
+        "quantity": "Enter the quantity moved.",
+        "amount": "Enter the amount moved."
+      }
+    },
+    "lotsScreen": {
+      "title": "Lots",
+      "description": "How each contribution to a holding has performed, and what is left of it.",
+      "selectHolding": "Choose an account and an asset to see how its contributions were grouped.",
+      "readOnly": "Read-only. Lots are opened by what you record, not edited here.",
+      "empty": "This holding has no lots yet.",
+      "status": {
+        "OPEN": "Open",
+        "CLOSED": "Closed"
+      },
+      "columns": {
+        "label": "Contribution",
+        "status": "Status",
+        "remaining": "Remaining",
+        "invested": "Invested",
+        "income": "Income",
+        "realized": "Realized",
+        "unrealized": "Unrealized",
+        "return": "Return"
+      }
+    },
+    "recorded": "Movement recorded.",
+    "corrected": "Correction recorded.",
+    "loadFailed": "The ledger could not be loaded."
+  },
   "enums": {
     "kind": {
       "BANK": "Bank",
@@ -348,6 +504,32 @@
       "EXCHANGE_SECURITY": "Exchange security",
       "NAV_FUND": "NAV fund",
       "CRYPTO": "Crypto"
+    },
+    "movementType": {
+      "DEPOSIT": "Deposit",
+      "WITHDRAWAL": "Withdrawal",
+      "TRANSFER_IN": "Transfer in",
+      "TRANSFER_OUT": "Transfer out",
+      "BUY": "Buy",
+      "SELL": "Sell",
+      "DIVIDEND": "Dividend",
+      "DISTRIBUTION": "Distribution",
+      "INTEREST": "Interest",
+      "COUPON": "Coupon",
+      "MATURITY": "Maturity",
+      "REDEMPTION": "Redemption",
+      "FEE": "Fee",
+      "TAX": "Tax",
+      "SPLIT": "Split",
+      "BONUS": "Bonus shares"
+    },
+    "movementCategory": {
+      "CASH_FLOW": "Cash",
+      "TRADE": "Trades",
+      "INCOME": "Income",
+      "LIFECYCLE": "Lifecycle",
+      "COST": "Costs",
+      "CORPORATE_ACTION": "Corporate actions"
     },
     "rateType": {
       "FIXED": "Fixed",
