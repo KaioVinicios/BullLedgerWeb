@@ -25,6 +25,11 @@ import { VerifyEmailPage } from "@/pages/VerifyEmail";
 import { ResendVerificationPage } from "@/pages/ResendVerification";
 import { ResetPasswordPage } from "@/pages/ResetPassword";
 import { ResetPasswordConfirmPage } from "@/pages/ResetPassword/Confirm";
+import {
+  ledgerListDefaults,
+  ledgerListSearchSchema,
+  lotsSearchSchema,
+} from "@/schemas/ledgerList";
 import { authSearchSchema } from "@/schemas/redirect";
 import {
   assetListSearchSchema,
@@ -36,6 +41,8 @@ import { rootRoute } from "@/routes/root";
 import { accountQuery } from "@/services/accounts";
 import { assetQuery } from "@/services/assets";
 import { institutionQuery } from "@/services/institutions";
+import { movementQuery } from "@/services/movements";
+import { movementTypesQuery } from "@/services/movementTypes";
 import { profileQuery } from "@/services/profile";
 
 const indexRoute = createRoute({
@@ -273,7 +280,65 @@ const assetEditRoute = createRoute({
 const ledgerRoute = createRoute({
   getParentRoute: () => appRoute,
   path: APP_SEGMENTS.LEDGER,
+  validateSearch: ledgerListSearchSchema,
+  search: { middlewares: [stripSearchParams(ledgerListDefaults)] },
   component: lazyRouteComponent(() => import("@/pages/Ledger"), "LedgerPage"),
+  ...appScreenOptions,
+});
+
+/**
+ * Both write routes resolve the server's movement-type table before rendering,
+ * for the same reason the structure edit routes resolve their record: a form
+ * that mounts without the rules it filters by would offer every type for one
+ * frame and then take them away.
+ */
+const ledgerNewRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.LEDGER_NEW,
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(movementTypesQuery),
+  component: lazyRouteComponent(
+    () => import("@/pages/Ledger/New"),
+    "MovementNewPage",
+  ),
+  ...appScreenOptions,
+});
+
+const ledgerTransferRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.LEDGER_TRANSFER,
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(movementTypesQuery),
+  component: lazyRouteComponent(
+    () => import("@/pages/Ledger/Transfer"),
+    "MovementTransferPage",
+  ),
+  ...appScreenOptions,
+});
+
+const ledgerCorrectRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.LEDGER_CORRECT,
+  loader: ({ context, params }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(movementQuery(params.id)),
+      context.queryClient.ensureQueryData(movementTypesQuery),
+    ]),
+  component: lazyRouteComponent(
+    () => import("@/pages/Ledger/Correct"),
+    "MovementCorrectPage",
+  ),
+  ...appScreenOptions,
+});
+
+const ledgerLotsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.LEDGER_LOTS,
+  validateSearch: lotsSearchSchema,
+  component: lazyRouteComponent(
+    () => import("@/pages/Ledger/Lots"),
+    "LedgerLotsPage",
+  ),
   ...appScreenOptions,
 });
 
@@ -343,6 +408,10 @@ const routeTree = rootRoute.addChildren([
     assetNewRoute,
     assetEditRoute,
     ledgerRoute,
+    ledgerNewRoute,
+    ledgerTransferRoute,
+    ledgerCorrectRoute,
+    ledgerLotsRoute,
     pricingRoute,
     targetsRoute,
     profileRoute,

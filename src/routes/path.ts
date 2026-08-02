@@ -46,6 +46,13 @@ export const APP_CHILD_SEGMENTS = {
   ACCOUNTS_EDIT: `${APP_SEGMENTS.ACCOUNTS}/$id/edit`,
   ASSETS_NEW: `${APP_SEGMENTS.ASSETS}/new`,
   ASSETS_EDIT: `${APP_SEGMENTS.ASSETS}/$id/edit`,
+  // The ledger's children are not a create/edit trio: a movement is immutable,
+  // so `correct` replaces `edit`, and `transfer` exists because the API keeps
+  // two-legged transfers on their own endpoint.
+  LEDGER_NEW: `${APP_SEGMENTS.LEDGER}/new`,
+  LEDGER_TRANSFER: `${APP_SEGMENTS.LEDGER}/transfer`,
+  LEDGER_CORRECT: `${APP_SEGMENTS.LEDGER}/$id/correct`,
+  LEDGER_LOTS: `${APP_SEGMENTS.LEDGER}/lots`,
 } as const;
 
 export const PATHS = {
@@ -66,6 +73,10 @@ export const PATHS = {
   ASSETS_NEW: `${APP}/${APP_CHILD_SEGMENTS.ASSETS_NEW}`,
   ASSETS_EDIT: `${APP}/${APP_CHILD_SEGMENTS.ASSETS_EDIT}`,
   LEDGER: `${APP}/${APP_SEGMENTS.LEDGER}`,
+  LEDGER_NEW: `${APP}/${APP_CHILD_SEGMENTS.LEDGER_NEW}`,
+  LEDGER_TRANSFER: `${APP}/${APP_CHILD_SEGMENTS.LEDGER_TRANSFER}`,
+  LEDGER_CORRECT: `${APP}/${APP_CHILD_SEGMENTS.LEDGER_CORRECT}`,
+  LEDGER_LOTS: `${APP}/${APP_CHILD_SEGMENTS.LEDGER_LOTS}`,
   PRICING: `${APP}/${APP_SEGMENTS.PRICING}`,
   TARGETS: `${APP}/${APP_SEGMENTS.TARGETS}`,
   PROFILE: `${APP}/${APP_SEGMENTS.PROFILE}`,

@@ -46,12 +46,21 @@ describe("the authenticated route surface", () => {
     }
   });
 
-  it("keeps edit params as TanStack segments, never interpolation", () => {
+  it("keeps record params as TanStack segments, never interpolation", () => {
+    // Both spellings of "this one record": the structure resources edit, and
+    // the ledger corrects — a movement is immutable, so there is no edit.
     for (const name of Object.keys(APP_CHILD_SEGMENTS)) {
-      if (!name.endsWith("_EDIT")) continue;
+      if (!name.endsWith("_EDIT") && !name.endsWith("_CORRECT")) continue;
       const key = name as keyof typeof APP_CHILD_SEGMENTS;
       expect(APP_CHILD_SEGMENTS[key]).toContain("/$id/");
     }
+  });
+
+  it("derives every ledger child from the ledger segment", () => {
+    expect(PATHS.LEDGER_NEW).toBe("/app/ledger/new");
+    expect(PATHS.LEDGER_TRANSFER).toBe("/app/ledger/transfer");
+    expect(PATHS.LEDGER_CORRECT).toBe("/app/ledger/$id/correct");
+    expect(PATHS.LEDGER_LOTS).toBe("/app/ledger/lots");
   });
 
   it("keeps the derived paths as literal types, not string", () => {
