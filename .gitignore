@@ -374,6 +374,7 @@ docs/backend/
 ### Project-local working docs ###
 docs/*todo.md
 docs/superpowers/
+docs/backend-requests/
 
 ### Playwright ###
 # The API's console mailbox, which the E2E specs read emailed keys from. Kept
