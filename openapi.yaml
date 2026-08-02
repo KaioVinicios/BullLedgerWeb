@@ -1465,6 +1465,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+  /api/movement-types/:
+    get:
+      operationId: api_movement_types_retrieve
+      description: 'The per-type validation vocabulary of the ledger, served from
+        the same table the server validates against, so a client can make an invalid
+        combination unofferable instead of merely having it rejected. Static reference
+        data: it changes only with a deploy, and it is not paginated.'
+      summary: List the movement type spec
+      tags:
+      - Reference
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovementTypeSpecListEnvelope'
+          description: Every movement type, in taxonomy order.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
   /api/movements/:
     get:
       operationId: api_movements_list
@@ -2798,6 +2823,16 @@ components:
       - name
       - rate_index
       - rate_type
+    CashRuleEnum:
+      enum:
+      - POSITIVE
+      - NEGATIVE
+      - ZERO
+      type: string
+      description: |-
+        * `POSITIVE` - POSITIVE
+        * `NEGATIVE` - NEGATIVE
+        * `ZERO` - ZERO
     CompoundingEnum:
       enum:
       - DAILY
@@ -3978,6 +4013,16 @@ components:
       - realized_gain
       - status
       - unrealized_gain
+    LotRuleEnum:
+      enum:
+      - CREATES
+      - REQUIRES
+      - FORBIDDEN
+      type: string
+      description: |-
+        * `CREATES` - CREATES
+        * `REQUIRES` - REQUIRES
+        * `FORBIDDEN` - FORBIDDEN
     LotStatusEnum:
       enum:
       - OPEN
@@ -4253,6 +4298,102 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/Movement'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    MovementShape:
+      type: object
+      description: The sign rule of one form of a movement type (`spec.shape`).
+      properties:
+        quantity:
+          allOf:
+          - $ref: '#/components/schemas/QuantityRuleEnum'
+          description: |-
+            Rule for `quantity_delta`. `NULL` means the field must be omitted; `*_OR_NULL` means either; `NONZERO` allows a negative (a reverse SPLIT).
+
+            * `POSITIVE` - POSITIVE
+            * `NEGATIVE` - NEGATIVE
+            * `NONZERO` - NONZERO
+            * `NULL` - NULL
+            * `POSITIVE_OR_NULL` - POSITIVE_OR_NULL
+            * `NEGATIVE_OR_NULL` - NEGATIVE_OR_NULL
+        cash:
+          allOf:
+          - $ref: '#/components/schemas/CashRuleEnum'
+          description: |-
+            Rule for `cash_delta`, from the account's point of view.
+
+            * `POSITIVE` - POSITIVE
+            * `NEGATIVE` - NEGATIVE
+            * `ZERO` - ZERO
+      required:
+      - cash
+      - quantity
+    MovementTypeSpec:
+      type: object
+      description: One row of MOVEMENT_TYPE_SPEC — everything the server checks on
+        a write.
+      properties:
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        archetypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchetypeEnum'
+          description: Asset archetypes this type is valid for.
+        asset_required:
+          type: boolean
+          description: 'False means the type also has a pure-cash form (`asset: null`),
+            which never carries a lot.'
+        shape:
+          $ref: '#/components/schemas/MovementShape'
+        crypto_shape:
+          allOf:
+          - $ref: '#/components/schemas/MovementShape'
+          nullable: true
+          description: The second shape a CRYPTO-archetype row takes — units move
+            and cash is zero. Null for every type with one shape only.
+        unit_price:
+          allOf:
+          - $ref: '#/components/schemas/UnitPriceRuleEnum'
+          description: |-
+            `WITH_QUANTITY` requires `unit_price` exactly when `quantity_delta` is set; `FORBIDDEN` never accepts one.
+
+            * `WITH_QUANTITY` - WITH_QUANTITY
+            * `FORBIDDEN` - FORBIDDEN
+        fee_allowed:
+          type: boolean
+          description: Whether the row may carry a `fee`, which must be in the movement's
+            own currency.
+        lot:
+          allOf:
+          - $ref: '#/components/schemas/LotRuleEnum'
+          description: |-
+            Lot behaviour of the asset-carrying form: `CREATES` opens one server-side (sending `lot` is a 400), `REQUIRES` means the caller must name one, `FORBIDDEN` accepts none.
+
+            * `CREATES` - CREATES
+            * `REQUIRES` - REQUIRES
+            * `FORBIDDEN` - FORBIDDEN
+      required:
+      - archetypes
+      - asset_required
+      - crypto_shape
+      - fee_allowed
+      - lot
+      - shape
+      - type
+      - unit_price
+    MovementTypeSpecListEnvelope:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovementTypeSpec'
         status:
           type: integer
           default: 200
@@ -5350,6 +5491,22 @@ components:
           type: string
       required:
       - data
+    QuantityRuleEnum:
+      enum:
+      - POSITIVE
+      - NEGATIVE
+      - NONZERO
+      - 'NULL'
+      - POSITIVE_OR_NULL
+      - NEGATIVE_OR_NULL
+      type: string
+      description: |-
+        * `POSITIVE` - POSITIVE
+        * `NEGATIVE` - NEGATIVE
+        * `NONZERO` - NONZERO
+        * `NULL` - NULL
+        * `POSITIVE_OR_NULL` - POSITIVE_OR_NULL
+        * `NEGATIVE_OR_NULL` - NEGATIVE_OR_NULL
     RateIndexEnum:
       enum:
       - CDI
@@ -5825,6 +5982,14 @@ components:
         * `TAX` - Tax
         * `SPLIT` - Split
         * `BONUS` - Bonus
+    UnitPriceRuleEnum:
+      enum:
+      - WITH_QUANTITY
+      - FORBIDDEN
+      type: string
+      description: |-
+        * `WITH_QUANTITY` - WITH_QUANTITY
+        * `FORBIDDEN` - FORBIDDEN
     VerifyEmailRequest:
       type: object
       properties:

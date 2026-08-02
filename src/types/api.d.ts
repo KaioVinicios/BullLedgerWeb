@@ -719,6 +719,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/movement-types/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the movement type spec
+         * @description The per-type validation vocabulary of the ledger, served from the same table the server validates against, so a client can make an invalid combination unofferable instead of merely having it rejected. Static reference data: it changes only with a deploy, and it is not paginated.
+         */
+        get: operations["api_movement_types_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/movements/": {
         parameters: {
             query?: never;
@@ -1276,6 +1296,13 @@ export interface components {
             rate_value?: string | null;
         };
         /**
+         * @description * `POSITIVE` - POSITIVE
+         *     * `NEGATIVE` - NEGATIVE
+         *     * `ZERO` - ZERO
+         * @enum {string}
+         */
+        CashRuleEnum: "POSITIVE" | "NEGATIVE" | "ZERO";
+        /**
          * @description * `DAILY` - Daily
          *     * `MONTHLY` - Monthly
          * @enum {string}
@@ -1820,6 +1847,13 @@ export interface components {
             lot_return: string | null;
         };
         /**
+         * @description * `CREATES` - CREATES
+         *     * `REQUIRES` - REQUIRES
+         *     * `FORBIDDEN` - FORBIDDEN
+         * @enum {string}
+         */
+        LotRuleEnum: "CREATES" | "REQUIRES" | "FORBIDDEN";
+        /**
          * @description * `OPEN` - OPEN
          *     * `CLOSED` - CLOSED
          * @enum {string}
@@ -1960,6 +1994,62 @@ export interface components {
         };
         MovementReplaceEnvelope: {
             data: components["schemas"]["Movement"];
+            /** @default 200 */
+            status: number;
+            message?: string;
+        };
+        /** @description The sign rule of one form of a movement type (`spec.shape`). */
+        MovementShape: {
+            /**
+             * @description Rule for `quantity_delta`. `NULL` means the field must be omitted; `*_OR_NULL` means either; `NONZERO` allows a negative (a reverse SPLIT).
+             *
+             *     * `POSITIVE` - POSITIVE
+             *     * `NEGATIVE` - NEGATIVE
+             *     * `NONZERO` - NONZERO
+             *     * `NULL` - NULL
+             *     * `POSITIVE_OR_NULL` - POSITIVE_OR_NULL
+             *     * `NEGATIVE_OR_NULL` - NEGATIVE_OR_NULL
+             */
+            quantity: components["schemas"]["QuantityRuleEnum"];
+            /**
+             * @description Rule for `cash_delta`, from the account's point of view.
+             *
+             *     * `POSITIVE` - POSITIVE
+             *     * `NEGATIVE` - NEGATIVE
+             *     * `ZERO` - ZERO
+             */
+            cash: components["schemas"]["CashRuleEnum"];
+        };
+        /** @description One row of MOVEMENT_TYPE_SPEC — everything the server checks on a write. */
+        MovementTypeSpec: {
+            type: components["schemas"]["TypeEnum"];
+            /** @description Asset archetypes this type is valid for. */
+            archetypes: components["schemas"]["ArchetypeEnum"][];
+            /** @description False means the type also has a pure-cash form (`asset: null`), which never carries a lot. */
+            asset_required: boolean;
+            shape: components["schemas"]["MovementShape"];
+            /** @description The second shape a CRYPTO-archetype row takes — units move and cash is zero. Null for every type with one shape only. */
+            crypto_shape: components["schemas"]["MovementShape"] | null;
+            /**
+             * @description `WITH_QUANTITY` requires `unit_price` exactly when `quantity_delta` is set; `FORBIDDEN` never accepts one.
+             *
+             *     * `WITH_QUANTITY` - WITH_QUANTITY
+             *     * `FORBIDDEN` - FORBIDDEN
+             */
+            unit_price: components["schemas"]["UnitPriceRuleEnum"];
+            /** @description Whether the row may carry a `fee`, which must be in the movement's own currency. */
+            fee_allowed: boolean;
+            /**
+             * @description Lot behaviour of the asset-carrying form: `CREATES` opens one server-side (sending `lot` is a 400), `REQUIRES` means the caller must name one, `FORBIDDEN` accepts none.
+             *
+             *     * `CREATES` - CREATES
+             *     * `REQUIRES` - REQUIRES
+             *     * `FORBIDDEN` - FORBIDDEN
+             */
+            lot: components["schemas"]["LotRuleEnum"];
+        };
+        MovementTypeSpecListEnvelope: {
+            data: components["schemas"]["MovementTypeSpec"][];
             /** @default 200 */
             status: number;
             message?: string;
@@ -2552,6 +2642,16 @@ export interface components {
             message?: string;
         };
         /**
+         * @description * `POSITIVE` - POSITIVE
+         *     * `NEGATIVE` - NEGATIVE
+         *     * `NONZERO` - NONZERO
+         *     * `NULL` - NULL
+         *     * `POSITIVE_OR_NULL` - POSITIVE_OR_NULL
+         *     * `NEGATIVE_OR_NULL` - NEGATIVE_OR_NULL
+         * @enum {string}
+         */
+        QuantityRuleEnum: "POSITIVE" | "NEGATIVE" | "NONZERO" | "NULL" | "POSITIVE_OR_NULL" | "NEGATIVE_OR_NULL";
+        /**
          * @description * `CDI` - CDI
          *     * `SELIC` - Selic
          *     * `IPCA` - IPCA
@@ -2802,6 +2902,12 @@ export interface components {
          * @enum {string}
          */
         TypeEnum: "DEPOSIT" | "WITHDRAWAL" | "TRANSFER_IN" | "TRANSFER_OUT" | "BUY" | "SELL" | "DIVIDEND" | "DISTRIBUTION" | "INTEREST" | "COUPON" | "MATURITY" | "REDEMPTION" | "FEE" | "TAX" | "SPLIT" | "BONUS";
+        /**
+         * @description * `WITH_QUANTITY` - WITH_QUANTITY
+         *     * `FORBIDDEN` - FORBIDDEN
+         * @enum {string}
+         */
+        UnitPriceRuleEnum: "WITH_QUANTITY" | "FORBIDDEN";
         VerifyEmailRequest: {
             key: string;
         };
@@ -4309,6 +4415,35 @@ export interface operations {
             };
             /** @description No such object in your portfolio. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    api_movement_types_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every movement type, in taxonomy order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementTypeSpecListEnvelope"];
+                };
+            };
+            /** @description No valid session cookie. */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
