@@ -2,10 +2,22 @@ import { afterAll, afterEach, beforeAll } from "vitest";
 import { cleanup, configure } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
-// `findBy*` waits 1s by default — enough alone, not with sixty files
+// `findBy*` waits 1s by default — enough alone, not with seventy files
 // competing for the same cores. The screens are not slower; the machine is
 // busier, and a timeout that measures load is a flake, not a signal.
-configure({ asyncUtilTimeout: 4000 });
+//
+// Raised from 4s during Phase 6, on measurement rather than suspicion: the
+// full suite failed three runs in four, never twice on the same test, while
+// every one of those files passed on its own and the whole suite passed under
+// `--no-file-parallelism`. Aggregate test time was 78s parallel against 13s
+// serial — six times the work per core, against a budget that had been sized
+// for a smaller suite.
+//
+// This costs nothing when tests pass, because a passing query resolves as soon
+// as its element appears; the number only decides how long a genuine failure
+// takes to report. Ten seconds is chosen to survive a loaded CI runner with
+// fewer cores than a laptop, which is where this would have bitten next.
+configure({ asyncUtilTimeout: 10_000 });
 
 // Real translations, not the key-passthrough fallback: without init, `t()`
 // echoes the key, and a test asserting on translated copy would pass because
