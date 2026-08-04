@@ -44,6 +44,22 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/setupTests.ts"],
+    // The other half of the timeout `setupTests.ts` documents. Phase 6 raised
+    // Testing Library's `asyncUtilTimeout` to 10s and left Vitest's own
+    // per-test budget at its 5s default — so once the suite grew past that,
+    // a loaded test was killed at 5s before its 10s query could report, and
+    // the failure blamed whichever file lost the race.
+    //
+    // Measured at Phase 8, not guessed: the full suite failed 1, then 2, then
+    // 3 tests across three runs, never the same one twice, every file passed
+    // alone, and `--no-file-parallelism` passed 572/572 with aggregate test
+    // time of 31s against ~148s parallel.
+    //
+    // It must stay *above* `asyncUtilTimeout`, or this cap decides the outcome
+    // and a genuine query failure never gets to say so. Costs nothing when
+    // tests pass; it only bounds how long a real failure takes to report.
+    testTimeout: 15_000,
+    hookTimeout: 15_000,
     // Playwright owns e2e/; Vitest must never try to run those specs.
     exclude: ["**/node_modules/**", "**/dist/**", "e2e/**"],
     env: {
