@@ -37,6 +37,14 @@ describe("the authenticated route surface", () => {
     [PATHS.ASSETS, app.screens.assets.title],
     [PATHS.LEDGER, app.screens.ledger.title],
     [PATHS.PRICING, app.screens.pricing.title],
+    // Pricing's two children are reached from the pricing screen rather than
+    // from the sidebar, so nothing else in this suite would notice them going
+    // missing.
+    [PATHS.PRICING_NEW, app.pricing.form.createTitle],
+    [PATHS.PRICING_FX, app.pricing.fx.title],
+    // Reached from the overview's breakdown block rather than the sidebar, so
+    // like pricing's children it has no other guard against going missing.
+    [PATHS.ALLOCATION, app.screens.allocation.title],
     [PATHS.TARGETS, app.screens.targets.title],
     [PATHS.PROFILE, app.screens.profile.title],
     [PATHS.HELP, app.screens.help.title],
@@ -59,6 +67,14 @@ describe("the authenticated route surface", () => {
       // The institutions screen is a real list now and fetches on mount; an
       // empty page keeps this spec about routing, not about list content.
       http.get(`${TEST_API_URL}/api/institutions/`, () =>
+        HttpResponse.json({
+          status: 200,
+          data: { count: 0, next: null, previous: null, results: [] },
+        }),
+      ),
+      // The quote route's loader resolves this before rendering, so the asset
+      // picker never mounts empty.
+      http.get(`${TEST_API_URL}/api/assets/`, () =>
         HttpResponse.json({
           status: 200,
           data: { count: 0, next: null, previous: null, results: [] },
@@ -100,5 +116,20 @@ describe("the authenticated route surface", () => {
     expect(router.state.location.search).toMatchObject({
       redirect: PATHS.ACCOUNTS,
     });
+  });
+
+  it("has no holdings index, because the API publishes no holdings list", async () => {
+    server.use(
+      http.get(`${TEST_API_URL}/api/auth/user/`, () => HttpResponse.json(user)),
+    );
+
+    // The one literal path in this suite, and it has to be: the assertion is
+    // precisely that no `PATHS` entry exists for it. A holding is reached from
+    // the overview's rows and from nowhere else, so a `PATHS.HOLDINGS` would
+    // be a typed, linkable path resolving to not-found — this is what stops
+    // one being added on the assumption there is an index here.
+    mount("/app/holdings");
+
+    expect(await screen.findByText(app.notFound.title)).toBeVisible();
   });
 });

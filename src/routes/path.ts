@@ -11,6 +11,20 @@
 const APP = "/app";
 
 /**
+ * The overview's route **id**, which is not `PATHS.APP`.
+ *
+ * TanStack gives a layout route and its index child different ids: the guarded
+ * layout is `/app` and the index beneath it is `/app/`. `getRouteApi` resolves
+ * by id, so the overview — the one screen that *is* an index route — must ask
+ * for this one. Passing `PATHS.APP` silently resolves the layout instead, whose
+ * search schema is empty, and the screen reads `{}` forever.
+ *
+ * Deliberately not in `PATHS`: it is not a destination to link to. `<Link to>`
+ * still uses `PATHS.APP`.
+ */
+export const APP_INDEX_ROUTE_ID = `${APP}/` as const;
+
+/**
  * The authenticated surface, one entry per child route of `/app`.
  *
  * Two forms exist because the router and the links need different things.
@@ -22,6 +36,7 @@ const APP = "/app";
  * both the derivation and that the literal types survive it.
  */
 export const APP_SEGMENTS = {
+  ALLOCATION: "allocation",
   INSTITUTIONS: "institutions",
   ACCOUNTS: "accounts",
   ASSETS: "assets",
@@ -44,6 +59,10 @@ export const APP_CHILD_SEGMENTS = {
   INSTITUTIONS_EDIT: `${APP_SEGMENTS.INSTITUTIONS}/$id/edit`,
   ACCOUNTS_NEW: `${APP_SEGMENTS.ACCOUNTS}/new`,
   ACCOUNTS_EDIT: `${APP_SEGMENTS.ACCOUNTS}/$id/edit`,
+  // Read-only reference data, sitting beside the resource whose `registration`
+  // it qualifies rather than in primary navigation. A literal segment, which
+  // TanStack ranks above the sibling `$id`, exactly as `accounts/new` does.
+  ACCOUNTS_LIMITS: `${APP_SEGMENTS.ACCOUNTS}/limits`,
   ASSETS_NEW: `${APP_SEGMENTS.ASSETS}/new`,
   ASSETS_EDIT: `${APP_SEGMENTS.ASSETS}/$id/edit`,
   // The ledger's children are not a create/edit trio: a movement is immutable,
@@ -53,6 +72,17 @@ export const APP_CHILD_SEGMENTS = {
   LEDGER_TRANSFER: `${APP_SEGMENTS.LEDGER}/transfer`,
   LEDGER_CORRECT: `${APP_SEGMENTS.LEDGER}/$id/correct`,
   LEDGER_LOTS: `${APP_SEGMENTS.LEDGER}/lots`,
+  // Pricing's children are a create route and a sibling table, not a
+  // create/edit trio: a quote and a rate are both immutable rows, and the FX
+  // table has no client write at all — `POST /api/fx-rates/` is staff-only.
+  PRICING_NEW: `${APP_SEGMENTS.PRICING}/new`,
+  PRICING_FX: `${APP_SEGMENTS.PRICING}/fx`,
+  // Written with a literal prefix and deliberately *not* derived from an
+  // `APP_SEGMENTS.HOLDINGS`, because there is no holdings index to derive it
+  // from: the API publishes no holdings-list endpoint, so a `PATHS.HOLDINGS`
+  // would be a typed, linkable path that resolves to not-found. A holding is
+  // reached from the overview's rows and from nowhere else.
+  HOLDING_DETAIL: "holdings/$accountId/$assetId",
 } as const;
 
 export const PATHS = {
@@ -63,12 +93,17 @@ export const PATHS = {
   TERMS: "/terms",
   PRIVACY: "/privacy",
   APP,
+  // Reached from the overview's breakdown block, not from the sidebar: a user
+  // asking "how is this split?" is already looking at the split.
+  ALLOCATION: `${APP}/${APP_SEGMENTS.ALLOCATION}`,
+  HOLDING_DETAIL: `${APP}/${APP_CHILD_SEGMENTS.HOLDING_DETAIL}`,
   INSTITUTIONS: `${APP}/${APP_SEGMENTS.INSTITUTIONS}`,
   INSTITUTIONS_NEW: `${APP}/${APP_CHILD_SEGMENTS.INSTITUTIONS_NEW}`,
   INSTITUTIONS_EDIT: `${APP}/${APP_CHILD_SEGMENTS.INSTITUTIONS_EDIT}`,
   ACCOUNTS: `${APP}/${APP_SEGMENTS.ACCOUNTS}`,
   ACCOUNTS_NEW: `${APP}/${APP_CHILD_SEGMENTS.ACCOUNTS_NEW}`,
   ACCOUNTS_EDIT: `${APP}/${APP_CHILD_SEGMENTS.ACCOUNTS_EDIT}`,
+  ACCOUNTS_LIMITS: `${APP}/${APP_CHILD_SEGMENTS.ACCOUNTS_LIMITS}`,
   ASSETS: `${APP}/${APP_SEGMENTS.ASSETS}`,
   ASSETS_NEW: `${APP}/${APP_CHILD_SEGMENTS.ASSETS_NEW}`,
   ASSETS_EDIT: `${APP}/${APP_CHILD_SEGMENTS.ASSETS_EDIT}`,
@@ -78,6 +113,8 @@ export const PATHS = {
   LEDGER_CORRECT: `${APP}/${APP_CHILD_SEGMENTS.LEDGER_CORRECT}`,
   LEDGER_LOTS: `${APP}/${APP_CHILD_SEGMENTS.LEDGER_LOTS}`,
   PRICING: `${APP}/${APP_SEGMENTS.PRICING}`,
+  PRICING_NEW: `${APP}/${APP_CHILD_SEGMENTS.PRICING_NEW}`,
+  PRICING_FX: `${APP}/${APP_CHILD_SEGMENTS.PRICING_FX}`,
   TARGETS: `${APP}/${APP_SEGMENTS.TARGETS}`,
   PROFILE: `${APP}/${APP_SEGMENTS.PROFILE}`,
   HELP: `${APP}/${APP_SEGMENTS.HELP}`,

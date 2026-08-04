@@ -37,8 +37,19 @@ describe("the authenticated route surface", () => {
   it("derives every child segment from its parent's segment", () => {
     // A renamed resource must carry its create/edit children with it; a child
     // segment that does not extend a parent segment has drifted.
+    //
+    // `HOLDING_DETAIL` is the one exemption, and it is not drift: there is no
+    // holdings resource for it to derive from. The API publishes no
+    // holdings-list endpoint, so `holdings` is a path prefix rather than a
+    // destination — promoting it to `APP_SEGMENTS` would oblige it to have a
+    // `PATHS.HOLDINGS` twin (the first two cases in this file), and that would
+    // be a typed, linkable path resolving to not-found. `appRoutes.test.tsx`
+    // pins that /app/holdings really is nothing.
     const parents = Object.values(APP_SEGMENTS);
-    for (const segment of Object.values(APP_CHILD_SEGMENTS)) {
+    const { HOLDING_DETAIL, ...derived } = APP_CHILD_SEGMENTS;
+    expect(HOLDING_DETAIL).toBe("holdings/$accountId/$assetId");
+
+    for (const segment of Object.values(derived)) {
       expect(segment.startsWith("/")).toBe(false);
       expect(parents.some((parent) => segment.startsWith(`${parent}/`))).toBe(
         true,

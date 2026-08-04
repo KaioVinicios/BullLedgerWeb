@@ -30,6 +30,20 @@ import {
   ledgerListSearchSchema,
   lotsSearchSchema,
 } from "@/schemas/ledgerList";
+import {
+  fxListDefaults,
+  fxListSearchSchema,
+  newQuoteSearchSchema,
+  pricingListDefaults,
+  pricingListSearchSchema,
+} from "@/schemas/pricingList";
+import {
+  allocationDefaults,
+  allocationSearchSchema,
+  limitsDefaults,
+  limitsSearchSchema,
+  overviewSearchSchema,
+} from "@/schemas/portfolioView";
 import { authSearchSchema } from "@/schemas/redirect";
 import {
   assetListSearchSchema,
@@ -39,10 +53,11 @@ import {
 import { APP_CHILD_SEGMENTS, APP_SEGMENTS, PATHS } from "@/routes/path";
 import { rootRoute } from "@/routes/root";
 import { accountQuery } from "@/services/accounts";
-import { assetQuery } from "@/services/assets";
+import { assetKeys, assetQuery, listAssets } from "@/services/assets";
 import { institutionQuery } from "@/services/institutions";
 import { movementQuery } from "@/services/movements";
 import { movementTypesQuery } from "@/services/movementTypes";
+import { holdingQuery } from "@/services/portfolio";
 import { profileQuery } from "@/services/profile";
 
 const indexRoute = createRoute({
@@ -150,9 +165,16 @@ const appScreenOptions = {
   errorComponent: AppError,
 } as const;
 
+/** Only live assets can take a quote; an archived one takes no new anything. */
+const LIVE_ASSETS = {} as const;
+
 const appIndexRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/",
+  // No `stripSearchParams`: absence *is* the default here — an overview with
+  // nothing collapsed writes nothing to the address bar, so there is nothing
+  // to strip back out.
+  validateSearch: overviewSearchSchema,
   component: lazyRouteComponent(
     () => import("@/pages/Overview"),
     "OverviewPage",
@@ -345,7 +367,88 @@ const ledgerLotsRoute = createRoute({
 const pricingRoute = createRoute({
   getParentRoute: () => appRoute,
   path: APP_SEGMENTS.PRICING,
+  validateSearch: pricingListSearchSchema,
+  search: { middlewares: [stripSearchParams(pricingListDefaults)] },
   component: lazyRouteComponent(() => import("@/pages/Pricing"), "PricingPage"),
+  ...appScreenOptions,
+});
+
+/**
+ * Resolves the asset list before rendering, for the reason the ledger's write
+ * routes resolve the movement-type table: the picker is filtered by
+ * `pricing_mode`, and one that mounts empty would offer nothing for a frame
+ * and then decide what the `?asset=` prefill was allowed to select.
+ */
+const pricingNewRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.PRICING_NEW,
+  validateSearch: newQuoteSearchSchema,
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: assetKeys.list(LIVE_ASSETS),
+      queryFn: () => listAssets(LIVE_ASSETS),
+    }),
+  component: lazyRouteComponent(
+    () => import("@/pages/Pricing/New"),
+    "PriceQuoteNewPage",
+  ),
+  ...appScreenOptions,
+});
+
+const pricingFxRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.PRICING_FX,
+  validateSearch: fxListSearchSchema,
+  search: { middlewares: [stripSearchParams(fxListDefaults)] },
+  component: lazyRouteComponent(
+    () => import("@/pages/Pricing/Fx"),
+    "PricingFxPage",
+  ),
+  ...appScreenOptions,
+});
+
+/**
+ * Ranks above the sibling `accounts/$id/edit`: TanStack prefers a literal
+ * segment over a param, exactly as `accounts/new` already relies on.
+ */
+const accountsLimitsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.ACCOUNTS_LIMITS,
+  validateSearch: limitsSearchSchema,
+  search: { middlewares: [stripSearchParams(limitsDefaults)] },
+  component: lazyRouteComponent(
+    () => import("@/pages/Accounts/Limits"),
+    "ContributionLimitsPage",
+  ),
+  ...appScreenOptions,
+});
+
+const allocationRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.ALLOCATION,
+  validateSearch: allocationSearchSchema,
+  search: { middlewares: [stripSearchParams(allocationDefaults)] },
+  component: lazyRouteComponent(
+    () => import("@/pages/Allocation"),
+    "AllocationPage",
+  ),
+  ...appScreenOptions,
+});
+
+/**
+ * Resolved before the screen renders, for the reason every edit route resolves
+ * its record: a projection screen that mounts empty and fills in is a screen
+ * whose figures visibly change after the reader started reading them. A 404 —
+ * no such holding in this portfolio — surfaces through `errorComponent`.
+ */
+const holdingRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.HOLDING_DETAIL,
+  loader: ({ context, params }) =>
+    context.queryClient.ensureQueryData(
+      holdingQuery(params.accountId, params.assetId),
+    ),
+  component: lazyRouteComponent(() => import("@/pages/Holding"), "HoldingPage"),
   ...appScreenOptions,
 });
 
@@ -404,6 +507,7 @@ const routeTree = rootRoute.addChildren([
     accountsRoute,
     accountNewRoute,
     accountEditRoute,
+    accountsLimitsRoute,
     assetsRoute,
     assetNewRoute,
     assetEditRoute,
@@ -413,6 +517,10 @@ const routeTree = rootRoute.addChildren([
     ledgerCorrectRoute,
     ledgerLotsRoute,
     pricingRoute,
+    pricingNewRoute,
+    pricingFxRoute,
+    allocationRoute,
+    holdingRoute,
     targetsRoute,
     profileRoute,
     helpRoute,
