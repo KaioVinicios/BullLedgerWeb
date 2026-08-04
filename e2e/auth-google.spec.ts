@@ -48,6 +48,48 @@ test("forwards Google's authorization code and lands in the app", async ({
       : route.fulfill({ status: 401, json: { detail: "Unauthenticated." } }),
   );
 
+  // The session here is simulated — the exchange below is stubbed, so no real
+  // cookies are ever set — and the landing screen is the Overview, which since
+  // Phase 8 reads three projections. Left unstubbed those 401 against the real
+  // API, session recovery gives up, and the app bounces to /login before this
+  // spec can assert anything about Google. Empty payloads keep the spec about
+  // the exchange rather than about the dashboard.
+  await page.route(`**${ENDPOINTS.portfolioOverview}**`, (route) =>
+    route.fulfill({
+      json: {
+        status: 200,
+        data: {
+          on_date: "2026-08-03",
+          reporting_currency: "BRL",
+          total_value: { amount: 0, currency: "BRL" },
+          free_cash: { amount: 0, currency: "BRL" },
+          complete: true,
+          accounts: [],
+          archetypes: [],
+          nominal_return: null,
+          real_return: null,
+          missing: [],
+        },
+      },
+    }),
+  );
+
+  for (const endpoint of [
+    ENDPOINTS.accounts,
+    ENDPOINTS.assets,
+    ENDPOINTS.institutions,
+    ENDPOINTS.movements,
+  ]) {
+    await page.route(`**${endpoint}**`, (route) =>
+      route.fulfill({
+        json: {
+          status: 200,
+          data: { count: 0, next: null, previous: null, results: [] },
+        },
+      }),
+    );
+  }
+
   let postedCode: unknown;
   await page.route(`**${ENDPOINTS.authGoogle}`, async (route) => {
     postedCode = route.request().postDataJSON()?.code;

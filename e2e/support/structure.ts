@@ -83,6 +83,7 @@ type Account = components["schemas"]["Account"];
 type Asset = components["schemas"]["Asset"];
 type Movement = components["schemas"]["Movement"];
 type MovementRecordRequest = components["schemas"]["MovementRecordRequest"];
+type PriceQuote = components["schemas"]["PriceQuote"];
 
 /**
  * The API enforces CSRF on every cookie-authenticated unsafe request, and
@@ -206,4 +207,36 @@ export function recordMovement(
   body: MovementRecordRequest,
 ): Promise<Movement> {
   return seed<Movement>(page, ENDPOINTS.movements, body);
+}
+
+/**
+ * One price quote, for the journeys where an existing quote is the precondition
+ * rather than the subject. The table is insert-only and unique per
+ * `(asset, date)`, so a spec calling this twice for one date gets a 400 — which
+ * `seed` surfaces with the server's own body rather than a bare status.
+ */
+export function seedPriceQuote(
+  page: Page,
+  options: { asset: string; date: string; price: string },
+): Promise<PriceQuote> {
+  return seed<PriceQuote>(page, ENDPOINTS.priceQuotes, options);
+}
+
+/**
+ * Voids a movement, for journeys where the void is a *precondition* — the
+ * projections letting go of a position — rather than the subject. The
+ * correct/void journey itself drives the dialog through the UI.
+ *
+ * Answers 200 rather than 201: it returns the voided row, it does not create
+ * one, which is why it does not go through `seed`.
+ */
+export async function voidMovement(page: Page, id: string): Promise<void> {
+  const response = await page.request.post(apiUrl(ENDPOINTS.movementVoid(id)), {
+    headers: { [CSRF_HEADER]: await csrfToken(page) },
+  });
+
+  expect(
+    response.status(),
+    `voiding ${id} failed: ${await response.text()}`,
+  ).toBe(200);
 }
