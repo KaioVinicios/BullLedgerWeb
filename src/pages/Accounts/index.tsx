@@ -15,6 +15,7 @@ import {
   IconPencil,
   IconPlus,
   IconRestore,
+  IconScale,
   IconWallet,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
@@ -133,12 +134,22 @@ export function AccountsPage() {
         title={t("screens.accounts.title")}
         description={t("screens.accounts.description")}
         action={
-          <Button asChild>
-            <Link to={PATHS.ACCOUNTS_NEW}>
-              <IconPlus aria-hidden />
-              {t("accounts.add")}
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {/* Reference data for the registrations this list assigns, so it
+                sits beside them rather than in primary navigation. */}
+            <Button asChild variant="outline">
+              <Link to={PATHS.ACCOUNTS_LIMITS}>
+                <IconScale aria-hidden />
+                {t("accounts.seeLimits")}
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to={PATHS.ACCOUNTS_NEW}>
+                <IconPlus aria-hidden />
+                {t("accounts.add")}
+              </Link>
+            </Button>
+          </div>
         }
       />
 
