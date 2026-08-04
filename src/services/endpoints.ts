@@ -40,6 +40,23 @@ export const ENDPOINTS = {
   holding: (accountId: string, assetId: string) =>
     `/api/portfolio/holdings/${accountId}/${assetId}/`,
 
+  // Pricing. Both tables are insert-only and unique per (asset, date) /
+  // (base, quote, date): there is no PATCH and no DELETE to name. FX has no
+  // create path here at all — `POST /api/fx-rates/` is staff-only (403,
+  // confirmed live), and the schema exposes no `is_staff` for the client to
+  // check against first.
+  priceQuotes: "/api/price-quotes/",
+  fxRates: "/api/fx-rates/",
+
+  // The read-only projections. Never posted to — every figure behind them is
+  // recomputed from the movement log at read time.
+  portfolioOverview: "/api/portfolio/overview/",
+  portfolioAllocation: "/api/portfolio/allocation/",
+
+  // Reference data: read-only for clients, and changed by a yearly data load
+  // rather than by anything a user does here.
+  contributionLimits: "/api/contribution-limits/",
+
   profile: "/api/profile/",
 
   // Auth. Two paths are deliberately absent for the same reason — `lib/` must
