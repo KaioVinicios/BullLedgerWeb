@@ -1,4 +1,4 @@
-<!-- v1.0.0 | last changed 2026-06-17 -->
+<!-- v1.1.0 | last changed 2026-08-03 -->
 
 # Project Directory Structure
 
@@ -51,6 +51,21 @@ without editing the address bar. `ArchiveConfirmDialog` is the one confirmation 
 resources share — worded as archival, never deletion, and keeping the default button
 variant rather than destructive red, because painting reversible tidying as destruction
 would make the dialog argue with its own copy.
+
+`signedTone.ts` is where a moved figure's presentation is decided, once.
+`SignedFigure` renders signed Money and `SignedPercent` a signed decimal-string
+rate; both read sign, tone, and screen-reader label from that one function, so a
+gain reads identically whether it is an amount or a rate. Same reasoning as
+`shell/activeStyles.ts` — the vocabulary for a state belongs in one file.
+
+`AllocationBar.tsx` is decorative **by design and marked as such**: it is
+`aria-hidden`, carries no text, and every label, value, and weight lives in the
+table beside it, so no category is ever distinguishable by fill alone. Two
+things about it were measured rather than eyeballed and are recorded in the
+file: adjacent steps of the gold ramp sit at 1.40–1.68:1, far under the 3:1
+non-text bar, so the segment boundary is a 2px gap rather than a colour
+difference; and `--chart-1` at 1.20:1 over the light trough is excluded, because
+a segment nobody can see is not a segment.
 
 `AppSidebarFooter.tsx` is the sidebar's second landmark: the destinations that belong to the product rather than to the portfolio (Help, Feedback), the legal links, and the build stamp. The legal links are plain anchors opening the canonical public documents in a new tab, never mirrored under `/app`. `activeStyles.ts` holds the classes that say "current" — shared by the primary navigation and the footer, so the sidebar has one vocabulary for that state rather than two that drift.
 
@@ -144,6 +159,19 @@ whole paths. `APP_CHILD_SEGMENTS` extends that to the create/edit trios, derivin
 child from its parent's segment so a renamed resource cannot leave its children behind, and
 edit routes use a `$id` param rather than interpolation.
 
+Two Phase 8 entries break the file's own symmetry, each for a stated reason.
+`HOLDING_DETAIL` is written with a literal `holdings/` prefix rather than derived from an
+`APP_SEGMENTS.HOLDINGS`, because there is no holdings index to derive from — the API
+publishes no holdings-list endpoint, so a `PATHS.HOLDINGS` would be a typed, linkable path
+resolving to not-found. `path.test.ts` exempts it by name and `appRoutes.test.tsx` pins
+that `/app/holdings` really is nothing.
+
+`APP_INDEX_ROUTE_ID` is exported beside `PATHS` and is deliberately not in it. TanStack
+gives a layout route and its index child different ids — `/app` and `/app/` — and
+`getRouteApi` resolves by id, so the overview must ask for the second. Passing `PATHS.APP`
+silently resolves the *layout*, whose search schema is empty, and the screen reads `{}`
+forever. It is not a destination, so `<Link to>` still uses `PATHS.APP`.
+
 Each edit route resolves its record in a `loader` before the screen renders, sharing one
 `queryOptions` object with the form — the reason `profileQuery` is shared by its loader and
 its screen. A form that mounts empty and resets when data lands is where dirty-state bugs
@@ -171,6 +199,22 @@ which is what keeps it testable against a captured fixture with no network, no q
 and no React. The one rule the table cannot express lives here too, and says so:
 `quantityRequired` encodes the server's `movement_quantity_required`, which lets only a
 lump-principal `FIXED_INCOME` position omit its units.
+
+`COST_BASIS_METHOD_BY_COUNTRY` joins the two country-keyed maps above and is the
+one rule in the file the **API does not publish**. `HoldingDetail` carries
+`registration` and `tax_advantaged` but never the method, so the client states
+what `business-rules.md` says: BR and CA compute a weighted average, the US
+FIFO / specific-lot. A *statement*, never a computation — the basis figure is
+always the server's. Being a copy of a document, it moves when that document
+does.
+
+`portfolioView.ts` holds the URL state for the three projection screens. Two
+choices in it are worth knowing: the overview stores which account groups are
+**closed** rather than which are open, because expanded is the resting state and
+storing the open set would put every account id in the address bar on a screen
+nobody has touched; and none of the three carries `on`, because all three
+endpoints default the valuation date to today and a date picker would be a
+product decision rather than a missing control.
 
 `resourceList.ts` holds the URL search state every structure list shares. Every field is
 optional in the *output* as well as the input, deliberately: a required output would force
@@ -208,12 +252,30 @@ user's data — so it is fetched once per session under its own `["movement-type
 `staleTime: Infinity`. No mutation anywhere can invalidate it, which is exactly why it must
 not sit under a resource root that `invalidateLedger` sweeps.
 
-`portfolio.ts` arrives ahead of the phase that owns it. Phase 8 builds the projection
-screens; Phase 6 needs one read from them, and pulling it forward is what makes the exit
-lot selector honest — `/api/lots/` knows a lot's label and nothing else, while
-`holdingQuery` carries each lot's status and remainder, so an insolvent lot can be
-unofferable rather than merely rejected. It is keyed under `PORTFOLIO_KEY`, so every ledger
-write already invalidates it with no separate rule.
+`portfolio.ts` holds all three read-only projections, two of which arrived ahead of the
+phase that owns them: Phase 6 pulled `holdingQuery` forward to make the exit lot selector
+honest — `/api/lots/` knows a lot's label and nothing else, while this carries each lot's
+status and remainder, so an insolvent lot can be unofferable rather than merely rejected —
+and Phase 7 pulled `overviewQuery` forward for `missing[]`. Everything here is keyed under
+`PORTFOLIO_KEY`, so every ledger write, price write, and reporting-currency change already
+invalidates it with no separate rule.
+
+Two traps live in the shapes rather than in the code. The overview's `accounts[]` includes
+an account with **no movements** (empty `holdings`, zero cash), so "is this portfolio
+empty" reads the groups rather than the array's length — verified against a running API,
+not assumed. And allocation's `by_archetype` is **not** the overview's `archetypes[]`: it
+adds a sixth `FREE_CASH` bucket and types `key` as a bare string where the overview types
+`archetype` as `ArchetypeEnum`, so the two look interchangeable in the generated types and
+are not.
+
+`contributionLimits.ts` is reference data and keys **outside** `PORTFOLIO_KEY`, for the
+reason `movementTypes.ts` does: no user mutation can change it, so nothing should
+invalidate it and it must not sit under a root `invalidateLedger` sweeps. Unlike that table
+it is paginated, so it keeps the ordinary key factory with `staleTime: Infinity`. Its query
+type declares neither `registration` nor `year` — the holding detail needs exactly one row
+and can only ask for a page, which is why `findLimit` searches page 1 and returns
+`undefined` rather than a nearest match. The filter is asked for in
+`docs/backend-requests/2026-08-03-reporting.md`.
 
 `movements.ts` is the ledger's write surface, and what it *lacks* is the schema's decision
 rather than an omission: there is no update and no delete, because `/api/movements/{id}/`
@@ -235,6 +297,13 @@ Shared TypeScript interfaces and type aliases that are used across multiple modu
 
 ### `utils/`
 Pure functions with no side effects: formatters, parsers, date helpers, math. No React, no API calls.
+
+`allocation.ts` holds `weightToWidth`, and its comment draws a line worth keeping: the
+result is **geometry, not money**. It lands in a `style.width` and never on screen as a
+figure — every displayed percentage goes through `formatPercent`, which keeps the decimal
+string intact all the way to `Intl`. It also clamps, because the server's weights are
+fractions of the *computable* total and legitimately fall outside 0–1 (a portfolio that
+bought before depositing returns a weight of `"5"` beside one of `"-4"`).
 
 `movementWire.ts` is the single place the UI's language becomes the wire's. Every numeric
 field in the ledger asks for a **magnitude** — "total paid", "units disposed" — and
