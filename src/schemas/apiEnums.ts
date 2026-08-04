@@ -77,6 +77,29 @@ export const CURRENCY_BY_COUNTRY = {
   CA: "CAD",
 } as const satisfies Record<Country, Currency>;
 
+export type CostBasisMethod = "WEIGHTED_AVERAGE" | "FIFO";
+
+/**
+ * Which method the projection computed a basis figure with, by the *account's*
+ * country — `business-rules.md` §Cost basis by country.
+ *
+ * The one rule in this file the API does not publish. `HoldingDetail` carries
+ * `registration` and `tax_advantaged` but never the method, so the client
+ * states it: BR (preço médio) and CA (adjusted cost base) use a weighted
+ * average, the US uses FIFO / specific-lot. The same movements therefore yield
+ * different realized gains in a US and a BR account, which is correct and by
+ * design — and a user comparing two accounts needs to be told why.
+ *
+ * A **statement, never a computation**: the figure itself is always read from
+ * the server. This is a copy of a document, so if `business-rules.md` moves,
+ * this moves with it.
+ */
+export const COST_BASIS_METHOD_BY_COUNTRY = {
+  BR: "WEIGHTED_AVERAGE",
+  CA: "WEIGHTED_AVERAGE",
+  US: "FIFO",
+} as const satisfies Record<Country, CostBasisMethod>;
+
 export type Registration = components["schemas"]["RegistrationEnum"];
 
 /**
