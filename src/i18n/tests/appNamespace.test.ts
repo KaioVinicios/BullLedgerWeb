@@ -36,14 +36,27 @@ describe("the app namespace", () => {
     }
   });
 
+  it("no longer promises a pricing screen that has shipped", () => {
+    // `comingSoon` is a list of honest admissions, not a permanent fixture.
+    // A screen that exists and says it is coming is worse than no copy at all.
+    expect(en.comingSoon).not.toHaveProperty("pricing");
+    expect(pt.comingSoon).not.toHaveProperty("pricing");
+  });
+
   it("names one screen entry per navigable area", () => {
+    // "Navigable" is wider than the sidebar: `allocation` is reached from the
+    // overview's breakdown block rather than from primary navigation, and it
+    // is still a screen with its own address and heading.
     expect(Object.keys(en.screens).sort()).toEqual([
       "accounts",
+      "allocation",
       "assets",
       "feedback",
       "help",
+      "holding",
       "institutions",
       "ledger",
+      "limits",
       "overview",
       "pricing",
       "profile",

@@ -82,6 +82,17 @@
     "feedback": {
       "title": "Feedback",
       "description": "Conte o que está quebrado, confuso ou faltando."
+    },
+    "allocation": {
+      "title": "Alocação",
+      "description": "Como sua carteira se divide, por arquétipo, moeda e país."
+    },
+    "holding": {
+      "title": "Posição"
+    },
+    "limits": {
+      "title": "Limites de contribuição",
+      "description": "Os limites anuais que se aplicam a cada registro."
     }
   },
   "comingSoon": {
@@ -90,7 +101,6 @@
     "institutions": "Os bancos, corretoras e exchanges que você adicionar aparecerão aqui.",
     "accounts": "As contas que você criar aparecerão aqui.",
     "assets": "Os ativos que você registrar aparecerão aqui.",
-    "pricing": "Os preços e taxas de câmbio que você informar aparecerão aqui.",
     "targets": "As metas que você definir aparecerão aqui.",
     "help": "Os guias serão publicados aqui conforme cada parte do produto ficar pronta.",
     "feedback": "Um canal para relatos e sugestões vai abrir aqui antes do lançamento."
@@ -125,6 +135,53 @@
     "saved": {
       "identity": "Seu nome foi atualizado.",
       "reporting": "Agora os valores são exibidos em {{currency}}. Nada do que você registrou mudou."
+    }
+  },
+  "overview": {
+    "totalValue": "Valor total",
+    "freeCash": "Caixa livre",
+    "nominalReturn": "Retorno nominal",
+    "realReturn": "Retorno real",
+    "setInflation": "Defina uma referência de inflação para ver o retorno real",
+    "valuedOn": "Avaliado em {{date}}",
+    "incomplete_one": "{{count}} posição não pôde ser avaliada, então o total abaixo não a inclui.",
+    "incomplete_other": "{{count}} posições não puderam ser avaliadas, então o total abaixo não as inclui.",
+    "seePricing": "Ver o que falta",
+    "cash": "Caixa",
+    "subtotal": "Subtotal",
+    "groupIncomplete": "Parcialmente avaliado",
+    "toggleGroup": "Mostrar ou ocultar {{name}}",
+    "byArchetype": "Por arquétipo",
+    "seeAllocation": "Ver também moeda e país",
+    "columns": {
+      "asset": "Ativo",
+      "quantity": "Posição",
+      "value": "Valor",
+      "return": "Retorno"
+    },
+    "firstRun": {
+      "title": "Comece seu registro",
+      "description": "Quatro passos, em ordem. Cada um torna o próximo possível.",
+      "institution": {
+        "label": "Cadastre um banco, corretora ou carteira",
+        "action": "Adicionar instituição",
+        "done": "Feito"
+      },
+      "account": {
+        "label": "Abra uma conta dentro dela",
+        "action": "Adicionar conta",
+        "done": "Feito"
+      },
+      "asset": {
+        "label": "Cadastre algo que você tem",
+        "action": "Adicionar ativo",
+        "done": "Feito"
+      },
+      "movement": {
+        "label": "Registre seu primeiro movimento",
+        "action": "Registrar movimento",
+        "done": "Feito"
+      }
     }
   },
   "structure": {
@@ -234,6 +291,19 @@
         "name": "Dê um nome a ela.",
         "money": "Informe um valor, como 1234,56."
       }
+    },
+    "seeLimits": "Limites de contribuição"
+  },
+  "limits": {
+    "reference": "Dados de referência, mantidos pelo BullLedger e atualizados conforme os limites mudam. Nada aqui é editável.",
+    "columns": {
+      "registration": "Registro",
+      "year": "Ano",
+      "limit": "Limite"
+    },
+    "empty": {
+      "title": "Nenhum limite publicado",
+      "description": "Os limites de contribuição aparecerão aqui quando estiverem disponíveis para seus registros."
     }
   },
   "assets": {
@@ -490,6 +560,152 @@
     "corrected": "Correção registrada.",
     "loadFailed": "Não foi possível carregar os lançamentos."
   },
+  "pricing": {
+    "recordQuote": "Registrar cotação",
+    "fxRates": "Taxas de câmbio",
+    "backToPrices": "Preços",
+    "columns": {
+      "date": "Data",
+      "asset": "Ativo",
+      "price": "Preço",
+      "source": "Origem",
+      "pair": "Par",
+      "rate": "Taxa"
+    },
+    "filters": {
+      "asset": "Ativo",
+      "base": "Base",
+      "quote": "Cotada",
+      "all": "Todos"
+    },
+    "empty": {
+      "title": "Nenhum preço registrado",
+      "description": "Ativos a preço de mercado e de cota são avaliados pelos preços que você registra aqui.",
+      "filteredTitle": "Nenhum preço para este ativo",
+      "filteredDescription": "Registre um, ou limpe o filtro para ver os demais."
+    },
+    "age": {
+      "lastQuote": "Última cotação em {{date}}",
+      "valuedOn": "avaliação de {{date}}",
+      "precedesValuation": "Cotado antes da data de avaliação"
+    },
+    "coverage": {
+      "title": "Precisa de preço",
+      "description": "Estas posições não podem ser avaliadas enquanto não houver um preço registrado.",
+      "priceIt": "Precificar",
+      "complete": "Todas as posições têm preço e taxa para {{date}}.",
+      "unknown": "Não foi possível verificar quais posições estão sem preço.",
+      "noFxTitle": "Falta uma taxa de câmbio",
+      "noFxDescription": "Estas posições não puderam ser convertidas para a sua moeda de relatório, porque a tabela de câmbio não tem taxa para aquela data. A tabela é global e mantida pela plataforma.",
+      "seeRates": "Ver taxas de câmbio"
+    },
+    "form": {
+      "createTitle": "Registrar cotação",
+      "createDescription": "Um preço por ativo e data. Uma cotação registrada nunca é sobrescrita.",
+      "asset": "Ativo",
+      "assetHint": "Apenas ativos a preço de mercado e de cota aceitam cotação.",
+      "date": "Data",
+      "price": "Preço",
+      "cancel": "Cancelar",
+      "create": "Registrar cotação",
+      "created": "Preço registrado para {{name}}.",
+      "errors": {
+        "asset": "Escolha um ativo.",
+        "date": "Informe a data a que este preço se refere.",
+        "price": "Informe um preço."
+      }
+    },
+    "fx": {
+      "title": "Taxas de câmbio",
+      "description": "As taxas pelas quais os seus valores são convertidos.",
+      "readOnly": "Esta tabela é global e mantida pela plataforma, por isso não pode ser editada aqui.",
+      "precedence": "Uma taxa manual é um override: a sincronização diária nunca atualiza uma linha que já existe, então o override vence para aquela data e par.",
+      "movementOverride": "Para sobrepor a taxa de um movimento específico, informe-a ao registrar o movimento — uma taxa digitada é gravada exatamente como digitada e nunca é resolvida de novo.",
+      "empty": {
+        "title": "Nenhuma taxa para este par",
+        "description": "Limpe os filtros para ver o restante da tabela.",
+        "unfilteredTitle": "Nenhuma taxa publicada ainda",
+        "unfilteredDescription": "Esta tabela é preenchida pela sincronização diária da plataforma. Até lá, valores que dependem de conversão não podem ser calculados."
+      }
+    }
+  },
+  "allocation": {
+    "dimensions": {
+      "archetype": "Arquétipo",
+      "currency": "Moeda",
+      "country": "País"
+    },
+    "columns": {
+      "category": "Categoria",
+      "value": "Valor",
+      "weight": "Participação"
+    },
+    "total": "Total",
+    "valuedOn": "Avaliado em {{date}}",
+    "complete": "Todas as posições foram avaliadas.",
+    "incomplete_one": "{{count}} posição não pôde ser avaliada, então as participações abaixo cobrem o restante.",
+    "incomplete_other": "{{count}} posições não puderam ser avaliadas, então as participações abaixo cobrem o restante.",
+    "seePricing": "Ver o que falta",
+    "sliceIncomplete": "Parcialmente avaliado",
+    "empty": {
+      "title": "Nada para alocar ainda",
+      "description": "Registre um movimento e isto dividirá sua carteira por arquétipo, moeda e país."
+    },
+    "freeCash": "Caixa livre"
+  },
+  "holding": {
+    "headline": {
+      "value": "Valor atual",
+      "unrealized": "Ganho não realizado",
+      "realized": "Ganho realizado",
+      "income": "Rendimentos recebidos",
+      "invested": "Investido",
+      "totalReturn": "Retorno total",
+      "realReturn": "Retorno real"
+    },
+    "figures": {
+      "title": "Números",
+      "inOne": "Números abaixo em {{currency}}.",
+      "inTwo": "Números abaixo em {{native}} (ativo) e {{base}} (conta).",
+      "figure": "Número",
+      "nativeColumn": "{{currency}} (ativo)",
+      "baseColumn": "{{currency}} (conta)",
+      "quantity": "Posição",
+      "units": "{{quantity}} unidades",
+      "holdingPeriod": "Mantida há",
+      "days_one": "{{count}} dia",
+      "days_other": "{{count}} dias",
+      "since": "desde {{date}}",
+      "principal": "Principal",
+      "currentValue": "Valor atual",
+      "costBasis": "Custo remanescente",
+      "invested": "Investido",
+      "realized": "Ganho realizado",
+      "unrealized": "Ganho não realizado",
+      "income": "Rendimentos recebidos",
+      "costs": "Custos"
+    },
+    "valuedOn": "Avaliado em {{date}}",
+    "derivedNote": "Estes números derivam dos movimentos que você registrou.",
+    "seeMovements": "Ver seus movimentos",
+    "setInflation": "Defina uma referência de inflação para ver o retorno real",
+    "basis": {
+      "title": "Custo de aquisição",
+      "method": "Método",
+      "explanation": "O método segue o país da conta, então movimentos idênticos em dois países podem legitimamente mostrar ganhos realizados diferentes."
+    },
+    "tax": {
+      "title": "Atributos fiscais",
+      "registration": "Registro",
+      "advantaged": "Benefício fiscal",
+      "advantagedYes": "Sim",
+      "advantagedNo": "Não",
+      "room": "Limite disponível",
+      "limit": "Limite de {{year}}",
+      "disclaimer": "Apenas informativo. O BullLedger registra atributos fiscais e nunca calcula o que você deve."
+    },
+    "seeLots": "Ver seus lotes"
+  },
   "enums": {
     "kind": {
       "BANK": "Banco",
@@ -598,6 +814,23 @@
     "taxedOn": {
       "WHOLE_AMOUNT": "Valor integral",
       "GAINS_ONLY": "Apenas ganhos"
+    },
+    "priceSource": {
+      "MANUAL": "Manual",
+      "FEED": "Feed"
+    },
+    "pricingMode": {
+      "MARKET": "Preço de mercado",
+      "NAV": "Cota",
+      "ACCRUAL": "Acumulação"
+    },
+    "missingReason": {
+      "NO_QUOTE": "Sem preço",
+      "NO_FX": "Sem taxa de câmbio"
+    },
+    "costBasisMethod": {
+      "WEIGHTED_AVERAGE": "Preço médio",
+      "FIFO": "FIFO / lote específico"
     }
   },
   "notFound": {

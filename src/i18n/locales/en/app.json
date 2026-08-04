@@ -82,6 +82,17 @@
     "feedback": {
       "title": "Feedback",
       "description": "Tell us what's broken, confusing, or missing."
+    },
+    "allocation": {
+      "title": "Allocation",
+      "description": "How your portfolio divides, by archetype, currency, and country."
+    },
+    "holding": {
+      "title": "Holding"
+    },
+    "limits": {
+      "title": "Contribution limits",
+      "description": "The yearly limits that apply to each registration."
     }
   },
   "comingSoon": {
@@ -90,7 +101,6 @@
     "institutions": "The banks, brokerages, and exchanges you add will be listed here.",
     "accounts": "The accounts you create will be listed here.",
     "assets": "The assets you register will be listed here.",
-    "pricing": "The prices and exchange rates you enter will be listed here.",
     "targets": "The targets you set will be listed here.",
     "help": "Guides will be published here as each part of the product lands.",
     "feedback": "A channel for reports and suggestions will open here before launch."
@@ -125,6 +135,53 @@
     "saved": {
       "identity": "Your name has been updated.",
       "reporting": "Now reporting in {{currency}}. Nothing you recorded has changed."
+    }
+  },
+  "overview": {
+    "totalValue": "Total value",
+    "freeCash": "Free cash",
+    "nominalReturn": "Nominal return",
+    "realReturn": "Real return",
+    "setInflation": "Set an inflation reference to see real return",
+    "valuedOn": "Valued on {{date}}",
+    "incomplete_one": "{{count}} holding could not be valued, so the total below is short of it.",
+    "incomplete_other": "{{count}} holdings could not be valued, so the total below is short of them.",
+    "seePricing": "See what's missing",
+    "cash": "Cash",
+    "subtotal": "Subtotal",
+    "groupIncomplete": "Partly valued",
+    "toggleGroup": "Show or hide {{name}}",
+    "byArchetype": "By archetype",
+    "seeAllocation": "See currency and country too",
+    "columns": {
+      "asset": "Asset",
+      "quantity": "Position",
+      "value": "Value",
+      "return": "Return"
+    },
+    "firstRun": {
+      "title": "Start your ledger",
+      "description": "Four steps, in order. Each one makes the next possible.",
+      "institution": {
+        "label": "Register a bank, brokerage, or wallet",
+        "action": "Add an institution",
+        "done": "Done"
+      },
+      "account": {
+        "label": "Open an account inside it",
+        "action": "Add an account",
+        "done": "Done"
+      },
+      "asset": {
+        "label": "Register something you hold",
+        "action": "Add an asset",
+        "done": "Done"
+      },
+      "movement": {
+        "label": "Record your first movement",
+        "action": "Record a movement",
+        "done": "Done"
+      }
     }
   },
   "structure": {
@@ -234,6 +291,19 @@
         "name": "Give it a name.",
         "money": "Enter an amount, like 1234.56."
       }
+    },
+    "seeLimits": "Contribution limits"
+  },
+  "limits": {
+    "reference": "Reference data, maintained by BullLedger and updated as the limits change. Nothing here is editable.",
+    "columns": {
+      "registration": "Registration",
+      "year": "Year",
+      "limit": "Limit"
+    },
+    "empty": {
+      "title": "No limits published",
+      "description": "Contribution limits will appear here once they're available for your registrations."
     }
   },
   "assets": {
@@ -490,6 +560,152 @@
     "corrected": "Correction recorded.",
     "loadFailed": "The ledger could not be loaded."
   },
+  "pricing": {
+    "recordQuote": "Record a quote",
+    "fxRates": "Exchange rates",
+    "backToPrices": "Prices",
+    "columns": {
+      "date": "Date",
+      "asset": "Asset",
+      "price": "Price",
+      "source": "Source",
+      "pair": "Pair",
+      "rate": "Rate"
+    },
+    "filters": {
+      "asset": "Asset",
+      "base": "Base",
+      "quote": "Quote",
+      "all": "All"
+    },
+    "empty": {
+      "title": "No prices recorded",
+      "description": "Market-priced and NAV assets are valued at the prices you record here.",
+      "filteredTitle": "No prices for this asset",
+      "filteredDescription": "Record one, or clear the filter to see the rest."
+    },
+    "age": {
+      "lastQuote": "Last quote {{date}}",
+      "valuedOn": "valued {{date}}",
+      "precedesValuation": "Priced before the valuation date"
+    },
+    "coverage": {
+      "title": "Needs a price",
+      "description": "These holdings can't be valued until a price is recorded.",
+      "priceIt": "Price it",
+      "complete": "Every holding has a price and a rate for {{date}}.",
+      "unknown": "Couldn't check which holdings are missing a price.",
+      "noFxTitle": "Missing an exchange rate",
+      "noFxDescription": "These holdings couldn't be converted to your reporting currency, because the exchange-rate table has no rate for that date. The table is global and maintained by the platform.",
+      "seeRates": "See exchange rates"
+    },
+    "form": {
+      "createTitle": "Record a price quote",
+      "createDescription": "One price per asset and date. A recorded quote is never overwritten.",
+      "asset": "Asset",
+      "assetHint": "Only market-priced and NAV assets carry a quote.",
+      "date": "Date",
+      "price": "Price",
+      "cancel": "Cancel",
+      "create": "Record quote",
+      "created": "Price recorded for {{name}}.",
+      "errors": {
+        "asset": "Choose an asset.",
+        "date": "Enter the date this price is for.",
+        "price": "Enter a price."
+      }
+    },
+    "fx": {
+      "title": "Exchange rates",
+      "description": "The rates your figures are converted at.",
+      "readOnly": "This table is global and maintained by the platform, so it can't be edited here.",
+      "precedence": "A manual rate is an override: the daily sync never updates a row that already exists, so an override wins for its date and pair.",
+      "movementOverride": "To override the rate on a single movement, enter it when you record that movement — a rate you type in is stored exactly as typed and is never resolved again.",
+      "empty": {
+        "title": "No rates for this pair",
+        "description": "Clear the filters to see the rest of the table.",
+        "unfilteredTitle": "No rates published yet",
+        "unfilteredDescription": "This table is filled by the platform's daily sync. Until it has, figures that need a conversion can't be produced."
+      }
+    }
+  },
+  "allocation": {
+    "dimensions": {
+      "archetype": "Archetype",
+      "currency": "Currency",
+      "country": "Country"
+    },
+    "columns": {
+      "category": "Category",
+      "value": "Value",
+      "weight": "Share"
+    },
+    "total": "Total",
+    "valuedOn": "Valued on {{date}}",
+    "complete": "Every holding was valued.",
+    "incomplete_one": "{{count}} holding could not be valued, so the shares below cover the rest.",
+    "incomplete_other": "{{count}} holdings could not be valued, so the shares below cover the rest.",
+    "seePricing": "See what's missing",
+    "sliceIncomplete": "Partly valued",
+    "empty": {
+      "title": "Nothing to allocate yet",
+      "description": "Record a movement and this splits your portfolio by archetype, currency, and country."
+    },
+    "freeCash": "Free cash"
+  },
+  "holding": {
+    "headline": {
+      "value": "Current value",
+      "unrealized": "Unrealized gain",
+      "realized": "Realized gain",
+      "income": "Income received",
+      "invested": "Invested",
+      "totalReturn": "Total return",
+      "realReturn": "Real return"
+    },
+    "figures": {
+      "title": "Figures",
+      "inOne": "Figures below in {{currency}}.",
+      "inTwo": "Figures below in {{native}} (asset) and {{base}} (account).",
+      "figure": "Figure",
+      "nativeColumn": "{{currency}} (asset)",
+      "baseColumn": "{{currency}} (account)",
+      "quantity": "Position",
+      "units": "{{quantity}} units",
+      "holdingPeriod": "Held for",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "since": "since {{date}}",
+      "principal": "Principal",
+      "currentValue": "Current value",
+      "costBasis": "Cost basis remaining",
+      "invested": "Invested",
+      "realized": "Realized gain",
+      "unrealized": "Unrealized gain",
+      "income": "Income received",
+      "costs": "Costs"
+    },
+    "valuedOn": "Valued on {{date}}",
+    "derivedNote": "These figures are derived from your recorded movements.",
+    "seeMovements": "See its movements",
+    "setInflation": "Set an inflation reference to see real return",
+    "basis": {
+      "title": "Cost basis",
+      "method": "Method",
+      "explanation": "The method follows the account's country, so identical movements in two countries can legitimately show different realized gains."
+    },
+    "tax": {
+      "title": "Tax attributes",
+      "registration": "Registration",
+      "advantaged": "Tax-advantaged",
+      "advantagedYes": "Yes",
+      "advantagedNo": "No",
+      "room": "Contribution room",
+      "limit": "{{year}} limit",
+      "disclaimer": "Information only. BullLedger records tax attributes and never calculates what you owe."
+    },
+    "seeLots": "See its lots"
+  },
   "enums": {
     "kind": {
       "BANK": "Bank",
@@ -598,6 +814,23 @@
     "taxedOn": {
       "WHOLE_AMOUNT": "Whole amount",
       "GAINS_ONLY": "Gains only"
+    },
+    "priceSource": {
+      "MANUAL": "Manual",
+      "FEED": "Feed"
+    },
+    "pricingMode": {
+      "MARKET": "Market price",
+      "NAV": "NAV",
+      "ACCRUAL": "Accrual"
+    },
+    "missingReason": {
+      "NO_QUOTE": "No price",
+      "NO_FX": "No exchange rate"
+    },
+    "costBasisMethod": {
+      "WEIGHTED_AVERAGE": "Weighted average",
+      "FIFO": "FIFO / specific lot"
     }
   },
   "notFound": {
