@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 
 import { MoneyValue } from "@/components/MoneyValue";
 import { SignedPercent } from "@/components/SignedPercent";
+import { TargetStatusBadge } from "@/components/TargetStatusBadge";
 import { UnpricedNote } from "@/components/UnpricedNote";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
@@ -69,6 +70,16 @@ export function HoldingRow({
           <span className="text-muted-foreground">—</span>
         ) : (
           <SignedPercent value={holding.total_return} />
+        )}
+      </TableCell>
+
+      <TableCell className="text-right">
+        {/* Null is the ordinary case, not a gap: a holding no target covers
+            simply has no status. Repeating "no target" down every row would
+            print the absence forty times and the presence three, which inverts
+            the signal — and an em dash would read as "measured, and nothing". */}
+        {holding.target_status !== null && (
+          <TargetStatusBadge status={holding.target_status} />
         )}
       </TableCell>
     </TableRow>

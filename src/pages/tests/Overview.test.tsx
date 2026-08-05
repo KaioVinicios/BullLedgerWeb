@@ -378,3 +378,45 @@ describe("the overview screen", () => {
     }
   });
 });
+
+describe("target status on the overview", () => {
+  /** The same portfolio, with a verdict on its first holding. */
+  const withStatus = (
+    target_status: "AHEAD" | "ON_TRACK" | "BEHIND" | "BELOW_FLOOR" | null,
+  ): PortfolioOverview => ({
+    ...overview,
+    accounts: [
+      {
+        ...overview.accounts[0],
+        holdings: [
+          { ...overview.accounts[0].holdings[0], target_status },
+          overview.accounts[0].holdings[1],
+        ],
+      },
+    ],
+  });
+
+  it("badges a holding a target resolved for", async () => {
+    server.use(...signedIn(withStatus("BEHIND")));
+    mount();
+
+    expect(
+      await screen.findByText(app.enums.targetStatus.BEHIND),
+    ).toBeVisible();
+  });
+
+  it("leaves the cell empty when no target resolved, rather than saying so on every row", async () => {
+    server.use(...signedIn(withStatus(null)));
+    mount();
+
+    await screen.findByText(app.overview.columns.status);
+
+    for (const status of Object.values(app.enums.targetStatus)) {
+      expect(screen.queryByText(status)).not.toBeInTheDocument();
+    }
+
+    // And no stand-in either: an em dash would read as "measured, and nothing".
+    const row = screen.getByRole("row", { name: /PETR4/ });
+    expect(within(row).getAllByRole("cell").at(-1)).toBeEmptyDOMElement();
+  });
+});

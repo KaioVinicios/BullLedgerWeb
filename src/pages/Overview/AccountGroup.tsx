@@ -107,6 +107,9 @@ export function AccountGroupBlock({
                   <TableHead className="text-right">
                     {t("overview.columns.return")}
                   </TableHead>
+                  <TableHead className="text-right">
+                    {t("overview.columns.status")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

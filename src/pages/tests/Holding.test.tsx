@@ -391,3 +391,113 @@ describe("cost basis and tax context", () => {
     expect(screen.queryByText("CA$7,000.00")).not.toBeInTheDocument();
   });
 });
+
+describe("the holding's target block", () => {
+  const withTarget = (target: HoldingDetail["target"]): HoldingDetail => ({
+    ...singleCurrency,
+    target,
+  });
+
+  it("renders the verdict with its label and the three figures", async () => {
+    server.use(
+      ...signedIn(
+        withTarget({
+          status: "AHEAD",
+          actual: "0.182",
+          expected: "0.12",
+          band: "0.02",
+          source: {
+            scope: "HOLDING",
+            id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          },
+        }),
+      ),
+    );
+    await mount();
+
+    expect(await screen.findByText(app.enums.targetStatus.AHEAD)).toBeVisible();
+    expect(screen.getByText("18.2%")).toBeVisible();
+    expect(screen.getByText("12%")).toBeVisible();
+    expect(screen.getByText("2%")).toBeVisible();
+  });
+
+  it("names the level the verdict resolved from", async () => {
+    server.use(
+      ...signedIn(
+        withTarget({
+          status: "BEHIND",
+          actual: "0.05",
+          expected: "0.12",
+          band: "0.02",
+          source: {
+            scope: "ACCOUNT_ARCHETYPE",
+            id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          },
+        }),
+      ),
+    );
+    await mount();
+
+    expect(
+      await screen.findByText(
+        app.holding.target.from.ACCOUNT_ARCHETYPE.replace(
+          "{{archetype}}",
+          app.enums.archetype.EXCHANGE_SECURITY,
+        ).replace("{{account}}", "Corretora XP"),
+      ),
+    ).toBeVisible();
+  });
+
+  it("states the provenance without offering a link to the target it names", async () => {
+    server.use(
+      ...signedIn(
+        withTarget({
+          status: "ON_TRACK",
+          actual: "0.12",
+          expected: "0.12",
+          band: "0.02",
+          source: {
+            scope: "HOLDING",
+            id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          },
+        }),
+      ),
+    );
+    await mount();
+
+    await screen.findByText(app.enums.targetStatus.ON_TRACK);
+
+    // This screen reads. It does not grow an edit path to what it is reading.
+    for (const link of screen.getAllByRole("link")) {
+      expect(link.getAttribute("href")).not.toMatch(
+        /\/app\/targets\/[^/]+\/edit/,
+      );
+    }
+  });
+
+  it("treats no target as no status, not as a failure", async () => {
+    server.use(...signedIn(withTarget(null)));
+    await mount();
+
+    expect(await screen.findByText(app.holding.target.none)).toBeVisible();
+
+    // No verdict word, no warning tone, no zero standing in for a figure.
+    for (const status of Object.values(app.enums.targetStatus)) {
+      expect(screen.queryByText(status)).not.toBeInTheDocument();
+    }
+  });
+
+  it("prefills the scope on the way to the form", async () => {
+    server.use(...signedIn(withTarget(null)));
+    await mount();
+
+    const href = (
+      await screen.findByRole("link", { name: app.holding.target.set })
+    ).getAttribute("href");
+
+    expect(href).toContain("/app/targets/new");
+    expect(href).toContain("scope=HOLDING");
+    expect(href).toContain(`account=${ACCOUNT_ID}`);
+    expect(href).toContain(`asset=${ASSET_ID}`);
+  });
+});
