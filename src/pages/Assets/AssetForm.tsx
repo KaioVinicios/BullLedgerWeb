@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import Big from "big.js";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -65,17 +64,19 @@ import {
   type AssetUpdate,
 } from "@/services/assets";
 import { institutionKeys, listInstitutions } from "@/services/institutions";
-import { SCALE, parseDecimalInput } from "@/utils/decimal";
-import { formatNumericString } from "@/utils/intl";
+import {
+  SCALE,
+  fractionToPercent,
+  localizeDecimal,
+  parseDecimalInput,
+  percentToFraction,
+} from "@/utils/decimal";
 import { minorUnitsToDecimalString, parseMoneyInput } from "@/utils/money";
 
 const NO_SERVER_ERRORS: PartitionedServerErrors = {
   fieldErrors: {},
   formErrors: [],
 };
-
-/** Percent entries keep two digits of headroom for the ÷100 shift. */
-const PERCENT_SCALE = SCALE.rate - 2;
 
 /** Radix select values are strings; "no issuer" needs its own. */
 const NO_ISSUER = "none";
@@ -172,18 +173,7 @@ function defaultsFor(
   asset: Asset | undefined,
   locale: string,
 ): AssetFormValues {
-  const localize = (value: string) =>
-    formatNumericString(
-      new Intl.NumberFormat(locale, {
-        useGrouping: false,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: SCALE.unitPrice,
-      }),
-      value,
-    );
-
-  const fractionToPercent = (fraction: string | null | undefined) =>
-    fraction ? localize(new Big(fraction).times(100).toFixed()) : "";
+  const localize = (value: string) => localizeDecimal(value, locale);
 
   const values: AssetFormValues = {
     name: asset?.name ?? "",
@@ -234,7 +224,7 @@ function defaultsFor(
         compounding: asset.compounding,
         deposit_insurance: asset.deposit_insurance,
         liquidity: asset.liquidity,
-        rate_value: fractionToPercent(asset.rate_value),
+        rate_value: fractionToPercent(asset.rate_value, locale),
       };
     case "FIXED_INCOME":
       return {
@@ -245,7 +235,7 @@ function defaultsFor(
         maturity_date: asset.maturity_date,
         rate_type: asset.rate_type,
         rate_index: asset.rate_index,
-        coupon_rate: fractionToPercent(asset.coupon_rate),
+        coupon_rate: fractionToPercent(asset.coupon_rate, locale),
         coupon_frequency: asset.coupon_frequency,
         tax_advantaged: asset.tax_advantaged,
         early_redemption: asset.early_redemption,
@@ -255,7 +245,7 @@ function defaultsFor(
         face_value: asset.face_value
           ? localize(minorUnitsToDecimalString(asset.face_value.amount))
           : "",
-        rate_value: fractionToPercent(asset.rate_value),
+        rate_value: fractionToPercent(asset.rate_value, locale),
       };
     case "EXCHANGE_SECURITY":
       return {
@@ -271,8 +261,8 @@ function defaultsFor(
         ...values,
         fund_category: asset.fund_category,
         unit_price: asset.unit_price ? localize(asset.unit_price) : "",
-        management_fee: fractionToPercent(asset.management_fee),
-        performance_fee: fractionToPercent(asset.performance_fee),
+        management_fee: fractionToPercent(asset.management_fee, locale),
+        performance_fee: fractionToPercent(asset.performance_fee, locale),
         redemption_period: asset.redemption_period ?? "",
       };
     case "CRYPTO":
@@ -315,17 +305,9 @@ export function AssetForm({ asset }: { asset?: Asset }) {
   const institutionName = (id: string) =>
     institutions.find((row) => row.id === id)?.name ?? id;
 
-  const percentToFraction = useMemo(
-    () => (input: string) => {
-      const parsed = parseDecimalInput(input, locale, PERCENT_SCALE);
-      return parsed === null ? null : new Big(parsed).div(100).toFixed();
-    },
-    [locale],
-  );
-
   const schema = useMemo(() => {
     const percentOk = (value: string) =>
-      value.trim() === "" || percentToFraction(value) !== null;
+      value.trim() === "" || percentToFraction(value, locale) !== null;
     const decimalOk = (value: string, scale: number) =>
       value.trim() === "" || parseDecimalInput(value, locale, scale) !== null;
 
@@ -404,7 +386,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                 path: ["issuer"],
               });
             }
-            if (percentToFraction(values.coupon_rate) === null) {
+            if (percentToFraction(values.coupon_rate, locale) === null) {
               ctx.addIssue({
                 code: "custom",
                 message: t("assets.form.errors.percentRequired"),
@@ -432,7 +414,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
           }
         }
       });
-  }, [t, locale, percentToFraction]);
+  }, [t, locale]);
 
   const mutation = useMutation({
     mutationFn: (body: AssetRequest | AssetUpdate) =>
@@ -472,7 +454,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
         return trimmed === "" ? null : trimmed;
       };
       const percentOrNull = (input: string) =>
-        input.trim() === "" ? null : percentToFraction(input);
+        input.trim() === "" ? null : percentToFraction(input, locale);
 
       const base = {
         name: value.name.trim(),
@@ -505,7 +487,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
             rate_type: value.rate_type,
             rate_index: value.rate_index,
             // Validated non-null by the schema before this runs.
-            coupon_rate: percentToFraction(value.coupon_rate) ?? "0",
+            coupon_rate: percentToFraction(value.coupon_rate, locale) ?? "0",
             coupon_frequency: value.coupon_frequency,
             tax_advantaged: value.tax_advantaged,
             early_redemption: value.early_redemption,

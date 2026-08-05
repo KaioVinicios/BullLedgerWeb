@@ -79,3 +79,56 @@ export function formatPercent(fraction: string, locale: string): string {
 
   return `${formatDecimal(percent, locale, SCALE.rate)}%`;
 }
+
+/**
+ * Percent entries keep two digits of headroom for the ÷100 shift: a rate is a
+ * fraction at `SCALE.rate`, so a percent typed with more than `SCALE.rate - 2`
+ * decimals would shift into a value the wire's pattern rejects.
+ */
+export const PERCENT_SCALE = SCALE.rate - 2;
+
+/**
+ * A canonical decimal string rendered in the reader's locale, ungrouped —
+ * what a form *input* wants as a prefill, as opposed to what a table wants to
+ * display. Ungrouped because the value is about to be re-parsed by the same
+ * input it was written into, and thousands separators are noise on the way
+ * back in.
+ */
+export function localizeDecimal(value: string, locale: string): string {
+  return formatNumericString(
+    new Intl.NumberFormat(locale, {
+      useGrouping: false,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: SCALE.unitPrice,
+    }),
+    value,
+  );
+}
+
+/**
+ * A percent as the user typed it → the decimal-string fraction the wire wants:
+ * `13.75` → `0.1375`. Locale-aware coming in, canonical going out, and the
+ * shift goes through Big so nothing passes through a float.
+ *
+ * `null` when the entry is not a number or carries more precision than
+ * `PERCENT_SCALE` leaves room for — the same refusal `parseDecimalInput`
+ * makes, passed through rather than rounded away.
+ */
+export function percentToFraction(
+  input: string,
+  locale: string,
+): string | null {
+  const parsed = parseDecimalInput(input, locale, PERCENT_SCALE);
+
+  return parsed === null ? null : new Big(parsed).div(100).toFixed();
+}
+
+/** The inverse, for prefilling a form from a stored fraction: `0.1375` → `13.75`. */
+export function fractionToPercent(
+  fraction: string | null | undefined,
+  locale: string,
+): string {
+  return fraction
+    ? localizeDecimal(new Big(fraction).times(100).toFixed(), locale)
+    : "";
+}

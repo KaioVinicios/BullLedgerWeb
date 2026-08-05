@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   formatDecimal,
   formatPercent,
+  fractionToPercent,
   isValidDecimalString,
   parseDecimalInput,
+  percentToFraction,
   SCALE,
 } from "@/utils/decimal";
 
@@ -82,5 +84,38 @@ describe("formatPercent", () => {
 
   it("keeps the sign on a negative fraction", () => {
     expect(formatPercent("-0.0125", "en-US")).toContain("-1.25");
+  });
+});
+
+describe("percent conversion", () => {
+  it("shifts a typed percent into the wire's fraction", () => {
+    expect(percentToFraction("13.75", "en-US")).toBe("0.1375");
+    expect(percentToFraction("13,75", "pt-BR")).toBe("0.1375");
+    expect(percentToFraction("0", "en-US")).toBe("0");
+  });
+
+  it("shifts back for a prefill, in the reader's locale", () => {
+    expect(fractionToPercent("0.1375", "en-US")).toBe("13.75");
+    expect(fractionToPercent("0.1375", "pt-BR")).toBe("13,75");
+    expect(fractionToPercent(null, "en-US")).toBe("");
+    expect(fractionToPercent(undefined, "en-US")).toBe("");
+  });
+
+  it("survives the round trip at the scale the shift leaves room for", () => {
+    const typed = "12.345678";
+    const fraction = percentToFraction(typed, "en-US");
+
+    expect(fraction).toBe("0.12345678");
+    expect(fractionToPercent(fraction, "en-US")).toBe(typed);
+  });
+
+  it("refuses precision the shift cannot hold", () => {
+    // PERCENT_SCALE is SCALE.rate - 2, so a seventh decimal has nowhere to go.
+    expect(percentToFraction("1.2345678", "en-US")).toBeNull();
+  });
+
+  it("refuses what is not a number", () => {
+    expect(percentToFraction("", "en-US")).toBeNull();
+    expect(percentToFraction("abc", "en-US")).toBeNull();
   });
 });
