@@ -1,4 +1,4 @@
-<!-- v1.1.0 | last changed 2026-08-03 -->
+<!-- v1.2.0 | last changed 2026-08-05 -->
 
 # Project Directory Structure
 
@@ -57,6 +57,16 @@ would make the dialog argue with its own copy.
 rate; both read sign, tone, and screen-reader label from that one function, so a
 gain reads identically whether it is an amount or a rate. Same reasoning as
 `shell/activeStyles.ts` — the vocabulary for a state belongs in one file.
+
+`TargetStatusBadge.tsx` is one file for four verdicts, the same reason `signedTone.ts` is
+one file: the vocabulary for a state belongs in one place, so the word for `BEHIND` is the
+same word on the holding detail and on the overview row. The label is always rendered —
+`PRODUCT.md` forbids encoding financial state by colour alone, and the icon is decorative
+beside it rather than a substitute for it. The phase spends **one tone**: three verdicts
+take the neutral `outline` variant and only `BELOW_FLOOR` takes `destructive`, which is the
+incumbent pair already used elsewhere rather than a new colour this phase introduced. That
+pair's measured contrast is still unrecorded; the file says so rather than implying it was
+checked.
 
 `AllocationBar.tsx` is decorative **by design and marked as such**: it is
 `aria-hidden`, carries no text, and every label, value, and weight lives in the
@@ -216,6 +226,14 @@ nobody has touched; and none of the three carries `on`, because all three
 endpoints default the valuation date to today and a date picker would be a
 product decision rather than a missing control.
 
+`targetsList.ts` holds the targets screen's URL state, and carries **three** page
+parameters — `holdingPage`, `accountPage`, `portfolioPage` — where every other list in the
+app has one. That is the cost of the three-section layout, paid rather than dodged: the
+sections are three independent queries, and a single shared `page` would step all three
+lists together, which is not a thing anyone means. It also holds `newTargetSearchSchema`,
+the prefill the holding detail links with; every field there is `.catch(undefined)`, so a
+hand-edited URL degrades to an empty form rather than to a crash.
+
 `resourceList.ts` holds the URL search state every structure list shares. Every field is
 optional in the *output* as well as the input, deliberately: a required output would force
 a `search` prop onto every `<Link>` into a list screen, including the sidebar's. Absence
@@ -285,6 +303,26 @@ here because the answer is not the obvious field: the API pairs a transfer's leg
 one-directionally, so the departing leg's own `transfer_of` is null and only the type
 identifies both.
 
+`targets.ts` types the create body as a **union over `scope`** — the schema's own shape,
+three members carrying different coordinates — while the update body is a union of three
+*structurally identical* members carrying no scope at all. That asymmetry is the contract
+saying a target for a different scope is a different target, and it is why the edit screen
+renders scope as a badge rather than as a control: there is no field to send.
+
+`listAllTargetsInScope` walks every page rather than reading page 1, and the difference
+matters. `GET /api/targets/` filters by `scope` only; `account` and `asset` are accepted and
+**silently ignored**. The create form has to know whether an exact scope is already taken
+before it offers a submit, and a page-1 answer would be confidently wrong the moment a user
+owns 51 targets — the Phase 8 contribution-limits trap, which was survivable there because
+a missing limit is visible and is not here, because a missing collision looks exactly like
+no collision. `docs/backend-requests/2026-08-04-targets.md` asks for the filters; the walk
+comes out when they land.
+
+`invalidateTargets` sweeps `PORTFOLIO_KEY` alongside the target keys, and that line is
+asserted by a test rather than trusted. A target changes no *figure* the projections
+carry — only the derived verdict beside them — so nothing on screen would look wrong if it
+were dropped.
+
 `profile.ts` is the one resource that is a singleton — `/api/profile/` carries no id and always resolves to the caller's own profile — so it defines its key inline instead of through `createResourceKeys`, which would give it a `list()` and a `detail()` that can never be called. The identity write (`updateCurrentUser`) lives in `auth.ts` beside `currentUserQuery` rather than in its own module, because it is the same resource; splitting a read from its write is how a client ends up with two disagreeing ideas of what a user is.
 
 ### `store/`
@@ -311,6 +349,31 @@ field in the ledger asks for a **magnitude** — "total paid", "units disposed" 
 a user for a negative number and no screen has to remember to negate one. It returns `null`
 rather than a rounded guess when an amount cannot be held exactly, because passing
 `parseMoneyInput`'s refusal through is the only honest option on the money path.
+
+`targetWire.ts` is `movementWire.ts`'s twin for targets, and the differences are the
+interesting part. Where the ledger's conversion is about **sign**, this one is about
+**shape**: the form holds one flat object for every scope and `toTargetRequest` picks the
+union member at the wire, so choosing the wrong level and choosing back does not discard
+what was typed. `from_month` is the one honest `Number()` on this path — `int64`, a count
+of whole months, not money. `validateFormValues` exists because a `null` from the
+conversion would otherwise be a submit button that does nothing, which is the Phase 5
+`issuer` defect; it keys its refusals **exactly as the server keys its own**
+(`steps.0.rate`), so client and server errors render through one path. Three facts the live
+walk settled are recorded where the code reads them: the floor is a positive magnitude,
+`PATCH` with `steps` replaces the array, and duplicate months are rejected.
+
+`targetScope.ts` answers the three questions a target's scope raises — what it is called,
+whether a half-filled selection is answerable yet, and whether an existing target already
+occupies it. Pure and React-free, taking `t` as an argument the way `translateServerErrors`
+does, because the same target has to be called the same thing in the list, the archive
+dialog, the create form, and the edit screen. A target carries **no name of its own**:
+nothing on any member of the union is a label, so every name here is built from the scope.
+
+`decimal.ts` gained the percent↔fraction pair (`percentToFraction`, `fractionToPercent`,
+`localizeDecimal`). The ÷100 shift now has one home rather than a copy per form — it was
+written once in `AssetForm` and would have been written a second time in `TargetForm`,
+which is the moment a shared rule stops being a coincidence. It goes through Big, never a
+float, like everything else on the money path.
 
 ## Tests
 
