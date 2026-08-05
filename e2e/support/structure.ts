@@ -84,6 +84,7 @@ type Asset = components["schemas"]["Asset"];
 type Movement = components["schemas"]["Movement"];
 type MovementRecordRequest = components["schemas"]["MovementRecordRequest"];
 type PriceQuote = components["schemas"]["PriceQuote"];
+type Target = components["schemas"]["Target"];
 
 /**
  * The API enforces CSRF on every cookie-authenticated unsafe request, and
@@ -220,6 +221,22 @@ export function seedPriceQuote(
   options: { asset: string; date: string; price: string },
 ): Promise<PriceQuote> {
   return seed<PriceQuote>(page, ENDPOINTS.priceQuotes, options);
+}
+
+/**
+ * One target, for journeys where an existing target is the *precondition*
+ * rather than the subject — reading a status, seeing a scope already taken,
+ * archiving. The specs about authoring one drive the form.
+ *
+ * Takes the request union as the schema defines it, so the caller picks the
+ * member and the type checker holds them to it: a `HOLDING` body carries no
+ * archetype, and an archetype body carries no asset.
+ */
+export function seedTarget(
+  page: Page,
+  body: components["schemas"]["TargetRequest"],
+): Promise<Target> {
+  return seed<Target>(page, ENDPOINTS.targets, body);
 }
 
 /**
