@@ -348,3 +348,57 @@ export const EXCHANGES = [
 
 const _exchangesExhaustive: AllOf<Exchange, typeof EXCHANGES> = EXCHANGES;
 void _exchangesExhaustive;
+
+// ——— Targets ———
+
+export type TargetScope = components["schemas"]["TargetScopeEnum"];
+
+/**
+ * **In resolution order, most specific first.** `business-rules.md`: a
+ * holding's effective target comes from the first level that matches — its own
+ * target, then its account's archetype default, then the portfolio's — as a
+ * whole package, never a blend.
+ *
+ * The order is not cosmetic. The list screen renders one section per entry in
+ * this order, and that geometry is how the screen teaches the rule.
+ */
+export const TARGET_SCOPES = [
+  "HOLDING",
+  "ACCOUNT_ARCHETYPE",
+  "PORTFOLIO_ARCHETYPE",
+] as const satisfies readonly TargetScope[];
+
+const _targetScopesExhaustive: AllOf<TargetScope, typeof TARGET_SCOPES> =
+  TARGET_SCOPES;
+void _targetScopesExhaustive;
+
+export type Period = components["schemas"]["PeriodEnum"];
+
+/** Shortest first, so the select reads as a ladder rather than an alphabet. */
+export const PERIODS = [
+  "MONTHLY",
+  "QUARTERLY",
+  "SEMIANNUAL",
+  "ANNUAL",
+] as const satisfies readonly Period[];
+
+const _periodsExhaustive: AllOf<Period, typeof PERIODS> = PERIODS;
+void _periodsExhaustive;
+
+export type TargetStatus = components["schemas"]["TargetStatusEnum"];
+
+/**
+ * The verdict vocabulary. Derived by the server at read time and never stored,
+ * so this list exists only to let a component map all four to a label and an
+ * icon exhaustively — the client never produces one of these values.
+ */
+export const TARGET_STATUSES = [
+  "AHEAD",
+  "ON_TRACK",
+  "BEHIND",
+  "BELOW_FLOOR",
+] as const satisfies readonly TargetStatus[];
+
+const _targetStatusesExhaustive: AllOf<TargetStatus, typeof TARGET_STATUSES> =
+  TARGET_STATUSES;
+void _targetStatusesExhaustive;
