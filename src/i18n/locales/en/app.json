@@ -101,7 +101,6 @@
     "institutions": "The banks, brokerages, and exchanges you add will be listed here.",
     "accounts": "The accounts you create will be listed here.",
     "assets": "The assets you register will be listed here.",
-    "targets": "The targets you set will be listed here.",
     "help": "Guides will be published here as each part of the product lands.",
     "feedback": "A channel for reports and suggestions will open here before launch."
   },
@@ -157,7 +156,8 @@
       "asset": "Asset",
       "quantity": "Position",
       "value": "Value",
-      "return": "Return"
+      "return": "Return",
+      "status": "Status"
     },
     "firstRun": {
       "title": "Start your ledger",
@@ -704,7 +704,84 @@
       "limit": "{{year}} limit",
       "disclaimer": "Information only. BullLedger records tax attributes and never calculates what you owe."
     },
-    "seeLots": "See its lots"
+    "seeLots": "See its lots",
+    "target": {
+      "title": "Target",
+      "actual": "Actual",
+      "expected": "Expected",
+      "band": "Tolerance",
+      "from": {
+        "HOLDING": "From this holding's own target.",
+        "ACCOUNT_ARCHETYPE": "From your {{archetype}} target in {{account}}.",
+        "PORTFOLIO_ARCHETYPE": "From your portfolio-wide {{archetype}} target."
+      },
+      "none": "No target applies to this holding.",
+      "set": "Set one"
+    }
+  },
+  "targets": {
+    "add": "New target",
+    "resolution": "The most specific match wins: a holding's own target, then its account's archetype target, then the portfolio's. A holding's status comes from exactly one of them — never a blend.",
+    "sectionEmpty": "No targets at this level.",
+    "columns": {
+      "appliesTo": "Applies to",
+      "steps": "Steps",
+      "floor": "Floor"
+    },
+    "stepSummary": "{{rate}} {{period}} from month {{month}}",
+    "moreSteps": "+{{count}} more",
+    "empty": {
+      "title": "No targets yet",
+      "description": "A target is a rate you measure a holding against. Nothing happens when one is met or missed — BullLedger reports it and never acts on it.",
+      "action": "Set your first target"
+    },
+    "archived": "Target archived.",
+    "restored": "Target restored.",
+    "form": {
+      "createTitle": "New target",
+      "createDescription": "The rate you want to measure against, and where it applies.",
+      "editTitle": "Edit target",
+      "editDescription": "The scope is fixed — a target for another scope is another target. Change the rate steps or the floor.",
+      "scope": "Scope",
+      "scopeFixed": "Applies to",
+      "account": "Account",
+      "asset": "Asset",
+      "archetype": "Archetype",
+      "taken": {
+        "title": "{{name}} already has a target.",
+        "description": "A scope holds one target at a time. Edit the existing one rather than creating a second.",
+        "action": "Edit that target"
+      },
+      "steps": {
+        "title": "Rate steps",
+        "description": "Author each rate in the period you think in. A step starts at a whole number of months counted from the holding's first acquisition — and for an account or portfolio target, from each matching holding's own first acquisition.",
+        "add": "Add step",
+        "remove": "Remove step {{index}}",
+        "fromMonth": "From month, step {{index}}",
+        "firstStepFixed": "The first step starts at month 0, so the ladder always covers the whole period.",
+        "rate": "Rate, step {{index}}",
+        "period": "Period, step {{index}}"
+      },
+      "floor": {
+        "toggle": "Set a loss limit",
+        "description": "A floor the holding reads as breached below. Optional, and still only a report.",
+        "rate": "Loss limit",
+        "period": "Loss limit period"
+      },
+      "cancel": "Cancel",
+      "create": "Create target",
+      "save": "Save changes",
+      "created": "Target created for {{name}}.",
+      "saved": "Target saved.",
+      "errors": {
+        "account": "Choose an account.",
+        "asset": "Choose an asset.",
+        "fromMonth": "Enter a whole number of months, 0 or more.",
+        "duplicateMonth": "Two steps cannot start at the same month.",
+        "rate": "Enter a rate.",
+        "floor": "Enter a loss limit, or switch it off."
+      }
+    }
   },
   "enums": {
     "kind": {
@@ -831,6 +908,23 @@
     "costBasisMethod": {
       "WEIGHTED_AVERAGE": "Weighted average",
       "FIFO": "FIFO / specific lot"
+    },
+    "targetScope": {
+      "HOLDING": "Holding",
+      "ACCOUNT_ARCHETYPE": "Account × archetype",
+      "PORTFOLIO_ARCHETYPE": "Portfolio × archetype"
+    },
+    "period": {
+      "MONTHLY": "monthly",
+      "QUARTERLY": "quarterly",
+      "SEMIANNUAL": "semiannual",
+      "ANNUAL": "annual"
+    },
+    "targetStatus": {
+      "AHEAD": "Ahead",
+      "ON_TRACK": "On track",
+      "BEHIND": "Behind",
+      "BELOW_FLOOR": "Below floor"
     }
   },
   "notFound": {
