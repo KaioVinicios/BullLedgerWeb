@@ -77,6 +77,11 @@ export const APP_CHILD_SEGMENTS = {
   // table has no client write at all — `POST /api/fx-rates/` is staff-only.
   PRICING_NEW: `${APP_SEGMENTS.PRICING}/new`,
   PRICING_FX: `${APP_SEGMENTS.PRICING}/fx`,
+  // A target's create/edit pair, and no `archive` route: archival is an action
+  // on a row, not a destination. There is also no detail route — the edit
+  // screen *is* the detail view, as it is for every structure resource.
+  TARGETS_NEW: `${APP_SEGMENTS.TARGETS}/new`,
+  TARGETS_EDIT: `${APP_SEGMENTS.TARGETS}/$id/edit`,
   // Written with a literal prefix and deliberately *not* derived from an
   // `APP_SEGMENTS.HOLDINGS`, because there is no holdings index to derive it
   // from: the API publishes no holdings-list endpoint, so a `PATHS.HOLDINGS`
@@ -116,6 +121,8 @@ export const PATHS = {
   PRICING_NEW: `${APP}/${APP_CHILD_SEGMENTS.PRICING_NEW}`,
   PRICING_FX: `${APP}/${APP_CHILD_SEGMENTS.PRICING_FX}`,
   TARGETS: `${APP}/${APP_SEGMENTS.TARGETS}`,
+  TARGETS_NEW: `${APP}/${APP_CHILD_SEGMENTS.TARGETS_NEW}`,
+  TARGETS_EDIT: `${APP}/${APP_CHILD_SEGMENTS.TARGETS_EDIT}`,
   PROFILE: `${APP}/${APP_SEGMENTS.PROFILE}`,
   HELP: `${APP}/${APP_SEGMENTS.HELP}`,
   FEEDBACK: `${APP}/${APP_SEGMENTS.FEEDBACK}`,

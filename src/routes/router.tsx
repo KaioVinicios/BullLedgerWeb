@@ -50,6 +50,11 @@ import {
   resourceListDefaults,
   resourceListSearchSchema,
 } from "@/schemas/resourceList";
+import {
+  newTargetSearchSchema,
+  targetsListDefaults,
+  targetsListSearchSchema,
+} from "@/schemas/targetsList";
 import { APP_CHILD_SEGMENTS, APP_SEGMENTS, PATHS } from "@/routes/path";
 import { rootRoute } from "@/routes/root";
 import { accountQuery } from "@/services/accounts";
@@ -59,6 +64,7 @@ import { movementQuery } from "@/services/movements";
 import { movementTypesQuery } from "@/services/movementTypes";
 import { holdingQuery } from "@/services/portfolio";
 import { profileQuery } from "@/services/profile";
+import { targetQuery } from "@/services/targets";
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -455,7 +461,40 @@ const holdingRoute = createRoute({
 const targetsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: APP_SEGMENTS.TARGETS,
+  validateSearch: targetsListSearchSchema,
+  search: { middlewares: [stripSearchParams(targetsListDefaults)] },
   component: lazyRouteComponent(() => import("@/pages/Targets"), "TargetsPage"),
+  ...appScreenOptions,
+});
+
+/**
+ * Ranks above the sibling `targets/$id/edit`: TanStack prefers a literal
+ * segment over a param, exactly as `accounts/new` already relies on.
+ *
+ * The search schema carries the prefill the holding detail writes. It is
+ * validated rather than trusted for the reason every other search schema is: a
+ * hand-edited link should open a blank form, not a route error.
+ */
+const targetNewRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.TARGETS_NEW,
+  validateSearch: newTargetSearchSchema,
+  component: lazyRouteComponent(
+    () => import("@/pages/Targets/New"),
+    "TargetNewPage",
+  ),
+  ...appScreenOptions,
+});
+
+const targetEditRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_CHILD_SEGMENTS.TARGETS_EDIT,
+  loader: ({ context, params }) =>
+    context.queryClient.ensureQueryData(targetQuery(params.id)),
+  component: lazyRouteComponent(
+    () => import("@/pages/Targets/Edit"),
+    "TargetEditPage",
+  ),
   ...appScreenOptions,
 });
 
@@ -522,6 +561,8 @@ const routeTree = rootRoute.addChildren([
     allocationRoute,
     holdingRoute,
     targetsRoute,
+    targetNewRoute,
+    targetEditRoute,
     profileRoute,
     helpRoute,
     feedbackRoute,
