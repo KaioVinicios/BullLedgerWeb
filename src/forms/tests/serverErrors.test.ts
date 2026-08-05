@@ -68,6 +68,31 @@ describe("partitionServerErrors", () => {
     expect(fieldErrors).not.toHaveProperty("detail");
   });
 
+  it("routes __all__ to the form level too — a model constraint is not a field", () => {
+    // The Phase 9 live walk: a second target on a taken scope is rejected by a
+    // *model* constraint, and Django keys those `__all__` rather than
+    // `non_field_errors`. Read as a field name it belongs to no input, so the
+    // banner printed `__all__: …` at the user.
+    const error = apiClientErrorFromBody(
+      {
+        status: 400,
+        message: "Invalid input.",
+        errors: {
+          __all__: ["Constraint “target_unique_holding” is violated."],
+        },
+        codes: { __all__: ["invalid"] },
+      },
+      400,
+    );
+
+    const { fieldErrors, formErrors } = partitionServerErrors(error);
+
+    expect(formErrors).toEqual([
+      "Constraint “target_unique_holding” is violated.",
+    ]);
+    expect(fieldErrors).not.toHaveProperty("__all__");
+  });
+
   it("returns empty maps for an error carrying no fields", () => {
     const { fieldErrors, formErrors } = partitionServerErrors(
       apiClientErrorFromTransport(new TypeError("Failed to fetch")),

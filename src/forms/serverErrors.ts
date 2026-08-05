@@ -1,4 +1,9 @@
-import { DETAIL, NON_FIELD_ERRORS, type ApiClientError } from "@/lib/apiError";
+import {
+  ALL_FIELDS,
+  DETAIL,
+  NON_FIELD_ERRORS,
+  type ApiClientError,
+} from "@/lib/apiError";
 import { translateServerMessage, type ErrorsKey } from "@/lib/serverMessages";
 
 export interface PartitionedServerErrors {
@@ -14,7 +19,7 @@ function partitionMap(map: Record<string, string[]>): PartitionedServerErrors {
   const formErrors: string[] = [];
 
   for (const [key, values] of Object.entries(map)) {
-    if (key === NON_FIELD_ERRORS || key === DETAIL) {
+    if (key === NON_FIELD_ERRORS || key === DETAIL || key === ALL_FIELDS) {
       formErrors.push(...values);
     } else {
       fieldErrors[key] = values;

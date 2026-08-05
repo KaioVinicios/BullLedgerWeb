@@ -9,6 +9,18 @@ export type ApiErrorKind =
 export const NON_FIELD_ERRORS = "non_field_errors";
 /** The key a scalar problem (404, 405, 401) arrives under — always an array. */
 export const DETAIL = "detail";
+/**
+ * Django's *other* non-field key, used when a **model** constraint fails rather
+ * than a serializer rule — the two travel different paths and only the
+ * serializer one becomes `non_field_errors`.
+ *
+ * Found in the Phase 9 live walk: a second target on a scope that already has
+ * one is rejected as `{"__all__": ["Constraint “target_unique_holding” is
+ * violated."]}`. Read as a field name it belongs to no input, so
+ * `claimFieldErrors` prefixed the sentence with the key and printed
+ * `__all__: …` at the user. It is a form-level problem and is grouped as one.
+ */
+export const ALL_FIELDS = "__all__";
 
 interface ApiClientErrorInit {
   status: number;
