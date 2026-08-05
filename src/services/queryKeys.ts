@@ -24,9 +24,14 @@ export function createResourceKeys<TFilters>(
  * under this root.
  *
  * The invalidation rule for the whole app is one line: **any mutation to
- * movements, price quotes, FX rates, or the profile invalidates
+ * movements, price quotes, FX rates, the profile, or targets invalidates
  * `PORTFOLIO_KEY` wholesale.** Coarse on purpose. A stale total is a
  * correctness bug; an extra refetch is not. This is the client-side
  * expression of "the client records, it never derives".
+ *
+ * Targets are the odd one on that list and worth the extra sentence: a target
+ * changes no *figure* the projections carry. It changes the derived target
+ * status they carry beside the figures, which is enough — a screen showing a
+ * holding with no status right after its target was created is wrong.
  */
 export const PORTFOLIO_KEY = ["portfolio"] as const;

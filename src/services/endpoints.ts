@@ -57,6 +57,15 @@ export const ENDPOINTS = {
   // rather than by anything a user does here.
   contributionLimits: "/api/contribution-limits/",
 
+  // Targets. Archival is the dedicated POST pair, never a DELETE — there is no
+  // delete on a target, and `/api/targets/{id}/` takes GET and PATCH only. The
+  // PATCH body carries no scope, which is the schema saying a target for a
+  // different scope is a different target.
+  targets: "/api/targets/",
+  target: (id: string) => `/api/targets/${id}/`,
+  targetArchive: (id: string) => `/api/targets/${id}/archive/`,
+  targetUnarchive: (id: string) => `/api/targets/${id}/unarchive/`,
+
   profile: "/api/profile/",
 
   // Auth. Two paths are deliberately absent for the same reason — `lib/` must
