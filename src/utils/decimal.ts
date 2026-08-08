@@ -1,6 +1,7 @@
 import Big from "big.js";
 
 import { formatNumericString } from "@/utils/intl";
+import { escapeForRegExp, separatorsFor } from "@/utils/numericInput";
 
 /**
  * Decimal scales, read from the OpenAPI schema's own patterns:
@@ -34,19 +35,6 @@ export function formatDecimal(
   });
 
   return formatNumericString(formatter, value);
-}
-
-function separatorsFor(locale: string): { group: string; decimal: string } {
-  const parts = new Intl.NumberFormat(locale).formatToParts(12345.6);
-
-  return {
-    group: parts.find((part) => part.type === "group")?.value ?? ",",
-    decimal: parts.find((part) => part.type === "decimal")?.value ?? ".",
-  };
-}
-
-function escapeForRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**

@@ -1,6 +1,7 @@
 import type { components } from "@/types/api";
 import { SCALE } from "@/utils/decimal";
 import { formatNumericString } from "@/utils/intl";
+import { escapeForRegExp, separatorsFor } from "@/utils/numericInput";
 
 export type Money = components["schemas"]["Money"];
 export type Currency = components["schemas"]["CurrencyEnum"];
@@ -61,20 +62,6 @@ export function formatUnitPrice(
   });
 
   return formatNumericString(formatter, value);
-}
-
-/** Discovers a locale's group and decimal separators from Intl itself. */
-function separatorsFor(locale: string): { group: string; decimal: string } {
-  const parts = new Intl.NumberFormat(locale).formatToParts(12345.6);
-
-  return {
-    group: parts.find((part) => part.type === "group")?.value ?? ",",
-    decimal: parts.find((part) => part.type === "decimal")?.value ?? ".",
-  };
-}
-
-function escapeForRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
