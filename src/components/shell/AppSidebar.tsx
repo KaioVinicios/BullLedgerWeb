@@ -1,9 +1,9 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { BullLedgerLogo } from "@/components/BullLedgerLogo";
 import { ACTIVE_ITEM, ACTIVE_MARKER } from "@/components/shell/activeStyles";
 import { AppSidebarFooter } from "@/components/shell/AppSidebarFooter";
+import { BrandLink } from "@/components/shell/BrandLink";
 import {
   Sidebar,
   SidebarContent,
@@ -17,11 +17,9 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { NAV_SECTIONS } from "@/config/navigation";
-import { PATHS } from "@/routes/path";
 
 export function AppSidebar() {
   const { t } = useTranslation("app");
-  const router = useRouter();
 
   return (
     <Sidebar
@@ -30,44 +28,16 @@ export function AppSidebar() {
       mobileDescription={t("sidebar.drawerDescription")}
     >
       <SidebarHeader>
-        {/*
-          A plain anchor, not a `Link`, and the one place in this file that is.
-          `Link` appends `aria-current="page"` whenever its target matches, and
-          spreads it last, so no prop can suppress it. The brand points at
-          /app — a prefix of every screen — which made it claim to be the
-          current page alongside the real nav item everywhere, and `exact`
-          only narrows that to /app itself, where Overview claims it too.
-          `href` keeps middle-click and open-in-new-tab honest; the handler
-          keeps an ordinary click on the client side.
-        */}
-        <a
-          href={PATHS.APP}
-          onClick={(event) => {
-            const wantsNewContext =
-              event.button !== 0 ||
-              event.metaKey ||
-              event.ctrlKey ||
-              event.shiftKey ||
-              event.altKey;
-            if (event.defaultPrevented || wantsNewContext) return;
-
-            event.preventDefault();
-            void router.navigate({ to: PATHS.APP });
-          }}
+        <BrandLink
           // Collapsed, the mark is 24px against the nav icons' 16px, so
           // sharing their left edge would put its centre 4px to the right of
           // the column. It takes the same 32px box the menu buttons use, for
           // the same reason they do: centring inside the rail instead lands
           // half a pixel off, because the rail's 1px right border makes the
           // padded width odd.
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 outline-none group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 focus-visible:ring-3 focus-visible:ring-sidebar-ring"
-        >
-          {/* Decorative: the wordmark beside it already says the name. */}
-          <BullLedgerLogo aria-hidden className="size-6 shrink-0" />
-          <span className="font-heading text-base font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
-            BullLedger
-          </span>
-        </a>
+          className="group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 focus-visible:ring-sidebar-ring"
+          wordmarkClassName="group-data-[collapsible=icon]:hidden"
+        />
       </SidebarHeader>
 
       <SidebarContent>
