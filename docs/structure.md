@@ -108,12 +108,53 @@ TanStack Form compositions: field components with built-in validation wiring, an
 
 One field component per input shape, each the single owner of its label ↔ control ↔ hint ↔
 error wiring: `TextField`, `PasswordField`, `SelectField` (the enum twin — a form stacking
-ten enum fields must not invent its aria plumbing ten times), `MoneyField`, and
-`PercentField`. The last two keep their value a **string** in form state and convert only
-at submit — `parseMoneyInput` to integer minor units, Big.js for the percent's ÷100 — so
-the money path never touches a float between the keyboard and the wire. Their unit (`BRL`,
-`%`) rides beside the input as a non-interactive marker: it is part of reading the value,
-not of typing it.
+ten enum fields must not invent its aria plumbing ten times), and the four numeric ones
+below. All of them keep their value a **string** in form state and convert only at submit —
+`parseMoneyInput` to integer minor units, Big.js for the percent's ÷100, `parseDecimalInput`
+for the rest — so the money path never touches a float between the keyboard and the wire.
+A unit (`BRL`, `%`) rides beside the input as a non-interactive marker: it is part of
+reading the value, not of typing it.
+
+**The four numeric fields, and why they are four.** No page declares `inputMode` or filters
+a keystroke itself; a numeric field that is not one of these is a numeric field somebody
+will forget to wire.
+
+| Field | Types like | For |
+|---|---|---|
+| `MoneyField` | Cents mask, 2 places | Amounts, fees, balances |
+| `PercentField` | Cents mask, 2 places | Rates and fees |
+| `DecimalField` | Free, grouped live, `scale` prop | Quantities, unit prices, FX rates |
+| `IntegerField` | Free, grouped live, no separator | Counts |
+
+The split is forced by scale, not by taste. A currency's minor digits are fixed, which is
+what makes filling from the right exact; a quantity carries eighteen decimal places and a
+unit price twelve, so the same mask would read `10` as 1e-17 rather than ten shares.
+
+`PercentField` holds the one conditional. Its mask is narrower than the wire, which permits
+six decimal places as a percent, so an instance handed more precision than two places types
+freely instead — decided once from the initial value, never flipping under the cursor. That
+keeps opening a record and saving it from rounding a stored rate away.
+
+**Anything handed to a masked field must already carry `MASK_PLACES` decimals.** This is the
+easiest rule here to break by accident, and breaking it is silent: a rate prefilled as `6.5`
+looks right, and then the first keystroke reads it as the digits `65` and lands on `0.65`,
+dividing a stored figure by ten. Padding costs nothing, because `6.5` and `6.50` shift to
+the same fraction. The prefills are already funnelled — `fractionToPercent` for every
+percent in the app, `minorUnitsToDecimalString` for money — so a new one should go through
+those rather than format a value itself. `localizeDecimal`'s default of zero minimum
+fraction digits is what makes a hand-rolled prefill get this wrong; pass `MASK_PLACES` when
+the destination is a masked field.
+
+`hooks/useNumericInput.ts` is the shared behaviour and `utils/numericInput.ts` the
+arithmetic beneath it, kept pure and DOM-free because the caret math is the part most likely
+to be wrong and is far cheaper to pin as a function of `(string, index)`. That module also
+owns `separatorsFor`, which `money.ts` and `decimal.ts` each held a byte-identical private
+copy of until a third caller made the drift worth pre-empting.
+
+It also decides whether a change is a keystroke or a whole number arriving at once, which is
+not a nicety: read as keystrokes, a pasted `1.5` becomes `0.15`. A single inserted character
+is a keystroke even when it replaced a selection; anything longer, and anything that changes
+the length by more than one, is a paste — which is also how Playwright's `fill()` arrives.
 
 `serverErrors.ts` splits a rejection into per-field and form-level messages, and
 `claimFieldErrors` is what keeps a message from landing nowhere. A form passes the field
