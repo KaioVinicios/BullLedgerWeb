@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
+import { IntegerField } from "@/forms/IntegerField";
 import { PercentField } from "@/forms/PercentField";
 import { SelectField } from "@/forms/SelectField";
-import { TextField } from "@/forms/TextField";
 import { PERIODS, type Period } from "@/schemas/apiEnums";
 import { EMPTY_STEP, type StepDraft } from "@/utils/targetWire";
 
@@ -120,15 +120,12 @@ export function StepsEditor({
                 </p>
               </div>
             ) : (
-              <TextField
+              <IntegerField
                 name={`steps.${index}.from_month`}
                 label={t("targets.form.steps.fromMonth", { index: index + 1 })}
-                inputMode="numeric"
-                autoComplete="off"
                 value={step.from_month}
-                onChange={(event) =>
-                  update(index, { from_month: event.target.value })
-                }
+                onBlur={() => undefined}
+                onChange={(value) => update(index, { from_month: value })}
                 errors={fieldErrors[`steps.${index}.from_month`] ?? []}
               />
             )}

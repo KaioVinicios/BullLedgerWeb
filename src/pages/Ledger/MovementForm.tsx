@@ -44,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DecimalField } from "@/forms/DecimalField";
 import { FieldError } from "@/forms/FieldError";
 import { MoneyField } from "@/forms/MoneyField";
 import { TextField } from "@/forms/TextField";
@@ -85,7 +86,12 @@ import {
 import { typesFor } from "@/schemas/movementSpec";
 import { todayCalendarDate } from "@/utils/date";
 import { holdingQuery } from "@/services/portfolio";
-import { formatDecimal, parseDecimalInput, SCALE } from "@/utils/decimal";
+import {
+  formatDecimal,
+  INTEGER_DIGITS,
+  parseDecimalInput,
+  SCALE,
+} from "@/utils/decimal";
 import {
   formatMoney,
   minorUnitsToDecimalString,
@@ -870,10 +876,10 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                             >
                               <form.Field name="quantity">
                                 {(field) => (
-                                  <TextField
+                                  <DecimalField
                                     name="quantity"
-                                    inputMode="decimal"
-                                    autoComplete="off"
+                                    scale={SCALE.quantity}
+                                    integerDigits={INTEGER_DIGITS.quantity}
                                     label={t(
                                       `ledger.form.${quantityLabelKey(spec, shape)}` as const,
                                     )}
@@ -889,9 +895,7 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                                     ]}
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
-                                    onChange={(event) =>
-                                      field.handleChange(event.target.value)
-                                    }
+                                    onChange={field.handleChange}
                                   />
                                 )}
                               </form.Field>
@@ -899,10 +903,10 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                               {showUnitPrice && (
                                 <form.Field name="unit_price">
                                   {(field) => (
-                                    <TextField
+                                    <DecimalField
                                       name="unit_price"
-                                      inputMode="decimal"
-                                      autoComplete="off"
+                                      scale={SCALE.unitPrice}
+                                      integerDigits={INTEGER_DIGITS.unitPrice}
                                       label={t("ledger.form.unitPrice")}
                                       errors={[
                                         ...field.state.meta.errors,
@@ -911,9 +915,7 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                                       ]}
                                       value={field.state.value}
                                       onBlur={field.handleBlur}
-                                      onChange={(event) =>
-                                        field.handleChange(event.target.value)
-                                      }
+                                      onChange={field.handleChange}
                                     />
                                   )}
                                 </form.Field>
@@ -1006,10 +1008,10 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                             ) : (
                               <form.Field name="fx_rate">
                                 {(field) => (
-                                  <TextField
+                                  <DecimalField
                                     name="fx_rate"
-                                    inputMode="decimal"
-                                    autoComplete="off"
+                                    scale={SCALE.rate}
+                                    integerDigits={INTEGER_DIGITS.rate}
                                     label={t("ledger.form.fxRate")}
                                     hint={t("ledger.form.fxRateHint")}
                                     errors={[
@@ -1019,9 +1021,7 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                                     ]}
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
-                                    onChange={(event) =>
-                                      field.handleChange(event.target.value)
-                                    }
+                                    onChange={field.handleChange}
                                   />
                                 )}
                               </form.Field>

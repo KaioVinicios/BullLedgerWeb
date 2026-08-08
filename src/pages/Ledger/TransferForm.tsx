@@ -36,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DecimalField } from "@/forms/DecimalField";
 import { FieldError } from "@/forms/FieldError";
 import { MoneyField } from "@/forms/MoneyField";
 import { TextField } from "@/forms/TextField";
@@ -58,7 +59,7 @@ import {
 } from "@/services/movements";
 import { movementTypesQuery } from "@/services/movementTypes";
 import { todayCalendarDate } from "@/utils/date";
-import { parseDecimalInput, SCALE } from "@/utils/decimal";
+import { INTEGER_DIGITS, parseDecimalInput, SCALE } from "@/utils/decimal";
 import { parseMoneyInput, type Currency } from "@/utils/money";
 
 const NO_SERVER_ERRORS: PartitionedServerErrors = {
@@ -416,10 +417,10 @@ export function TransferForm() {
                   {movesUnits ? (
                     <form.Field name="quantity">
                       {(field) => (
-                        <TextField
+                        <DecimalField
                           name="quantity"
-                          inputMode="decimal"
-                          autoComplete="off"
+                          scale={SCALE.quantity}
+                          integerDigits={INTEGER_DIGITS.quantity}
                           label={t("ledger.transferForm.quantity")}
                           errors={[
                             ...field.state.meta.errors,
@@ -427,9 +428,7 @@ export function TransferForm() {
                           ]}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
+                          onChange={field.handleChange}
                         />
                       )}
                     </form.Field>

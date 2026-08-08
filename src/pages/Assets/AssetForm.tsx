@@ -14,6 +14,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
+import { DecimalField } from "@/forms/DecimalField";
+import { IntegerField } from "@/forms/IntegerField";
 import { MoneyField } from "@/forms/MoneyField";
 import { PercentField } from "@/forms/PercentField";
 import { SelectField } from "@/forms/SelectField";
@@ -65,8 +67,10 @@ import {
 } from "@/services/assets";
 import { institutionKeys, listInstitutions } from "@/services/institutions";
 import {
+  INTEGER_DIGITS,
   SCALE,
   fractionToPercent,
+  MASK_PLACES,
   localizeDecimal,
   parseDecimalInput,
   percentToFraction,
@@ -243,7 +247,11 @@ function defaultsFor(
         issuer_name: asset.issuer_name ?? "",
         issue_date: asset.issue_date ?? "",
         face_value: asset.face_value
-          ? localize(minorUnitsToDecimalString(asset.face_value.amount))
+          ? localizeDecimal(
+              minorUnitsToDecimalString(asset.face_value.amount),
+              locale,
+              MASK_PLACES,
+            )
           : "",
         rate_value: fractionToPercent(asset.rate_value, locale),
       };
@@ -1168,19 +1176,19 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                     </form.Field>
                     <form.Field name="unit_price">
                       {(field) => (
-                        <TextField
+                        <DecimalField
                           name="unit_price"
                           label={t("assets.form.unitPrice")}
                           hint={t("assets.form.optional")}
-                          inputMode="decimal"
-                          autoComplete="off"
+                          scale={SCALE.unitPrice}
+                          integerDigits={INTEGER_DIGITS.unitPrice}
                           errors={[
                             ...field.state.meta.errors,
                             ...fieldErrors("unit_price"),
                           ]}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
+                          onChange={field.handleChange}
                         />
                       )}
                     </form.Field>
@@ -1274,19 +1282,17 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                     </form.Field>
                     <form.Field name="decimals">
                       {(field) => (
-                        <TextField
+                        <IntegerField
                           name="decimals"
                           label={t("assets.form.decimals")}
                           hint={t("assets.form.decimalsHint")}
-                          inputMode="numeric"
-                          autoComplete="off"
                           errors={[
                             ...field.state.meta.errors,
                             ...fieldErrors("decimals"),
                           ]}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
+                          onChange={field.handleChange}
                         />
                       )}
                     </form.Field>

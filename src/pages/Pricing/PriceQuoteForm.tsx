@@ -27,6 +27,7 @@ import { FormError } from "@/components/FormError";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { DecimalField } from "@/forms/DecimalField";
 import { SelectField } from "@/forms/SelectField";
 import { TextField } from "@/forms/TextField";
 import {
@@ -44,7 +45,7 @@ import {
   type PriceQuoteRequest,
 } from "@/services/pricing";
 import { toCalendarDate, todayCalendarDate } from "@/utils/date";
-import { parseDecimalInput, SCALE } from "@/utils/decimal";
+import { INTEGER_DIGITS, parseDecimalInput, SCALE } from "@/utils/decimal";
 
 const route = getRouteApi(PATHS.PRICING_NEW);
 
@@ -228,9 +229,10 @@ export function PriceQuoteForm() {
               return (
                 <form.Field name="price">
                   {(field) => (
-                    <TextField
+                    <DecimalField
                       name={field.name}
-                      inputMode="decimal"
+                      scale={SCALE.unitPrice}
+                      integerDigits={INTEGER_DIGITS.unitPrice}
                       label={t("pricing.form.price")}
                       // The currency rides beside the input rather than inside
                       // the value: it follows the asset, and is not the user's
@@ -242,9 +244,7 @@ export function PriceQuoteForm() {
                       ]}
                       value={field.state.value}
                       onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value)
-                      }
+                      onChange={field.handleChange}
                     />
                   )}
                 </form.Field>
