@@ -106,7 +106,20 @@ bun run test:e2e
 ```
 
 An API started any other way runs the app fine but leaves no mailbox, and the
-four specs that follow an emailed link fail with `No API mailbox at …`.
+four specs that follow an emailed link fail. **How they fail depends on whether
+a mailbox file happens to be lying around, and only one of the two says so:**
+
+| `.e2e-mailbox/api.log` | Failure |
+|---|---|
+| Absent | `No API mailbox at …`, which names the cause and points back here |
+| Present but stale | `Waited 10000ms for reset-password link #1 to …; 0 arrived` |
+
+The second is the one to recognise, because it is the likelier of the two — any
+earlier correct run leaves a log behind, so the file is usually there. Nothing
+in that message suggests the API is the problem; it reads as six broken tests.
+Check the log's timestamp before believing it: if `ls -la .e2e-mailbox/api.log`
+predates the run, the API is writing somewhere else and the six failures are all
+one cause.
 
 | Requirement | Why |
 |---|---|
