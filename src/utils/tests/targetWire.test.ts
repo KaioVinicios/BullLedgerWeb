@@ -244,13 +244,17 @@ describe("defaultFormValues", () => {
 
     const values = defaultFormValues(target, {}, "pt-BR");
 
-    // 0.085 → 8,5 — a reader in pt-BR must not be handed the wire's dot, or
+    // 0.085 → 8,50 — a reader in pt-BR must not be handed the wire's dot, or
     // the next save reads it as a thousands separator. Phase 6's defect.
+    //
+    // The two decimal places are `MASK_PLACES`, not decoration: `PercentField`
+    // fills from the right at that width, so a prefill of `8,5` would be
+    // re-read as the digits `85` by the first keystroke and land on `0,85`.
     expect(values.steps).toEqual([
-      { from_month: "24", rate: "8,5", rate_period: "MONTHLY" },
+      { from_month: "24", rate: "8,50", rate_period: "MONTHLY" },
     ]);
     expect(values.floorEnabled).toBe(true);
-    expect(values.loss_limit_pct).toBe("10");
+    expect(values.loss_limit_pct).toBe("10,00");
   });
 });
 

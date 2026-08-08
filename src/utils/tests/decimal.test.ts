@@ -101,6 +101,23 @@ describe("percent conversion", () => {
     expect(fractionToPercent(undefined, "en-US")).toBe("");
   });
 
+  /**
+   * `PercentField` fills from the right at two places, so a prefill carrying
+   * fewer would be re-read as digits on the first keystroke: `6.5` typed into
+   * becomes `0.65`, silently dividing the user's rate by ten. Padding here is
+   * value-preserving — `6.5` and `6.50` shift to the same fraction — and it is
+   * the one funnel every percent prefill in the app already passes through.
+   */
+  it("pads a prefill to the two places the field's mask holds", () => {
+    expect(fractionToPercent("0.015", "en-US")).toBe("1.50");
+    expect(fractionToPercent("0.12", "en-US")).toBe("12.00");
+    expect(fractionToPercent("0.015", "pt-BR")).toBe("1,50");
+  });
+
+  it("keeps precision beyond two places rather than padding it away", () => {
+    expect(fractionToPercent("0.13755", "en-US")).toBe("13.755");
+  });
+
   it("survives the round trip at the scale the shift leaves room for", () => {
     const typed = "12.345678";
     const fraction = percentToFraction(typed, "en-US");

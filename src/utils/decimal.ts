@@ -16,6 +16,20 @@ export const SCALE = {
 } as const;
 
 /**
+ * The other half of those same patterns — digits allowed *before* the point.
+ *
+ * Read by the typing layer, which stops accepting digits at the ceiling rather
+ * than letting a user fill a field the server will reject. `SCALE` is left
+ * alone rather than widened into pairs: it is the argument every parser and
+ * formatter here already takes, and this is needed in one place.
+ */
+export const INTEGER_DIGITS = {
+  quantity: 20,
+  unitPrice: 18,
+  rate: 4,
+} as const;
+
+/**
  * Quantities and prices stay decimal strings end to end: the wire sends
  * strings and `Intl` formats strings, so nothing needs converting and nothing
  * passes through a float.
@@ -82,16 +96,30 @@ export const PERCENT_SCALE = SCALE.rate - 2;
  * input it was written into, and thousands separators are noise on the way
  * back in.
  */
-export function localizeDecimal(value: string, locale: string): string {
+export function localizeDecimal(
+  value: string,
+  locale: string,
+  minimumFractionDigits = 0,
+): string {
   return formatNumericString(
     new Intl.NumberFormat(locale, {
       useGrouping: false,
-      minimumFractionDigits: 0,
+      minimumFractionDigits,
       maximumFractionDigits: SCALE.unitPrice,
     }),
     value,
   );
 }
+
+/**
+ * The places `MoneyField` and `PercentField` fill from the right.
+ *
+ * A prefill carrying fewer would be re-read as a digit stream by the first
+ * keystroke — `6.5` becoming `0.65`, quietly dividing a stored rate by ten —
+ * so every value handed to one of those fields is padded to this width. The
+ * padding is value-preserving: `6.5` and `6.50` shift to the same fraction.
+ */
+export const MASK_PLACES = 2;
 
 /**
  * A percent as the user typed it → the decimal-string fraction the wire wants:
@@ -117,6 +145,10 @@ export function fractionToPercent(
   locale: string,
 ): string {
   return fraction
-    ? localizeDecimal(new Big(fraction).times(100).toFixed(), locale)
+    ? localizeDecimal(
+        new Big(fraction).times(100).toFixed(),
+        locale,
+        MASK_PLACES,
+      )
     : "";
 }
