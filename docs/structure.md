@@ -77,6 +77,15 @@ non-text bar, so the segment boundary is a 2px gap rather than a colour
 difference; and `--chart-1` at 1.20:1 over the light trough is excluded, because
 a segment nobody can see is not a segment.
 
+`BrandLink.tsx` is the brand in the one place it is defined, and it has two call sites for a
+reason. The sidebar header carries it from `md` up; below `md` the sidebar is an off-canvas
+sheet and takes the mark off screen with it, so `AppHeader` carries it there instead, behind
+a rule that stands in for the rail's right border. Both sides of that switch key off the same
+768px — `useIsMobile`'s query and Tailwind's `md` — so the brand is never absent and never
+doubled. The file also owns the reason it is a plain anchor rather than a `Link`: `Link`
+spreads `aria-current="page"` last when its target matches, and the brand points at `/app`, a
+prefix of every screen.
+
 `AppSidebarFooter.tsx` is the sidebar's second landmark: the destinations that belong to the product rather than to the portfolio (Help, Feedback), the legal links, and the build stamp. The legal links are plain anchors opening the canonical public documents in a new tab, never mirrored under `/app`. `activeStyles.ts` holds the classes that say "current" — shared by the primary navigation and the footer, so the sidebar has one vocabulary for that state rather than two that drift.
 
 **Adding a shadcn component:** run `bunx shadcn add <name>` and then check `git status`. The CLI resolves `components.json`'s `@/` aliases through `compilerOptions.paths`, and the root `tsconfig.json` is a solution file that carries none — so it writes to a literal `@/` directory at the repo root instead of `src/`. Move the files you wanted into place and delete `@/`. This is a safety net as much as a nuisance: several of the `ui/` files carry hand-tuned contrast fixes that a resolved overwrite would silently revert.
