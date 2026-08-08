@@ -1,6 +1,13 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { TextField } from "@/forms/TextField";
+import { useFormatLocale } from "@/hooks/useFormatLocale";
+import { useNumericInput } from "@/hooks/useNumericInput";
+import { PERCENT_SCALE } from "@/utils/decimal";
+import { separatorsFor } from "@/utils/numericInput";
+
+/** What the mask holds. `PERCENT_SCALE` is what the wire still permits. */
+const MASK_PLACES = 2;
 
 type PercentFieldProps = {
   name: string;
@@ -15,8 +22,21 @@ type PercentFieldProps = {
 /**
  * A rate as the user thinks it: `13.75` for 13.75%. The wire wants the
  * fraction (`0.1375`), and the ÷100 happens at submit through Big — a string
- * decimal shift, never a float. The twin of `MoneyField`, with the unit
- * pinned beside the input because it is part of the reading, not the typing.
+ * decimal shift, never a float. The twin of `MoneyField`, with the unit pinned
+ * beside the input because it is part of the reading, not the typing.
+ *
+ * It types like `MoneyField` too, filling from the right at two places. That
+ * mask is narrower than the data model: every percent-backed field is
+ * `^-?\d{0,4}(?:\.\d{0,8})?$` on the wire, which permits six decimal places as
+ * a percent, and `PERCENT_SCALE` stays 6 for exactly that reason.
+ *
+ * Hence the one conditional in this file. A field handed more precision than
+ * the mask can express types freely instead, so opening a record and saving it
+ * can never round a stored rate away. The decision is taken once, from the
+ * initial value, and never flips while the user types — a field that changed
+ * behaviour under the cursor would be worse than either mode. A field that
+ * starts empty always accumulates, because a value that does not exist has no
+ * precision to protect.
  */
 export function PercentField({
   name,
@@ -27,6 +47,15 @@ export function PercentField({
   onBlur,
   onChange,
 }: PercentFieldProps) {
+  const locale = useFormatLocale();
+  const [freeForm] = useState(() => exceedsMask(value, locale));
+
+  const handleChange = useNumericInput(
+    freeForm
+      ? { mode: "grouped", scale: PERCENT_SCALE, locale, value, onChange }
+      : { mode: "accumulate", places: MASK_PLACES, locale, value, onChange },
+  );
+
   return (
     <TextField
       name={name}
@@ -37,8 +66,8 @@ export function PercentField({
       hint={hint}
       value={value}
       onBlur={onBlur}
-      onChange={(e) => onChange(e.target.value)}
-      className="pr-9"
+      onChange={handleChange}
+      className="pr-9 tabular-nums"
       trailing={
         <span
           aria-hidden
@@ -49,4 +78,11 @@ export function PercentField({
       }
     />
   );
+}
+
+function exceedsMask(value: string, locale: string): boolean {
+  const { decimal } = separatorsFor(locale);
+  const at = value.indexOf(decimal);
+
+  return at !== -1 && value.length - at - 1 > MASK_PLACES;
 }

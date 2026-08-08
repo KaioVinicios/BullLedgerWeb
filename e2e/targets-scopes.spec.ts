@@ -139,9 +139,14 @@ test("sets a target at each of the three scopes, each ladder intact", async ({
 
   await expect(
     page.getByLabel(stepLabel(app.targets.form.steps.rate, 1)),
-  ).toHaveValue("1.5");
+  ).toHaveValue("1.50");
   // Stored as the fraction 0.015 and re-rendered as a percent: the shift this
-  // phase performs most often, proved by the number coming back as typed.
+  // phase performs most often, proved by the number coming back as authored.
+  //
+  // Two places rather than the one that was filled, and deliberately: the
+  // percent field fills from the right at `MASK_PLACES`, so a prefill of `1.5`
+  // would be re-read as the digits `15` by the next keystroke and land on
+  // `0.15`. Same value, padded to the width the field types at.
   await expect(
     page.getByRole("combobox", {
       name: stepLabel(app.targets.form.steps.period, 1),

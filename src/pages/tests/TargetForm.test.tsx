@@ -416,9 +416,10 @@ describe("the target form", () => {
       `${PATHS.TARGETS_NEW}?scope=HOLDING&account=${account.id}&asset=${btc.id}`,
     );
 
+    // Two places, filled from the right: 12% is four keystrokes, not two.
     await userEvent.type(
       await screen.findByLabelText(stepLabel(app.targets.form.steps.rate, 1)),
-      "12",
+      "1200",
     );
     await userEvent.click(
       screen.getByRole("button", { name: app.targets.form.create }),
@@ -494,7 +495,7 @@ describe("the target form", () => {
       stepLabel(app.targets.form.steps.rate, 1),
     );
     await userEvent.clear(rate);
-    await userEvent.type(rate, "15");
+    await userEvent.type(rate, "1500");
     await userEvent.click(
       screen.getByRole("button", { name: app.targets.form.save }),
     );
@@ -526,16 +527,17 @@ describe("the target form", () => {
       `${PATHS.TARGETS_NEW}?scope=HOLDING&account=${account.id}&asset=${btc.id}`,
     );
 
+    // Two places, filled from the right: 12% is four keystrokes, not two.
     await userEvent.type(
       await screen.findByLabelText(stepLabel(app.targets.form.steps.rate, 1)),
-      "12",
+      "1200",
     );
     await userEvent.click(
       screen.getByRole("switch", { name: app.targets.form.floor.toggle }),
     );
     await userEvent.type(
       screen.getByLabelText(app.targets.form.floor.rate),
-      "10",
+      "1000",
     );
     await userEvent.click(
       screen.getByRole("button", { name: app.targets.form.create }),

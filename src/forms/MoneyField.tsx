@@ -1,7 +1,12 @@
 import type { ReactNode, Ref } from "react";
 
 import { TextField } from "@/forms/TextField";
+import { useFormatLocale } from "@/hooks/useFormatLocale";
+import { useNumericInput } from "@/hooks/useNumericInput";
 import type { Currency } from "@/utils/money";
+
+/** BRL, USD, and CAD all use two minor digits. */
+const MINOR_DIGITS = 2;
 
 type MoneyFieldProps = {
   name: string;
@@ -21,12 +26,23 @@ type MoneyFieldProps = {
 };
 
 /**
- * A money amount as the user types it: a plain string in the form's state,
- * parsed into integer minor units by `parseMoneyInput` only at submit — the
- * one place the money path is allowed to touch a number, and it is guarded
- * there. The currency rides beside the input rather than inside the value,
- * because it is not the user's to type: it follows the account's base
- * currency.
+ * A money amount as the user types it: digits fill from the right, so `2` is
+ * `0.02` and `20000` is `200.00`. The mask is exact because a currency's minor
+ * digits are fixed — the same fact `parseMoneyInput` relies on — which is why
+ * quantities and prices, whose scales run to eighteen places, do not type this
+ * way.
+ *
+ * The value stays a plain string in form state and becomes integer minor units
+ * only at submit, through `parseMoneyInput`. That contract is unchanged: this
+ * layer decides what the field may *become* while it is being typed, and the
+ * parser still decides whether a finished entry is valid.
+ *
+ * An empty field stays empty rather than settling at `0.00`, because the two
+ * are not the same answer — `AccountForm` sends `contribution_room` as `null`
+ * for the first and `{ amount: 0 }` for the second.
+ *
+ * The currency rides beside the input rather than inside the value, because it
+ * is not the user's to type: it follows the account's base currency.
  */
 export function MoneyField({
   name,
@@ -39,6 +55,15 @@ export function MoneyField({
   onChange,
   ref,
 }: MoneyFieldProps) {
+  const locale = useFormatLocale();
+  const handleChange = useNumericInput({
+    mode: "accumulate",
+    places: MINOR_DIGITS,
+    locale,
+    value,
+    onChange,
+  });
+
   return (
     <TextField
       ref={ref}
@@ -50,8 +75,8 @@ export function MoneyField({
       hint={hint}
       value={value}
       onBlur={onBlur}
-      onChange={(e) => onChange(e.target.value)}
-      className="pr-14"
+      onChange={handleChange}
+      className="pr-14 tabular-nums"
       trailing={
         <span
           aria-hidden
