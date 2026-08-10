@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { HoldingRow } from "@/pages/Overview/HoldingRow";
+import { HoldingRow } from "@/components/HoldingRow";
 import type { Asset } from "@/services/assets";
 import type { AccountGroup, MissingFigure } from "@/services/portfolio";
 

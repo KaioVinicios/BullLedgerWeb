@@ -15,6 +15,11 @@ import { formatDecimal, SCALE } from "@/utils/decimal";
  * One holding, and the only way into its detail — the API publishes no
  * holdings-list endpoint, so this row is the entry point.
  *
+ * It lives here rather than under a page because two screens render it: the
+ * overview's account blocks and the holdings screen's custody pivot. They show
+ * the same five columns of the same payload, and a second copy of this row
+ * would be a second place for a column to drift.
+ *
  * A holding the server could not value renders `UnpricedNote` **in place of the
  * figure, never a zero**: a zero would read as a real balance of nothing, and
  * the position is unknown rather than empty. The reason is the server's own,
