@@ -81,6 +81,7 @@ export async function createAccountUI(
 
 type Account = components["schemas"]["Account"];
 type Asset = components["schemas"]["Asset"];
+type Institution = components["schemas"]["Institution"];
 type Movement = components["schemas"]["Movement"];
 type MovementRecordRequest = components["schemas"]["MovementRecordRequest"];
 type PriceQuote = components["schemas"]["PriceQuote"];
@@ -119,10 +120,33 @@ async function seed<T>(
   return ((await response.json()) as { data: T }).data;
 }
 
+/**
+ * One institution, straight to the API — the counterpart to
+ * `createInstitutionUI` for journeys where an institution is the *precondition*
+ * rather than the subject. The holdings screen needs one because its grouping
+ * is by custodian, which no journey can demonstrate without a real one.
+ */
+export function seedInstitution(
+  page: Page,
+  options: {
+    name: string;
+    kinds?: components["schemas"]["KindsEnum"][];
+    country?: "BR" | "US" | "CA";
+  },
+): Promise<Institution> {
+  return seed<Institution>(page, ENDPOINTS.institutions, {
+    name: options.name,
+    kinds: options.kinds ?? ["BROKERAGE"],
+    country: options.country ?? "BR",
+  });
+}
+
 export function seedAccount(
   page: Page,
   options: {
     name: string;
+    /** Omitted means self-custody, which the API models as a null institution. */
+    institution?: string;
     country?: "BR" | "US" | "CA";
     registration?: string;
     base_currency?: "BRL" | "USD" | "CAD";
@@ -130,6 +154,7 @@ export function seedAccount(
 ): Promise<Account> {
   return seed<Account>(page, ENDPOINTS.accounts, {
     name: options.name,
+    institution: options.institution ?? null,
     country: options.country ?? "BR",
     registration: options.registration ?? "BR_TAXABLE",
     base_currency: options.base_currency ?? "BRL",
