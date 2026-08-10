@@ -13,6 +13,7 @@ import {
 import { HoldingRow } from "@/components/HoldingRow";
 import type { Asset } from "@/services/assets";
 import type { AccountGroup, MissingFigure } from "@/services/portfolio";
+import { isOpenPosition } from "@/utils/holdings";
 
 /**
  * One account's block: its cash, its subtotal, and the holdings that make it up.
@@ -21,6 +22,13 @@ import type { AccountGroup, MissingFigure } from "@/services/portfolio";
  * where money sits, and because it keeps an account's `cash` beside the rows it
  * totals. Expanded by default — the figures are the point, and hiding them
  * behind a click would put the holding detail two clicks from the front door.
+ *
+ * The rows are the positions still **held**, while `subtotal` is the server's.
+ * The payload carries a row for every asset the account has ever touched, so a
+ * holding sold in full arrives reading zero, and listing it would answer "what
+ * have I ever owned" on a screen that asks what you own. The two still
+ * reconcile: a closed row contributed nothing to the subtotal it is hidden
+ * from.
  *
  * The disclosure is a real `<button aria-expanded>` controlling the row group,
  * never a clickable `<div>`, and the body is a real `<table>` so a screen reader
@@ -44,6 +52,9 @@ export function AccountGroupBlock({
   const { t } = useTranslation("app");
   const titleId = useId();
   const bodyId = useId();
+
+  // Named `held` rather than `open`, which one line down means the disclosure.
+  const held = group.holdings.filter(isOpenPosition);
 
   const assetById = (id: string) => assets.find((row) => row.id === id);
 
@@ -92,7 +103,7 @@ export function AccountGroupBlock({
       </div>
 
       <div id={bodyId} hidden={!isOpen}>
-        {group.holdings.length > 0 && (
+        {held.length > 0 && (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -113,7 +124,7 @@ export function AccountGroupBlock({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {group.holdings.map((holding) => (
+                {held.map((holding) => (
                   <HoldingRow
                     key={holding.asset}
                     holding={holding}

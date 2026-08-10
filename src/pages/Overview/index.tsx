@@ -35,6 +35,7 @@ import { APP_INDEX_ROUTE_ID, PATHS } from "@/routes/path";
 import { accountKeys, listAccounts } from "@/services/accounts";
 import { assetKeys, listAssets } from "@/services/assets";
 import { overviewQuery } from "@/services/portfolio";
+import { isOpenPosition } from "@/utils/holdings";
 
 // The index route's own id, not the layout's — see `APP_INDEX_ROUTE_ID`.
 const route = getRouteApi(APP_INDEX_ROUTE_ID);
@@ -82,10 +83,17 @@ export function OverviewPage() {
   // A portfolio with nothing in it yet. Every group being empty covers both
   // shapes the API might send — no accounts at all, or accounts that exist but
   // hold nothing — so the first-run path does not depend on which one it is.
+  //
+  // Counted after the open-position filter, not before: the payload keeps a row
+  // for every asset an account has ever touched, so a portfolio whose every
+  // position has been closed arrives with holdings and holds nothing. Counting
+  // the raw rows would render it as an occupied screen with no rows on it.
   const isEmpty =
     data !== undefined &&
     data.accounts.every(
-      (group) => group.holdings.length === 0 && (group.cash?.amount ?? 0) === 0,
+      (group) =>
+        group.holdings.filter(isOpenPosition).length === 0 &&
+        (group.cash?.amount ?? 0) === 0,
     );
 
   const archetypeSegments: AllocationSegment[] = (data?.archetypes ?? []).map(

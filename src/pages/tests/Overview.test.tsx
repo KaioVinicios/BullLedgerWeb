@@ -20,6 +20,7 @@ const user = { pk: 1, email: "ana@example.com", first_name: "", last_name: "" };
 const ACCOUNT_ID = "11111111-1111-4111-8111-111111111111";
 const PETR_ID = "22222222-2222-4222-8222-222222222222";
 const HASH_ID = "33333333-3333-4333-8333-333333333333";
+const VALE_ID = "44444444-4444-4444-8444-444444444444";
 
 const BRL = (amount: number) => ({ amount, currency: "BRL" as const });
 
@@ -54,6 +55,25 @@ const petr: Asset = {
 };
 
 const hash: Asset = { ...petr, id: HASH_ID, name: "HASH11", ticker: "HASH11" };
+const vale: Asset = { ...petr, id: VALE_ID, name: "VALE3", ticker: "VALE3" };
+
+/** Bought and sold in full: a row the rollup still reports, at zero. */
+const closedHolding = {
+  account: ACCOUNT_ID,
+  asset: VALE_ID,
+  archetype: "EXCHANGE_SECURITY" as const,
+  quantity: "0",
+  cost_basis_remaining_native: BRL(0),
+  current_value_native: BRL(0),
+  value: BRL(0),
+  invested: BRL(5_000_000),
+  realized_gain: BRL(1_200_000),
+  unrealized_gain: BRL(0),
+  income_received: BRL(0),
+  total_return: "0.24",
+  complete: true,
+  target_status: null,
+};
 
 const overview: PortfolioOverview = {
   on_date: "2026-08-03",
@@ -73,7 +93,7 @@ const overview: PortfolioOverview = {
           asset: PETR_ID,
           archetype: "EXCHANGE_SECURITY",
           quantity: "100",
-          principal_native: null,
+          cost_basis_remaining_native: BRL(19_780_000),
           current_value_native: BRL(21_410_000),
           value: BRL(21_410_000),
           invested: BRL(19_780_000),
@@ -89,7 +109,7 @@ const overview: PortfolioOverview = {
           asset: HASH_ID,
           archetype: "EXCHANGE_SECURITY",
           quantity: "50",
-          principal_native: null,
+          cost_basis_remaining_native: BRL(5_000_000),
           current_value_native: null,
           value: null,
           invested: BRL(5_000_000),
@@ -100,6 +120,7 @@ const overview: PortfolioOverview = {
           complete: false,
           target_status: null,
         },
+        closedHolding,
       ],
     },
   ],
@@ -133,7 +154,58 @@ function signedIn(data: PortfolioOverview = overview) {
       HttpResponse.json(page([account])),
     ),
     http.get(`${TEST_API_URL}/api/assets/`, () =>
-      HttpResponse.json(page([petr, hash])),
+      HttpResponse.json(page([petr, hash, vale])),
+    ),
+  ];
+}
+
+/**
+ * A portfolio with history and nothing held: every position closed, no cash.
+ *
+ * The counted endpoints are what `FirstRun` reads, and they are non-zero here
+ * on purpose — this user did every setup step. What they no longer have is a
+ * position, which is a different thing from never having started.
+ */
+function closedOnlyPortfolio() {
+  const counted = (count: number) => ({
+    status: 200,
+    data: { count, next: null, previous: null, results: [] },
+  });
+
+  const data: PortfolioOverview = {
+    ...overview,
+    total_value: BRL(0),
+    free_cash: BRL(0),
+    complete: true,
+    accounts: [
+      {
+        account: ACCOUNT_ID,
+        cash: BRL(0),
+        subtotal: BRL(0),
+        complete: true,
+        holdings: [closedHolding],
+      },
+    ],
+    archetypes: [],
+    missing: [],
+  };
+
+  return [
+    http.get(`${TEST_API_URL}/api/auth/user/`, () => HttpResponse.json(user)),
+    http.get(`${TEST_API_URL}/api/portfolio/overview/`, () =>
+      HttpResponse.json({ status: 200, data }),
+    ),
+    http.get(`${TEST_API_URL}/api/institutions/`, () =>
+      HttpResponse.json(counted(1)),
+    ),
+    http.get(`${TEST_API_URL}/api/accounts/`, () =>
+      HttpResponse.json(page([account])),
+    ),
+    http.get(`${TEST_API_URL}/api/assets/`, () =>
+      HttpResponse.json(page([petr, hash, vale])),
+    ),
+    http.get(`${TEST_API_URL}/api/movements/`, () =>
+      HttpResponse.json(counted(2)),
     ),
   ];
 }
@@ -294,6 +366,31 @@ describe("the overview screen", () => {
 
     expect(within(group).getByText("R$291,400.00")).toBeVisible();
     expect(within(group).getByText("R$12,000.00")).toBeVisible();
+  });
+
+  it("does not list a position that has been sold down to nothing", async () => {
+    server.use(...signedIn());
+    mount();
+
+    expect(await screen.findByText("PETR4")).toBeVisible();
+    expect(screen.queryByText("VALE3")).not.toBeInTheDocument();
+  });
+
+  it("keeps the server's subtotal, which already counted the closed row as zero", async () => {
+    server.use(...signedIn());
+    mount();
+
+    // Hiding a row that contributed nothing cannot change what it summed to.
+    const group = await screen.findByRole("region", { name: /Corretora XP/ });
+
+    expect(within(group).getByText("R$291,400.00")).toBeVisible();
+  });
+
+  it("treats a portfolio of only closed positions as a first run", async () => {
+    server.use(...closedOnlyPortfolio());
+    mount();
+
+    expect(await screen.findByText(app.overview.firstRun.title)).toBeVisible();
   });
 
   it("makes each holding row the way into its detail", async () => {
