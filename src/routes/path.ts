@@ -37,6 +37,8 @@ export const APP_INDEX_ROUTE_ID = `${APP}/` as const;
  */
 export const APP_SEGMENTS = {
   ALLOCATION: "allocation",
+  HOLDINGS: "holdings",
+  SALES: "sales",
   INSTITUTIONS: "institutions",
   ACCOUNTS: "accounts",
   ASSETS: "assets",
@@ -82,12 +84,14 @@ export const APP_CHILD_SEGMENTS = {
   // screen *is* the detail view, as it is for every structure resource.
   TARGETS_NEW: `${APP_SEGMENTS.TARGETS}/new`,
   TARGETS_EDIT: `${APP_SEGMENTS.TARGETS}/$id/edit`,
-  // Written with a literal prefix and deliberately *not* derived from an
-  // `APP_SEGMENTS.HOLDINGS`, because there is no holdings index to derive it
-  // from: the API publishes no holdings-list endpoint, so a `PATHS.HOLDINGS`
-  // would be a typed, linkable path that resolves to not-found. A holding is
-  // reached from the overview's rows and from nowhere else.
-  HOLDING_DETAIL: "holdings/$accountId/$assetId",
+  // Derived like every other child segment, which it could not be until the
+  // holdings index existed. The old comment here recorded the opposite —
+  // that `holdings` was a path prefix rather than a destination, because the
+  // API publishes no holdings-list endpoint. That was true of the API and
+  // never of the client: the index regroups `GET /api/portfolio/overview/`,
+  // which arrives unpaginated with every row. So the index came first and the
+  // detail now hangs off it, the way an edit route hangs off its resource.
+  HOLDING_DETAIL: `${APP_SEGMENTS.HOLDINGS}/$accountId/$assetId`,
 } as const;
 
 export const PATHS = {
@@ -101,7 +105,9 @@ export const PATHS = {
   // Reached from the overview's breakdown block, not from the sidebar: a user
   // asking "how is this split?" is already looking at the split.
   ALLOCATION: `${APP}/${APP_SEGMENTS.ALLOCATION}`,
+  HOLDINGS: `${APP}/${APP_SEGMENTS.HOLDINGS}`,
   HOLDING_DETAIL: `${APP}/${APP_CHILD_SEGMENTS.HOLDING_DETAIL}`,
+  SALES: `${APP}/${APP_SEGMENTS.SALES}`,
   INSTITUTIONS: `${APP}/${APP_SEGMENTS.INSTITUTIONS}`,
   INSTITUTIONS_NEW: `${APP}/${APP_CHILD_SEGMENTS.INSTITUTIONS_NEW}`,
   INSTITUTIONS_EDIT: `${APP}/${APP_CHILD_SEGMENTS.INSTITUTIONS_EDIT}`,

@@ -11,6 +11,14 @@ describe("the authenticated route surface", () => {
     },
   );
 
+  it("carries a holdings index, which the rollup makes buildable", () => {
+    // Explicit beside the generic derivation above, because the absence of
+    // this entry used to be a documented decision: no holdings-list endpoint
+    // existed, so a linkable path would have resolved to not-found. The screen
+    // regroups `GET /api/portfolio/overview/` instead, so the index is real.
+    expect(PATHS.HOLDINGS).toBe(`${PATHS.APP}/${APP_SEGMENTS.HOLDINGS}`);
+  });
+
   it("keeps every derived path under the guarded prefix", () => {
     for (const name of Object.keys(APP_SEGMENTS)) {
       const key = name as keyof typeof APP_SEGMENTS;
@@ -38,18 +46,14 @@ describe("the authenticated route surface", () => {
     // A renamed resource must carry its create/edit children with it; a child
     // segment that does not extend a parent segment has drifted.
     //
-    // `HOLDING_DETAIL` is the one exemption, and it is not drift: there is no
-    // holdings resource for it to derive from. The API publishes no
-    // holdings-list endpoint, so `holdings` is a path prefix rather than a
-    // destination — promoting it to `APP_SEGMENTS` would oblige it to have a
-    // `PATHS.HOLDINGS` twin (the first two cases in this file), and that would
-    // be a typed, linkable path resolving to not-found. `appRoutes.test.tsx`
-    // pins that /app/holdings really is nothing.
+    // `HOLDING_DETAIL` used to be exempt: there was no holdings resource for it
+    // to derive from, because the API publishes no holdings-list endpoint. The
+    // exemption is gone rather than relaxed — the index exists now, built by
+    // regrouping the overview rollup, so the detail derives from it like every
+    // other child and this rule covers all of them again.
     const parents = Object.values(APP_SEGMENTS);
-    const { HOLDING_DETAIL, ...derived } = APP_CHILD_SEGMENTS;
-    expect(HOLDING_DETAIL).toBe("holdings/$accountId/$assetId");
 
-    for (const segment of Object.values(derived)) {
+    for (const segment of Object.values(APP_CHILD_SEGMENTS)) {
       expect(segment.startsWith("/")).toBe(false);
       expect(parents.some((parent) => segment.startsWith(`${parent}/`))).toBe(
         true,

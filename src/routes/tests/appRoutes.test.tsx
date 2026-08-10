@@ -45,6 +45,15 @@ describe("the authenticated route surface", () => {
     // Reached from the overview's breakdown block rather than the sidebar, so
     // like pricing's children it has no other guard against going missing.
     [PATHS.ALLOCATION, app.screens.allocation.title],
+    // This row used to be a test asserting the opposite — that /app/holdings
+    // was nothing, because the API publishes no holdings-list endpoint and a
+    // linkable path would have resolved to not-found. The premise was about
+    // the API and the conclusion was about the client: the rollup arrives
+    // unpaginated with every account's rows, so the index is a regrouping the
+    // client builds. What stops one being invented is now this screen's own
+    // tests rather than a route that refuses to exist.
+    [PATHS.HOLDINGS, app.screens.holdings.title],
+    [PATHS.SALES, app.screens.sales.title],
     [PATHS.TARGETS, app.screens.targets.title],
     [PATHS.PROFILE, app.screens.profile.title],
     [PATHS.HELP, app.screens.help.title],
@@ -116,20 +125,5 @@ describe("the authenticated route surface", () => {
     expect(router.state.location.search).toMatchObject({
       redirect: PATHS.ACCOUNTS,
     });
-  });
-
-  it("has no holdings index, because the API publishes no holdings list", async () => {
-    server.use(
-      http.get(`${TEST_API_URL}/api/auth/user/`, () => HttpResponse.json(user)),
-    );
-
-    // The one literal path in this suite, and it has to be: the assertion is
-    // precisely that no `PATHS` entry exists for it. A holding is reached from
-    // the overview's rows and from nowhere else, so a `PATHS.HOLDINGS` would
-    // be a typed, linkable path resolving to not-found — this is what stops
-    // one being added on the assumption there is an index here.
-    mount("/app/holdings");
-
-    expect(await screen.findByText(app.notFound.title)).toBeVisible();
   });
 });

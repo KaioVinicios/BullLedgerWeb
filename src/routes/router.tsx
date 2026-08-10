@@ -40,9 +40,13 @@ import {
 import {
   allocationDefaults,
   allocationSearchSchema,
+  holdingsDefaults,
+  holdingsSearchSchema,
   limitsDefaults,
   limitsSearchSchema,
   overviewSearchSchema,
+  salesDefaults,
+  salesSearchSchema,
 } from "@/schemas/portfolioView";
 import { authSearchSchema } from "@/schemas/redirect";
 import {
@@ -441,6 +445,27 @@ const allocationRoute = createRoute({
   ...appScreenOptions,
 });
 
+const holdingsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.HOLDINGS,
+  validateSearch: holdingsSearchSchema,
+  search: { middlewares: [stripSearchParams(holdingsDefaults)] },
+  component: lazyRouteComponent(
+    () => import("@/pages/Holdings"),
+    "HoldingsPage",
+  ),
+  ...appScreenOptions,
+});
+
+const salesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.SALES,
+  validateSearch: salesSearchSchema,
+  search: { middlewares: [stripSearchParams(salesDefaults)] },
+  component: lazyRouteComponent(() => import("@/pages/Sales"), "SalesPage"),
+  ...appScreenOptions,
+});
+
 /**
  * Resolved before the screen renders, for the reason every edit route resolves
  * its record: a projection screen that mounts empty and fills in is a screen
@@ -559,6 +584,8 @@ const routeTree = rootRoute.addChildren([
     pricingNewRoute,
     pricingFxRoute,
     allocationRoute,
+    holdingsRoute,
+    salesRoute,
     holdingRoute,
     targetsRoute,
     targetNewRoute,
