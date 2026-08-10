@@ -52,6 +52,7 @@ export const ENDPOINTS = {
   // recomputed from the movement log at read time.
   portfolioOverview: "/api/portfolio/overview/",
   portfolioAllocation: "/api/portfolio/allocation/",
+  sales: "/api/portfolio/sales/",
 
   // Reference data: read-only for clients, and changed by a yearly data load
   // rather than by anything a user does here.
