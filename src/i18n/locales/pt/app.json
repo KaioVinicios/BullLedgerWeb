@@ -13,6 +13,8 @@
   },
   "nav": {
     "overview": "Visão geral",
+    "holdings": "Posições",
+    "sales": "Histórico de vendas",
     "institutions": "Instituições",
     "accounts": "Contas",
     "assets": "Ativos",
@@ -46,6 +48,10 @@
     "overview": {
       "title": "Visão geral",
       "description": "O que você tem, e quanto vale."
+    },
+    "holdings": {
+      "title": "Posições",
+      "description": "O que você tem agora, e onde está."
     },
     "institutions": {
       "title": "Instituições",
@@ -93,6 +99,10 @@
     "limits": {
       "title": "Limites de contribuição",
       "description": "Os limites anuais que se aplicam a cada registro."
+    },
+    "sales": {
+      "title": "Histórico de vendas",
+      "description": "O que cada aporte rendeu quando você vendeu."
     }
   },
   "comingSoon": {
@@ -156,7 +166,7 @@
       "asset": "Ativo",
       "quantity": "Posição",
       "value": "Valor",
-      "return": "Retorno",
+      "return": "Retorno total",
       "status": "Status"
     },
     "firstRun": {
@@ -183,6 +193,112 @@
         "done": "Feito"
       }
     }
+  },
+  "holdings": {
+    "noInstitution": "Sem instituição",
+    "cash": "Caixa",
+    "toggleGroup": "Mostrar ou ocultar {{name}}",
+    "unknownAccount": "Conta desconhecida",
+    "groupIncomplete": "Parcialmente avaliado",
+    "columns": {
+      "asset": "Ativo",
+      "quantity": "Posição",
+      "value": "Valor",
+      "return": "Retorno total",
+      "status": "Situação",
+      "unitCost": "Custo médio",
+      "currentPrice": "Preço"
+    },
+    "pivot": {
+      "label": "Agrupar por",
+      "account": "Instituição",
+      "asset": "Ativo"
+    },
+    "grain": {
+      "label": "Mostrar",
+      "set": "Posições",
+      "instance": "Compras"
+    },
+    "totals": {
+      "partial": "Parcialmente avaliado, então o total está aquém de ao menos uma posição.",
+      "unitCost": "Custo médio",
+      "currentPrice": "Preço atual",
+      "invested": "Investido",
+      "unrealized": "Ganho não realizado",
+      "total": "Total"
+    },
+    "instances": {
+      "empty": "Nenhuma compra em aberto nesta posição.",
+      "error": "Não foi possível carregar as compras desta posição.",
+      "retry": "Tentar de novo",
+      "undated": "Data desconhecida",
+      "columns": {
+        "openedOn": "Comprado em",
+        "quantity": "Unidades",
+        "unitPrice": "Valor unitário"
+      }
+    },
+    "empty": {
+      "noAccounts": {
+        "title": "Ainda não há o que ter",
+        "description": "Cadastre uma instituição e uma conta, e o que você colocar nelas aparece aqui."
+      },
+      "nothingRecorded": {
+        "title": "Nada registrado ainda",
+        "description": "Registre um movimento e a posição que ele abre aparece aqui.",
+        "action": "Registrar movimento"
+      },
+      "allClosed": {
+        "title": "Nada em carteira agora",
+        "description": "Todas as posições que você abriu foram encerradas. O histórico continua no ledger.",
+        "action": "Abrir o ledger"
+      }
+    }
+  },
+  "sales": {
+    "empty": "Nenhuma venda registrada ainda. Quando você vender de um lote, ele aparece aqui.",
+    "noMatch": "Nenhuma venda corresponde a estes filtros.",
+    "expand": "Mostrar as vendas individuais",
+    "collapse": "Ocultar as vendas individuais",
+    "filters": {
+      "account": "Conta",
+      "asset": "Ativo",
+      "archetype": "Tipo",
+      "soldFrom": "Vendido a partir de",
+      "soldTo": "Vendido até",
+      "result": "Resultado",
+      "ordering": "Ordenar por",
+      "includeArchived": "Mostrar lotes arquivados",
+      "all": "Todos",
+      "clear": "Limpar filtros"
+    },
+    "result": { "PROFIT": "Só lucros", "LOSS": "Só prejuízos" },
+    "ordering": {
+      "-sold_on": "Venda mais recente",
+      "sold_on": "Venda mais antiga",
+      "-profit_rate": "Melhor resultado",
+      "profit_rate": "Pior resultado",
+      "-purchased_on": "Compra mais recente",
+      "purchased_on": "Compra mais antiga"
+    },
+    "columns": {
+      "asset": "Ativo",
+      "costRemoved": "Custo removido",
+      "quantity": "Qtd x preço un.",
+      "purchasedOn": "Compra",
+      "proceeds": "Venda",
+      "profit": "Lucro",
+      "profitRate": "Resultado",
+      "soldOn": "Data da venda"
+    },
+    "kind": {
+      "SELL": "Venda",
+      "REDEMPTION": "Resgate",
+      "WITHDRAWAL": "Retirada",
+      "MATURITY": "Vencimento"
+    },
+    "partial": "Vendido em parte",
+    "feeNote": "Os percentuais são medidos contra o custo de compra com as taxas da operação embutidas, na moeda do próprio ativo. Taxas avulsas de custódia ou administração não entram."
   },
   "structure": {
     "showArchived": "Mostrar arquivadas",

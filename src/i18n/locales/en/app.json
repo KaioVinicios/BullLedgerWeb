@@ -13,6 +13,8 @@
   },
   "nav": {
     "overview": "Overview",
+    "holdings": "Holdings",
+    "sales": "Sales history",
     "institutions": "Institutions",
     "accounts": "Accounts",
     "assets": "Assets",
@@ -46,6 +48,10 @@
     "overview": {
       "title": "Overview",
       "description": "What you hold, and what it's worth."
+    },
+    "holdings": {
+      "title": "Holdings",
+      "description": "What you hold right now, and where it sits."
     },
     "institutions": {
       "title": "Institutions",
@@ -93,6 +99,10 @@
     "limits": {
       "title": "Contribution limits",
       "description": "The yearly limits that apply to each registration."
+    },
+    "sales": {
+      "title": "Sales history",
+      "description": "What each contribution returned when you sold it."
     }
   },
   "comingSoon": {
@@ -156,7 +166,7 @@
       "asset": "Asset",
       "quantity": "Position",
       "value": "Value",
-      "return": "Return",
+      "return": "Total return",
       "status": "Status"
     },
     "firstRun": {
@@ -183,6 +193,112 @@
         "done": "Done"
       }
     }
+  },
+  "holdings": {
+    "noInstitution": "No institution",
+    "cash": "Cash",
+    "toggleGroup": "Show or hide {{name}}",
+    "unknownAccount": "Unknown account",
+    "groupIncomplete": "Partly valued",
+    "columns": {
+      "asset": "Asset",
+      "quantity": "Position",
+      "value": "Value",
+      "return": "Total return",
+      "status": "Status",
+      "unitCost": "Average cost",
+      "currentPrice": "Price"
+    },
+    "pivot": {
+      "label": "Group by",
+      "account": "Institution",
+      "asset": "Asset"
+    },
+    "grain": {
+      "label": "Show",
+      "set": "Positions",
+      "instance": "Purchases"
+    },
+    "totals": {
+      "partial": "Partly valued, so the total is short of at least one position.",
+      "unitCost": "Average cost",
+      "currentPrice": "Current price",
+      "invested": "Invested",
+      "unrealized": "Unrealized gain",
+      "total": "Total"
+    },
+    "instances": {
+      "empty": "No open purchases left in this position.",
+      "error": "Could not load this position's purchases.",
+      "retry": "Try again",
+      "undated": "Date unknown",
+      "columns": {
+        "openedOn": "Bought",
+        "quantity": "Units",
+        "unitPrice": "Unit price"
+      }
+    },
+    "empty": {
+      "noAccounts": {
+        "title": "Nothing to hold yet",
+        "description": "Register an institution and an account, and what you put in them shows up here."
+      },
+      "nothingRecorded": {
+        "title": "Nothing recorded yet",
+        "description": "Record a movement and the position it opens appears here.",
+        "action": "Record a movement"
+      },
+      "allClosed": {
+        "title": "Nothing held right now",
+        "description": "Every position you opened has been closed. The ledger still has all of it.",
+        "action": "Open the ledger"
+      }
+    }
+  },
+  "sales": {
+    "empty": "No sales recorded yet. Once you sell from a lot, it shows up here.",
+    "noMatch": "No sales match these filters.",
+    "expand": "Show the individual sales",
+    "collapse": "Hide the individual sales",
+    "filters": {
+      "account": "Account",
+      "asset": "Asset",
+      "archetype": "Type",
+      "soldFrom": "Sold from",
+      "soldTo": "Sold to",
+      "result": "Result",
+      "ordering": "Sort by",
+      "includeArchived": "Show archived lots",
+      "all": "All",
+      "clear": "Clear filters"
+    },
+    "result": { "PROFIT": "Gains only", "LOSS": "Losses only" },
+    "ordering": {
+      "-sold_on": "Newest sale",
+      "sold_on": "Oldest sale",
+      "-profit_rate": "Best result",
+      "profit_rate": "Worst result",
+      "-purchased_on": "Newest purchase",
+      "purchased_on": "Oldest purchase"
+    },
+    "columns": {
+      "asset": "Asset",
+      "costRemoved": "Cost removed",
+      "quantity": "Qty x unit price",
+      "purchasedOn": "Purchased",
+      "proceeds": "Proceeds",
+      "profit": "Profit",
+      "profitRate": "Result",
+      "soldOn": "Sold"
+    },
+    "kind": {
+      "SELL": "Sale",
+      "REDEMPTION": "Redemption",
+      "WITHDRAWAL": "Withdrawal",
+      "MATURITY": "Maturity"
+    },
+    "partial": "Partly sold",
+    "feeNote": "Percentages are measured against the purchase cost with trade fees included, in the asset's own currency. Standalone custody or management fees are not included."
   },
   "structure": {
     "showArchived": "Show archived",

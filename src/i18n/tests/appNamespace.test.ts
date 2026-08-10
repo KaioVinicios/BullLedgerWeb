@@ -53,13 +53,17 @@ describe("the app namespace", () => {
       "assets",
       "feedback",
       "help",
+      // Two entries, one letter apart, and both are real: `holding` is one
+      // position's detail and `holdings` is the index of them all.
       "holding",
+      "holdings",
       "institutions",
       "ledger",
       "limits",
       "overview",
       "pricing",
       "profile",
+      "sales",
       "targets",
     ]);
   });
