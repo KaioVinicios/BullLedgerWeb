@@ -1894,6 +1894,118 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+  /api/portfolio/sales/:
+    get:
+      operationId: api_portfolio_sales_retrieve
+      description: 'Every lot in the portfolio that has been sold from, with the exits
+        drawn against it (spec 2026-08-09). One row is one lot; `sales[]` carries
+        each disposal separately, so a lot sold in tranches reports each tranche''s
+        own result. `profit_rate` is measured in the asset''s native currency against
+        the cost removed by the sale, with trade fees included. A TRANSFER_OUT is
+        never a sale and never appears; a MATURITY appears apportioned across the
+        lots that were open, with `movement` null. `sold_from`/`sold_to` filter exits,
+        not lots: `sold_on`, `quantity_sold`, `proceeds`, `cost_removed`, `profit`,
+        `profit_rate`, and `sales[]` cover only the exits inside the window. `cost`,
+        `purchased_on`, `entry_quantity`, `entry_unit_price`, and `fully_sold` describe
+        the lot itself and are unaffected by the window. This is not tax assessment:
+        no exemption, day-trade, or loss-offsetting rule is applied.'
+      summary: Sales history
+      parameters:
+      - in: query
+        name: account
+        schema:
+          type: string
+          format: uuid
+        description: Filter by account id.
+      - in: query
+        name: archetype
+        schema:
+          type: string
+          enum:
+          - CASH_DEPOSIT
+          - CRYPTO
+          - EXCHANGE_SECURITY
+          - FIXED_INCOME
+          - NAV_FUND
+        description: Filter by asset archetype. An unknown value is rejected with
+          400.
+      - in: query
+        name: asset
+        schema:
+          type: string
+          format: uuid
+        description: Filter by asset id.
+      - in: query
+        name: include_archived
+        schema:
+          type: boolean
+        description: Pass `true` to also return archived lots (hidden by default).
+      - in: query
+        name: 'on'
+        schema:
+          type: string
+          format: date
+        description: Valuation date (YYYY-MM-DD). Defaults to today.
+      - in: query
+        name: ordering
+        schema:
+          type: string
+          enum:
+          - -profit_rate
+          - -purchased_on
+          - -sold_on
+          - profit_rate
+          - purchased_on
+          - sold_on
+        description: Sort field; `-` prefixes descending. Ties break on lot id.
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number of the paginated results (50 rows per page).
+      - in: query
+        name: result
+        schema:
+          type: string
+          enum:
+          - LOSS
+          - PROFIT
+        description: Only rows whose filtered result is a gain, or only losses.
+      - in: query
+        name: sold_from
+        schema:
+          type: string
+          format: date
+        description: Only sales on or after this date. Filters exits, not lots.
+      - in: query
+        name: sold_to
+        schema:
+          type: string
+          format: date
+        description: Only sales on or before this date. Filters exits, not lots.
+      tags:
+      - Portfolio
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSaleRowList'
+          description: A page of sold-from lots.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
   /api/price-quotes/:
     get:
       operationId: api_price_quotes_list
@@ -3607,10 +3719,8 @@ components:
           pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
           nullable: true
           description: Decimal string. Never parse as a float (NFR-COR-003).
-        principal_native:
-          allOf:
-          - $ref: '#/components/schemas/Money'
-          nullable: true
+        cost_basis_remaining_native:
+          $ref: '#/components/schemas/Money'
         current_value_native:
           allOf:
           - $ref: '#/components/schemas/Money'
@@ -3653,10 +3763,10 @@ components:
       - archetype
       - asset
       - complete
+      - cost_basis_remaining_native
       - current_value_native
       - income_received
       - invested
-      - principal_native
       - quantity
       - realized_gain
       - target_status
@@ -3880,6 +3990,18 @@ components:
         * `CORPORATE` - Corporate
         * `MUNICIPAL` - Municipal
         * `BANK` - Bank
+    KindEnum:
+      enum:
+      - SELL
+      - REDEMPTION
+      - WITHDRAWAL
+      - MATURITY
+      type: string
+      description: |-
+        * `SELL` - SELL
+        * `REDEMPTION` - REDEMPTION
+        * `WITHDRAWAL` - WITHDRAWAL
+        * `MATURITY` - MATURITY
     KindsEnum:
       enum:
       - BANK
@@ -4002,13 +4124,37 @@ components:
           nullable: true
           description: Decimal string fraction — 0.1375 means 13.75%. Never parse
             as a float.
+        purchased_on:
+          type: string
+          format: date
+          nullable: true
+        entry_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        entry_unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,12})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        exits:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleExit'
       required:
+      - entry_quantity
+      - entry_unit_price
+      - exits
       - income_attributed
       - invested
       - label
       - lot
       - lot_return
       - principal_remaining
+      - purchased_on
       - quantity_remaining
       - realized_gain
       - status
@@ -4801,6 +4947,41 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/PriceQuote'
+    PaginatedSaleRowList:
+      type: object
+      required:
+      - status
+      - data
+      properties:
+        status:
+          type: integer
+          example: 200
+          description: Mirrors the HTTP status code.
+        message:
+          type: string
+        data:
+          type: object
+          required:
+          - count
+          - results
+          properties:
+            count:
+              type: integer
+              example: 123
+            next:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=4
+            previous:
+              type: string
+              nullable: true
+              format: uri
+              example: http://api.example.org/accounts/?page=2
+            results:
+              type: array
+              items:
+                $ref: '#/components/schemas/SaleRow'
     PaginatedTargetList:
       type: object
       required:
@@ -5613,6 +5794,161 @@ components:
           minLength: 1
       required:
       - email
+    SaleAccount:
+      type: object
+      description: Enough of the account to render a row without a second request.
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - id
+      - name
+    SaleAsset:
+      type: object
+      description: Enough of the asset to render a row without a second request.
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+      required:
+      - archetype
+      - currency
+      - id
+      - name
+    SaleExit:
+      type: object
+      description: One disposal drawn from one lot; movement is null for a maturity.
+      properties:
+        movement:
+          type: string
+          format: uuid
+          nullable: true
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        sold_on:
+          type: string
+          format: date
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        proceeds:
+          $ref: '#/components/schemas/MoneyPair'
+        cost_removed:
+          $ref: '#/components/schemas/MoneyPair'
+        profit:
+          $ref: '#/components/schemas/MoneyPair'
+        profit_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+      required:
+      - cost_removed
+      - kind
+      - movement
+      - proceeds
+      - profit
+      - profit_rate
+      - quantity
+      - sold_on
+    SaleLot:
+      type: object
+      description: The lot's identity — it stores nothing else (lots.md §2).
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+      required:
+      - id
+      - label
+    SaleRow:
+      type: object
+      description: 'One sold-from lot: the contribution, the exits, and their result.'
+      properties:
+        lot:
+          $ref: '#/components/schemas/SaleLot'
+        account:
+          $ref: '#/components/schemas/SaleAccount'
+        asset:
+          $ref: '#/components/schemas/SaleAsset'
+        purchased_on:
+          type: string
+          format: date
+          nullable: true
+        entry_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        entry_unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,18}(?:\.\d{0,12})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        cost:
+          $ref: '#/components/schemas/MoneyPair'
+        sold_on:
+          type: string
+          format: date
+        quantity_sold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,20}(?:\.\d{0,18})?$
+          nullable: true
+          description: Decimal string. Never parse as a float (NFR-COR-003).
+        proceeds:
+          $ref: '#/components/schemas/MoneyPair'
+        cost_removed:
+          $ref: '#/components/schemas/MoneyPair'
+        profit:
+          $ref: '#/components/schemas/MoneyPair'
+        profit_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        fully_sold:
+          type: boolean
+        sales:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleExit'
+      required:
+      - account
+      - asset
+      - cost
+      - cost_removed
+      - entry_quantity
+      - entry_unit_price
+      - fully_sold
+      - lot
+      - proceeds
+      - profit
+      - profit_rate
+      - purchased_on
+      - quantity_sold
+      - sales
+      - sold_on
     SecurityTypeEnum:
       enum:
       - STOCK

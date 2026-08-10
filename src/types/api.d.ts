@@ -903,6 +903,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portfolio/sales/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sales history
+         * @description Every lot in the portfolio that has been sold from, with the exits drawn against it (spec 2026-08-09). One row is one lot; `sales[]` carries each disposal separately, so a lot sold in tranches reports each tranche's own result. `profit_rate` is measured in the asset's native currency against the cost removed by the sale, with trade fees included. A TRANSFER_OUT is never a sale and never appears; a MATURITY appears apportioned across the lots that were open, with `movement` null. `sold_from`/`sold_to` filter exits, not lots: `sold_on`, `quantity_sold`, `proceeds`, `cost_removed`, `profit`, `profit_rate`, and `sales[]` cover only the exits inside the window. `cost`, `purchased_on`, `entry_quantity`, `entry_unit_price`, and `fully_sold` describe the lot itself and are unaffected by the window. This is not tax assessment: no exemption, day-trade, or loss-offsetting rule is applied.
+         */
+        get: operations["api_portfolio_sales_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/price-quotes/": {
         parameters: {
             query?: never;
@@ -1658,7 +1678,7 @@ export interface components {
              * @description Decimal string. Never parse as a float (NFR-COR-003).
              */
             quantity: string | null;
-            principal_native: components["schemas"]["Money"] | null;
+            cost_basis_remaining_native: components["schemas"]["Money"];
             current_value_native: components["schemas"]["Money"] | null;
             value: components["schemas"]["Money"] | null;
             invested: components["schemas"]["Money"] | null;
@@ -1782,6 +1802,14 @@ export interface components {
          */
         IssuerTypeEnum: "GOVERNMENT" | "CORPORATE" | "MUNICIPAL" | "BANK";
         /**
+         * @description * `SELL` - SELL
+         *     * `REDEMPTION` - REDEMPTION
+         *     * `WITHDRAWAL` - WITHDRAWAL
+         *     * `MATURITY` - MATURITY
+         * @enum {string}
+         */
+        KindEnum: "SELL" | "REDEMPTION" | "WITHDRAWAL" | "MATURITY";
+        /**
          * @description * `BANK` - Bank
          *     * `BROKERAGE` - Brokerage
          *     * `EXCHANGE` - Exchange
@@ -1845,6 +1873,19 @@ export interface components {
              * @description Decimal string fraction — 0.1375 means 13.75%. Never parse as a float.
              */
             lot_return: string | null;
+            /** Format: date */
+            purchased_on: string | null;
+            /**
+             * Format: decimal
+             * @description Decimal string. Never parse as a float (NFR-COR-003).
+             */
+            entry_quantity: string | null;
+            /**
+             * Format: decimal
+             * @description Decimal string. Never parse as a float (NFR-COR-003).
+             */
+            entry_unit_price: string | null;
+            exits: components["schemas"]["SaleExit"][];
         };
         /**
          * @description * `CREATES` - CREATES
@@ -2303,6 +2344,29 @@ export interface components {
                 results: components["schemas"]["PriceQuote"][];
             };
         };
+        PaginatedSaleRowList: {
+            /**
+             * @description Mirrors the HTTP status code.
+             * @example 200
+             */
+            status: number;
+            message?: string;
+            data: {
+                /** @example 123 */
+                count: number;
+                /**
+                 * Format: uri
+                 * @example http://api.example.org/accounts/?page=4
+                 */
+                next?: string | null;
+                /**
+                 * Format: uri
+                 * @example http://api.example.org/accounts/?page=2
+                 */
+                previous?: string | null;
+                results: components["schemas"]["SaleRow"][];
+            };
+        };
         PaginatedTargetList: {
             /**
              * @description Mirrors the HTTP status code.
@@ -2707,6 +2771,83 @@ export interface components {
         SPAPasswordResetRequest: {
             /** Format: email */
             email: string;
+        };
+        /** @description Enough of the account to render a row without a second request. */
+        SaleAccount: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        /** @description Enough of the asset to render a row without a second request. */
+        SaleAsset: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            archetype: components["schemas"]["ArchetypeEnum"];
+            currency: components["schemas"]["CurrencyEnum"];
+        };
+        /** @description One disposal drawn from one lot; movement is null for a maturity. */
+        SaleExit: {
+            /** Format: uuid */
+            movement: string | null;
+            kind: components["schemas"]["KindEnum"];
+            /** Format: date */
+            sold_on: string;
+            /**
+             * Format: decimal
+             * @description Decimal string. Never parse as a float (NFR-COR-003).
+             */
+            quantity: string | null;
+            proceeds: components["schemas"]["MoneyPair"];
+            cost_removed: components["schemas"]["MoneyPair"];
+            profit: components["schemas"]["MoneyPair"];
+            /**
+             * Format: decimal
+             * @description Decimal string fraction — 0.1375 means 13.75%. Never parse as a float.
+             */
+            profit_rate: string | null;
+        };
+        /** @description The lot's identity — it stores nothing else (lots.md §2). */
+        SaleLot: {
+            /** Format: uuid */
+            id: string;
+            label: string;
+        };
+        /** @description One sold-from lot: the contribution, the exits, and their result. */
+        SaleRow: {
+            lot: components["schemas"]["SaleLot"];
+            account: components["schemas"]["SaleAccount"];
+            asset: components["schemas"]["SaleAsset"];
+            /** Format: date */
+            purchased_on: string | null;
+            /**
+             * Format: decimal
+             * @description Decimal string. Never parse as a float (NFR-COR-003).
+             */
+            entry_quantity: string | null;
+            /**
+             * Format: decimal
+             * @description Decimal string. Never parse as a float (NFR-COR-003).
+             */
+            entry_unit_price: string | null;
+            cost: components["schemas"]["MoneyPair"];
+            /** Format: date */
+            sold_on: string;
+            /**
+             * Format: decimal
+             * @description Decimal string. Never parse as a float (NFR-COR-003).
+             */
+            quantity_sold: string | null;
+            proceeds: components["schemas"]["MoneyPair"];
+            cost_removed: components["schemas"]["MoneyPair"];
+            profit: components["schemas"]["MoneyPair"];
+            /**
+             * Format: decimal
+             * @description Decimal string fraction — 0.1375 means 13.75%. Never parse as a float.
+             */
+            profit_rate: string | null;
+            fully_sold: boolean;
+            sales: components["schemas"]["SaleExit"][];
         };
         /**
          * @description * `STOCK` - Stock
@@ -4830,6 +4971,65 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PortfolioOverviewEnvelope"];
+                };
+            };
+            /** @description Validation failed — `errors` names the offending fields. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No valid session cookie. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    api_portfolio_sales_retrieve: {
+        parameters: {
+            query?: {
+                /** @description Filter by account id. */
+                account?: string;
+                /** @description Filter by asset archetype. An unknown value is rejected with 400. */
+                archetype?: "CASH_DEPOSIT" | "CRYPTO" | "EXCHANGE_SECURITY" | "FIXED_INCOME" | "NAV_FUND";
+                /** @description Filter by asset id. */
+                asset?: string;
+                /** @description Pass `true` to also return archived lots (hidden by default). */
+                include_archived?: boolean;
+                /** @description Valuation date (YYYY-MM-DD). Defaults to today. */
+                on?: string;
+                /** @description Sort field; `-` prefixes descending. Ties break on lot id. */
+                ordering?: "-profit_rate" | "-purchased_on" | "-sold_on" | "profit_rate" | "purchased_on" | "sold_on";
+                /** @description Page number of the paginated results (50 rows per page). */
+                page?: number;
+                /** @description Only rows whose filtered result is a gain, or only losses. */
+                result?: "LOSS" | "PROFIT";
+                /** @description Only sales on or after this date. Filters exits, not lots. */
+                sold_from?: string;
+                /** @description Only sales on or before this date. Filters exits, not lots. */
+                sold_to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of sold-from lots. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedSaleRowList"];
                 };
             };
             /** @description Validation failed — `errors` names the offending fields. */
