@@ -12,6 +12,8 @@ Individual (retail) investors tracking their own portfolios: positions, transact
 
 BullLedger is a web frontend for the BullLedger REST API: an investment-tracking app where users record and review their holdings, transactions, and portfolio performance. Success means a user trusts the numbers at a glance and can complete record-keeping tasks (add a trade, review a position, scan performance) quickly and without ambiguity. The app is early-stage: the current surface is a placeholder home page and a design-system showcase, with authenticated dashboard/table/form surfaces ahead.
 
+Sales history answers the other half of "how am I doing": not what a lot still holds, but what leaving it produced — what did I sell, and did I win or lose on it. It sits beside the existing Aportes/Lots screen as a sibling, not a replacement — Lots is the position's ledger of what remains, Sales is the record of what left it.
+
 ## Brand Personality
 
 Precise, calm, trustworthy. Finance-grade restraint: the numbers are the hero, and the interface disappears into the task. The gold bull identity (logo, gold/amber primary) carries the brand's confidence, used for primary actions, selection, and key state — never as decoration. Tone of voice is plain, direct, and unhyped: state facts, avoid market-bro energy.
