@@ -91,6 +91,42 @@ export const movementQuery = (id: string) =>
   });
 
 /**
+ * Every movement for one holding, pages and all.
+ *
+ * The holdings screen needs each lot's opening row — its `occurred_on` and
+ * `unit_price` — and neither the lot resource nor the projection publishes
+ * them. `PAGE_SIZE` is 50 with no client override, so a position held for years
+ * outruns a single page, and the oldest lots are the first casualty of reading
+ * only the first one.
+ *
+ * Bounded by the position rather than by the portfolio: both filters are sent,
+ * so this walks one holding's history and not the whole ledger. It is issued on
+ * expanding a row, never on load — see `InstanceRows`.
+ *
+ * The same shape as `listAllTargetsInScope`, for the same reason: the endpoint
+ * pages and the caller needs the set.
+ */
+export async function listAllMovementsFor(
+  account: string,
+  asset: string,
+): Promise<Movement[]> {
+  const rows: Movement[] = [];
+
+  for (let page = 1; ; page += 1) {
+    const result = await listMovements({ account, asset, page });
+    rows.push(...result.results);
+
+    if (!result.next) return rows;
+  }
+}
+
+export const movementsForHoldingQuery = (account: string, asset: string) =>
+  queryOptions({
+    queryKey: [...movementKeys.all, "for-holding", account, asset] as const,
+    queryFn: () => listAllMovementsFor(account, asset),
+  });
+
+/**
  * What every ledger write invalidates, in one place because it is one rule.
  *
  * Coarse on purpose, and the coarseness is the point: a recorded movement can

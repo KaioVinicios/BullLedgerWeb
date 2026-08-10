@@ -5,6 +5,7 @@ import { ApiClientError } from "@/lib/apiError";
 import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
 import {
+  listAllMovementsFor,
   listMovements,
   recordMovement,
   recordTransfer,
@@ -201,5 +202,60 @@ describe("recordTransfer", () => {
 
     expect(legs.out.type).toBe("TRANSFER_OUT");
     expect(legs.in.type).toBe("TRANSFER_IN");
+  });
+});
+
+describe("listAllMovementsFor", () => {
+  it("walks every page, because a long position outruns one", async () => {
+    // PAGE_SIZE is 50 with no client override, so a position held for years
+    // arrives in several pages and a first-page read would silently lose the
+    // oldest lots — which are exactly the ones a purchase date is wanted for.
+    const rows = (n: number, from: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        ...movement,
+        id: `m${from + i}`,
+        lot: `lot${from + i}`,
+      }));
+
+    server.use(
+      http.get(`${TEST_API_URL}/api/movements/`, ({ request }) => {
+        const page = new URL(request.url).searchParams.get("page") ?? "1";
+
+        return HttpResponse.json({
+          status: 200,
+          data: {
+            count: 60,
+            next: page === "1" ? "http://next" : null,
+            previous: null,
+            results: page === "1" ? rows(50, 0) : rows(10, 50),
+          },
+        });
+      }),
+    );
+
+    const result = await listAllMovementsFor("acc", "ast");
+
+    expect(result).toHaveLength(60);
+    expect(result[59].id).toBe("m59");
+  });
+
+  it("sends both filters, so the walk is one position's history", async () => {
+    let seen: URLSearchParams | undefined;
+
+    server.use(
+      http.get(`${TEST_API_URL}/api/movements/`, ({ request }) => {
+        seen = new URL(request.url).searchParams;
+
+        return HttpResponse.json({
+          status: 200,
+          data: { count: 0, next: null, previous: null, results: [] },
+        });
+      }),
+    );
+
+    await listAllMovementsFor("acc-1", "ast-1");
+
+    expect(seen?.get("account")).toBe("acc-1");
+    expect(seen?.get("asset")).toBe("ast-1");
   });
 });
