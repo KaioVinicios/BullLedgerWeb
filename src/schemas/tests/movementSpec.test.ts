@@ -6,6 +6,7 @@ import {
   acceptsQuantity,
   allowsFee,
   createsLot,
+  entryTypes,
   quantityRequired,
   requiresLot,
   requiresQuantity,
@@ -199,5 +200,34 @@ describe("the quantity rules", () => {
     expect(requiresQuantity({ quantity: "NULL", cash: "POSITIVE" })).toBe(
       false,
     );
+  });
+});
+
+describe("entryTypes", () => {
+  it("names the types that open a lot, from the server's own rule", () => {
+    expect(entryTypes(specs).sort()).toEqual(
+      ["BUY", "DEPOSIT", "TRANSFER_IN"].sort(),
+    );
+  });
+
+  it("excludes the types that consume a lot rather than open one", () => {
+    // SELL, WITHDRAWAL, and TRANSFER_OUT are REQUIRES: they name an existing
+    // lot. Treating one as an entry would date a position from its disposal.
+    expect(entryTypes(specs)).not.toContain("SELL");
+    expect(entryTypes(specs)).not.toContain("WITHDRAWAL");
+    expect(entryTypes(specs)).not.toContain("TRANSFER_OUT");
+  });
+
+  it("excludes the types that carry no lot at all", () => {
+    expect(entryTypes(specs)).not.toContain("DIVIDEND");
+    expect(entryTypes(specs)).not.toContain("SPLIT");
+  });
+
+  it("reads the rule rather than a list, so a new entry type needs no edit here", () => {
+    const invented = [
+      { ...specs[0], type: "GRANT" as never, lot: "CREATES" as const },
+    ];
+
+    expect(entryTypes(invented)).toEqual(["GRANT"]);
   });
 });

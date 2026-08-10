@@ -82,6 +82,29 @@ export function createsLot(spec: MovementTypeSpec, hasAsset: boolean): boolean {
   return hasAsset && spec.lot === "CREATES";
 }
 
+/**
+ * The types whose asset-carrying form opens a lot.
+ *
+ * A lot has exactly one movement that made it, which is what lets a client
+ * date and price a purchase the API publishes on neither the lot resource nor
+ * the projection. The consumers — `SELL`, `WITHDRAWAL`, `TRANSFER_OUT` — name
+ * an existing lot instead, and mistaking one for an entry would date a
+ * position from the day part of it was sold.
+ *
+ * `hasAsset` is `true` and not a parameter, because the caller is matching
+ * against movements already filtered by asset. A pure-cash row carries no lot
+ * at all, so it can never be the entry this is used to find.
+ *
+ * Derived rather than listed, for the reason this whole module exists: a
+ * literal `["BUY", "DEPOSIT", "TRANSFER_IN"]` would be a second copy of
+ * `specs.py`, and the copy is the thing that drifts.
+ */
+export function entryTypes(specs: MovementSpecs): MovementType[] {
+  return specs
+    .filter((spec) => createsLot(spec, true))
+    .map((spec) => spec.type);
+}
+
 export function allowsFee(spec: MovementTypeSpec): boolean {
   return spec.fee_allowed;
 }
