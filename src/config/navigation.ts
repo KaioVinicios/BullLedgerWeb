@@ -1,10 +1,12 @@
 import {
+  IconBriefcase,
   IconBuildingBank,
   IconCoins,
   IconHelpCircle,
   IconLayoutDashboard,
   IconListDetails,
   IconMessageReport,
+  IconReceipt2,
   IconTag,
   IconTarget,
   IconWallet,
@@ -60,6 +62,14 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         icon: IconLayoutDashboard,
         exact: true,
       },
+      // Primary rather than structure: structure is the CRUD of institutions,
+      // accounts, and assets, while this reads the state they hold — the same
+      // reason the overview sits here.
+      { path: PATHS.HOLDINGS, labelKey: "holdings", icon: IconBriefcase },
+      // Beside holdings rather than ledger: this reads what selling produced,
+      // the same derived-reading reason holdings sits here rather than under
+      // activity.
+      { path: PATHS.SALES, labelKey: "sales", icon: IconReceipt2 },
     ],
   },
   {
