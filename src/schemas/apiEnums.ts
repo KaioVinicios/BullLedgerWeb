@@ -9,7 +9,10 @@ import type { components } from "@/types/api";
  * schema gained fails the exhaustiveness line, and either way the fix is
  * mechanical.
  */
-type AllOf<Union, Listed extends readonly Union[]> = [
+// Exported for the other hand-kept API-value lists outside this file
+// (`portfolioView.ts`'s `SALES_ORDERINGS`) that want the same two-way
+// guarantee against a generated union.
+export type AllOf<Union, Listed extends readonly Union[]> = [
   Exclude<Union, Listed[number]>,
 ] extends [never]
   ? readonly Union[]
