@@ -210,6 +210,10 @@ drifts. Recapture it whenever that table changes.
 ### `pages/`
 One file (or folder) per route. Page components compose smaller components and hooks but contain no reusable logic of their own.
 
+`Sales/` renders the sales history — every lot that has been sold from, and what it
+returned. A sibling of `Holding/` rather than a replacement: that screen answers what a
+position is worth now, this one what a contribution returned when it was disposed of.
+
 ### `routes/`
 TanStack Router route definitions. The route tree and lazy-loaded route files live here. Keep routing config separate from page UI.
 
@@ -374,6 +378,10 @@ carry — only the derived verdict beside them — so nothing on screen would lo
 were dropped.
 
 `profile.ts` is the one resource that is a singleton — `/api/profile/` carries no id and always resolves to the caller's own profile — so it defines its key inline instead of through `createResourceKeys`, which would give it a `list()` and a `detail()` that can never be called. The identity write (`updateCurrentUser`) lives in `auth.ts` beside `currentUserQuery` rather than in its own module, because it is the same resource; splitting a read from its write is how a client ends up with two disagreeing ideas of what a user is.
+
+`sales.ts` is the fourth read-only projection, keyed under `PORTFOLIO_KEY` like the rest of
+`portfolio.ts`. `profit_rate` arrives as a decimal-string fraction — the same convention
+every other rate in this app follows — so nothing on this side divides or converts it.
 
 ### `store/`
 Zustand store slices, one file per domain (e.g. `store/auth.ts`). Keep stores thin: derived state belongs in selectors or hooks, not in the store itself.
