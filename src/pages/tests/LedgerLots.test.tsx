@@ -95,6 +95,23 @@ const holding: HoldingDetail = {
       realized_gain: pair(1_500),
       unrealized_gain: pair(20_000),
       lot_return: "0.235",
+      // A partial draw: 3 of the original 10 units were sold, leaving 7 —
+      // which is where the lot's non-zero realized_gain above comes from.
+      purchased_on: "2026-01-10",
+      entry_quantity: "10",
+      entry_unit_price: "100.00",
+      exits: [
+        {
+          movement: "55555555-5555-4555-8555-555555555555",
+          kind: "SELL",
+          sold_on: "2026-02-01",
+          quantity: "3",
+          proceeds: pair(31_500),
+          cost_removed: pair(30_000),
+          profit: pair(1_500),
+          profit_rate: "0.05",
+        },
+      ],
     },
     {
       lot: "44444444-4444-4444-8444-444444444444",
@@ -107,6 +124,23 @@ const holding: HoldingDetail = {
       realized_gain: pair(4_000),
       unrealized_gain: null,
       lot_return: "0.08",
+      // Fully sold in one exit: all 5 entry units, all of the entry cost
+      // basis removed — which is why realized_gain equals the exit's profit.
+      purchased_on: "2025-08-02",
+      entry_quantity: "5",
+      entry_unit_price: "100.00",
+      exits: [
+        {
+          movement: "66666666-6666-4666-8666-666666666666",
+          kind: "SELL",
+          sold_on: "2026-01-15",
+          quantity: "5",
+          proceeds: pair(54_000),
+          cost_removed: pair(50_000),
+          profit: pair(4_000),
+          profit_rate: "0.08",
+        },
+      ],
     },
   ],
 };

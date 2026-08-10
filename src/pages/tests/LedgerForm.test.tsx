@@ -554,6 +554,11 @@ function lotProjection(overrides: Partial<LotProjection> = {}): LotProjection {
     realized_gain: pair(0),
     unrealized_gain: null,
     lot_return: null,
+    // The default lot is untouched: bought whole, nothing drawn from it yet.
+    purchased_on: "2026-01-10",
+    entry_quantity: "7",
+    entry_unit_price: "142.86",
+    exits: [],
     ...overrides,
   };
 }
@@ -594,6 +599,23 @@ const holding: HoldingDetail = {
       label: "Lot — 2025-08-02",
       status: "CLOSED",
       quantity_remaining: "0",
+      // Fully sold, unlike the default open lot above: the whole entry was
+      // drawn down in one exit, so nothing is left to offer in the picker.
+      purchased_on: "2025-08-02",
+      entry_quantity: "7",
+      entry_unit_price: "142.86",
+      exits: [
+        {
+          movement: "77777777-7777-4777-8777-777777777777",
+          kind: "SELL",
+          sold_on: "2026-01-05",
+          quantity: "7",
+          proceeds: pair(100_000),
+          cost_removed: pair(100_000),
+          profit: pair(0),
+          profit_rate: "0",
+        },
+      ],
     }),
   ],
 };

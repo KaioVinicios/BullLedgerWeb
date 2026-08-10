@@ -124,6 +124,13 @@ const holding: HoldingDetail = {
       realized_gain: pair(0),
       unrealized_gain: null,
       lot_return: null,
+      // Untouched so far: the transfer this test exercises hasn't happened
+      // yet, so the full entry remains and no exit has been recorded — a
+      // TRANSFER_OUT draws a lot down without ever counting as a disposal.
+      purchased_on: "2026-01-10",
+      entry_quantity: "1.5",
+      entry_unit_price: "666.67",
+      exits: [],
     },
   ],
 };

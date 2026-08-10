@@ -63,7 +63,7 @@ function overviewIn(currency: "BRL" | "USD", total: number): PortfolioOverview {
             asset: ASSET_ID,
             archetype: "EXCHANGE_SECURITY",
             quantity: "100",
-            principal_native: null,
+            cost_basis_remaining_native: money(total, currency),
             current_value_native: money(total, currency),
             value: money(total, currency),
             invested: money(total, currency),
