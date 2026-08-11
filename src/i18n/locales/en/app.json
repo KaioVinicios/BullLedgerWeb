@@ -838,6 +838,27 @@
   "targets": {
     "add": "New target",
     "resolution": "The most specific match wins: a holding's own target, then its account's archetype target, then the portfolio's. A holding's status comes from exactly one of them — never a blend.",
+    "sentence": {
+      "scope": {
+        "HOLDING": "This target covers {{asset}} in {{account}}.",
+        "ACCOUNT_ARCHETYPE": "This target covers every {{archetype}} holding in {{account}}.",
+        "PORTFOLIO_ARCHETYPE": "This target covers every {{archetype}} holding, in any account.",
+        "incomplete": "Pick where this target applies to see it described here."
+      },
+      "rate": "{{rate}} {{period}}",
+      "stepJoin": "{{rate}} {{when}}",
+      "when": {
+        "only": "from the first purchase",
+        "first_one": "for the first month",
+        "first_other": "for the first {{count}} months",
+        "middle": "from month {{from}} to {{until}}",
+        "last": "from month {{from}} onwards"
+      },
+      "floorRate": "−{{rate}} {{period}}",
+      "floorText": "a floor of −{{rate}} {{period}}",
+      "floorLabel": "floor",
+      "ladderEmpty": "Fill in the rate ladder to see it described here."
+    },
     "sectionEmpty": "No targets at this level.",
     "columns": {
       "appliesTo": "Applies to",

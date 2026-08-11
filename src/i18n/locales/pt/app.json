@@ -838,6 +838,27 @@
   "targets": {
     "add": "Nova meta",
     "resolution": "Vence a correspondência mais específica: a meta da própria posição, depois a meta do arquétipo na conta, depois a da carteira. O status de uma posição vem de exatamente uma delas — nunca de uma mistura.",
+    "sentence": {
+      "scope": {
+        "HOLDING": "Esta meta cobre {{asset}} na conta {{account}}.",
+        "ACCOUNT_ARCHETYPE": "Esta meta cobre toda posição de {{archetype}} na conta {{account}}.",
+        "PORTFOLIO_ARCHETYPE": "Esta meta cobre toda posição de {{archetype}}, em qualquer conta.",
+        "incomplete": "Escolha onde a meta se aplica para ver a descrição aqui."
+      },
+      "rate": "{{rate}} {{period}}",
+      "stepJoin": "{{rate}} {{when}}",
+      "when": {
+        "only": "desde a primeira compra",
+        "first_one": "no primeiro mês",
+        "first_other": "nos primeiros {{count}} meses",
+        "middle": "do mês {{from}} ao {{until}}",
+        "last": "do mês {{from}} em diante"
+      },
+      "floorRate": "−{{rate}} {{period}}",
+      "floorText": "piso de −{{rate}} {{period}}",
+      "floorLabel": "piso",
+      "ladderEmpty": "Preencha a escada de taxas para ver a descrição aqui."
+    },
     "sectionEmpty": "Nenhuma meta neste nível.",
     "columns": {
       "appliesTo": "Aplica-se a",
