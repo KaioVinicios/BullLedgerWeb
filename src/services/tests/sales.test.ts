@@ -11,7 +11,10 @@ import { PORTFOLIO_KEY } from "@/services/queryKeys";
 // fraction (recomputed from the row's own proceeds/cost after Task 8b
 // dropped the endpoint's ×100 and renamed the field).
 const saleRow: SaleRow = {
-  lot: { id: "b722438a-1577-4e56-8e96-484091aeb2ba", label: "Lot — 2025-03-12" },
+  lot: {
+    id: "b722438a-1577-4e56-8e96-484091aeb2ba",
+    label: "Lot — 2025-03-12",
+  },
   account: { id: "8d3cc69f-d2c9-4981-9819-ccadbe93b0d0", name: "XP Corretora" },
   asset: {
     id: "669049fb-9333-4c4d-bbde-959e9202700e",
@@ -109,7 +112,12 @@ describe("listSales", () => {
       http.get(`${TEST_API_URL}/api/portfolio/sales/`, () =>
         HttpResponse.json({
           status: 200,
-          data: { count: 1, next: null, previous: null, results: [maturityRow] },
+          data: {
+            count: 1,
+            next: null,
+            previous: null,
+            results: [maturityRow],
+          },
         }),
       ),
     );

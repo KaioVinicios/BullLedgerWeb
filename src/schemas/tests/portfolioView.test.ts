@@ -148,9 +148,9 @@ describe("salesSearchSchema", () => {
   it("degrades a non-boolean include_archived to undefined rather than throwing", () => {
     // Archived lots stay hidden unless the flag is unambiguously true, the
     // same untrusted-URL posture every other field here takes.
-    expect(
-      salesSearchSchema.parse({ include_archived: "yes" }),
-    ).toMatchObject({ include_archived: undefined });
+    expect(salesSearchSchema.parse({ include_archived: "yes" })).toMatchObject({
+      include_archived: undefined,
+    });
   });
 
   it("falls back to undefined rather than throwing on a hand-edited URL", () => {
@@ -168,8 +168,8 @@ describe("salesSearchSchema", () => {
     expect(
       salesSearchSchema.parse({ archetype: "SOMETHING_NEW" }),
     ).toMatchObject({ archetype: undefined });
-    expect(salesSearchSchema.parse({ sold_from: "not-a-date" })).toMatchObject(
-      { sold_from: undefined },
-    );
+    expect(salesSearchSchema.parse({ sold_from: "not-a-date" })).toMatchObject({
+      sold_from: undefined,
+    });
   });
 });

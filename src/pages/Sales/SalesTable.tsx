@@ -182,7 +182,7 @@ export function SaleExitRow({ sale }: { sale: SaleExit }) {
 
   return (
     <TableRow className="bg-muted/30 text-sm">
-      <TableCell className="py-2 pl-10 text-muted-foreground whitespace-nowrap">
+      <TableCell className="py-2 pl-10 whitespace-nowrap text-muted-foreground">
         {t(`sales.kind.${sale.kind}`)}
       </TableCell>
       <TableCell className="py-2 text-right">
