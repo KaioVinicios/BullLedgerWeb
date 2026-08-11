@@ -9,3 +9,7 @@ src/types/api.d.ts
 # conflict on every sync.
 .claude/
 .impeccable/
+
+# Git-ignored agent scratch: briefs, reports, and review packages. Prettier
+# does not read .gitignore, so it would otherwise check files no commit holds.
+.superpowers/
