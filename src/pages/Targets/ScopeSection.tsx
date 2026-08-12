@@ -31,12 +31,14 @@ import type { ScopeNames } from "@/utils/targetScope";
  * Tailwind's preflight sets `list-style: none`, and Safari/VoiceOver drop list
  * semantics when it is off, taking the count with them.
  *
- * **The card's name stays a link, not an `<h3>`.** Heading navigation on this
- * screen is load-bearing for the lesson — the three `<h2>`s *are* the
- * resolution order, which is what the first test in `Targets.test.tsx` pins —
- * and burying them under fifty record names would cost more than it bought.
- * The list already delivers the traversal and the count, and every name is
- * still reachable by the links rotor.
+ * **The card's name stays a link, not an `<h3>`.** A heading level is knowledge
+ * the card cannot have: `<h3>` is right only while the card sits under this
+ * section's `<h2>`, which it can no more see than it can see how many siblings
+ * it has — the same argument that keeps the `<li>` out here. And nothing is
+ * lost by withholding it. The name is a `<Link>`, so it is already in the links
+ * rotor, and list-item navigation now supplies the position and count a heading
+ * would not have. (Not because `<h3>`s would bury the `<h2>`s — heading
+ * navigation is level-aware and jumps between levels independently.)
  */
 export function ScopeSection({
   scope,
@@ -64,7 +66,15 @@ export function ScopeSection({
   const headingId = `targets-${scope}`;
 
   return (
-    <section aria-labelledby={headingId} className="space-y-3">
+    // `aria-busy` because `ListSkeleton` is `aria-hidden`: without it the
+    // heading, the hint and an em dash are all an AT user gets while the load
+    // is in flight, with nothing saying more is coming. All three sections go
+    // pending together now, so this is the whole screen, not one third of it.
+    <section
+      aria-labelledby={headingId}
+      aria-busy={isPending}
+      className="space-y-3"
+    >
       <div className="space-y-1">
         <h2 id={headingId} className="text-sm font-medium">
           {t(`enums.targetScope.${scope}`)}

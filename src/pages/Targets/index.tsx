@@ -123,14 +123,20 @@ export function TargetsPage() {
   const isEmpty = !isPending && everyTarget.length === 0;
 
   /**
-   * `null` while the load is in flight, so the explainer says "—" rather than
-   * claiming three empty levels for a frame. A level with no targets is a fact
-   * the screen knows; a level not loaded yet is not.
+   * `null` unless the number is a fact the screen actually holds.
+   *
+   * A level with no targets is a fact; a level still loading is not, and
+   * neither is a level whose load **failed** — a failed query is not pending
+   * and its `data` is `undefined`, so counting it would report a confident
+   * "no targets" for a level nobody was able to read. That one is the worse
+   * of the two: the pending flash lasts a frame, while an exhausted retry
+   * persists, sitting above the `ListError` that contradicts it.
    */
+  const known = !isPending && error === undefined;
   const counts: Record<TargetScope, number | null> = {
-    HOLDING: isPending ? null : byScope.HOLDING.length,
-    ACCOUNT_ARCHETYPE: isPending ? null : byScope.ACCOUNT_ARCHETYPE.length,
-    PORTFOLIO_ARCHETYPE: isPending ? null : byScope.PORTFOLIO_ARCHETYPE.length,
+    HOLDING: known ? byScope.HOLDING.length : null,
+    ACCOUNT_ARCHETYPE: known ? byScope.ACCOUNT_ARCHETYPE.length : null,
+    PORTFOLIO_ARCHETYPE: known ? byScope.PORTFOLIO_ARCHETYPE.length : null,
   };
 
   const archive = useMutation({

@@ -325,6 +325,39 @@ describe("the targets list", () => {
     expect(items[2]).toHaveTextContent("0");
   });
 
+  it("counts no level whose load failed, rather than reporting it empty", async () => {
+    server.use(
+      // Override first — MSW resolves with the first handler that matches, and
+      // `signedIn()` already serves this path.
+      //
+      // A 400 rather than a 500, the same trade `Pricing.test.tsx` makes:
+      // `queryClient` retries `server` and `network` failures twice with
+      // backoff, which is right and slower than this assertion should wait.
+      // What is under test is what the explainer says when no answer arrived,
+      // and that does not depend on which failure stopped it.
+      http.get(`${TEST_API_URL}/api/targets/`, () =>
+        HttpResponse.json({ status: 400, detail: "boom" }, { status: 400 }),
+      ),
+      ...signedIn([existing]),
+    );
+    mount(PATHS.TARGETS);
+
+    // The gate: `ListError` renders only once a query has actually failed, so
+    // reaching it proves the load settled rather than that it is still in
+    // flight. A failed query is not pending and carries no data, which is
+    // exactly the state that used to read as a confident zero.
+    await screen.findByRole("alert");
+
+    const explainer = screen.getByRole("region", {
+      name: app.targets.resolution.title,
+    });
+
+    for (const item of within(explainer).getAllByRole("listitem")) {
+      expect(item).toHaveTextContent(app.targets.resolution.unknown);
+      expect(item).not.toHaveTextContent(app.targets.resolution.count_zero);
+    }
+  });
+
   it("notes when a more specific target covers part of a broader one", async () => {
     const portfolio: Target = {
       id: "pppppppp-pppp-4ppp-8ppp-pppppppppppp",
