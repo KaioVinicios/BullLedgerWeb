@@ -1,228 +1,107 @@
-import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import {
-  IconArchive,
-  IconDots,
-  IconPencil,
-  IconRestore,
-} from "@tabler/icons-react";
 
-import { ListError } from "@/components/ListError";
 import { ListPagination } from "@/components/ListPagination";
 import { ListSkeleton } from "@/components/ListSkeleton";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useFormatLocale } from "@/hooks/useFormatLocale";
-import { usePaginatedQuery } from "@/hooks/usePaginatedQuery";
-import { PATHS } from "@/routes/path";
+import { TargetCard } from "@/pages/Targets/TargetCard";
 import type { TargetScope } from "@/schemas/apiEnums";
-import {
-  listTargets,
-  targetKeys,
-  type Target,
-  type TargetListQuery,
-} from "@/services/targets";
-import { formatPercent } from "@/utils/decimal";
-import { targetScopeName, type ScopeNames } from "@/utils/targetScope";
+import type { Target } from "@/services/targets";
+import { slicePage } from "@/utils/slicePage";
+import type { ScopeNames } from "@/utils/targetScope";
 
 /**
- * One level of the hierarchy: its own query, its own page parameter, its own
- * table.
+ * One level of the hierarchy: its heading, what the level means, and its rows.
  *
- * Three sections rather than one table with a scope column, because the order
- * they appear in *is* the resolution rule — most specific first — and the
- * screen teaches it by shape instead of by a sentence alone. The price is three
- * page parameters in the URL, paid rather than dodged: one shared `page` would
- * step all three lists together, which is not a thing anyone means.
+ * It no longer owns a query. The screen loads every target once — the shadow
+ * note has to compare levels the reader is not looking at — so this receives
+ * the rows already in hand and cuts them with `slicePage`. Its URL page
+ * parameter is unchanged: `holdingPage=2` still means the second fifty.
  *
- * No sortable header. `GET /api/targets/` declares no `ordering` parameter, and
- * a control that cannot work is not offered — the same rule the ledger and the
- * pricing list already follow.
+ * Three sections rather than one list with a level column, unchanged from
+ * before: the order they appear in *is* the resolution rule, and the screen
+ * teaches it by shape. A section with no rows keeps its heading and its
+ * explanation, because the headings are what carry the lesson.
+ *
+ * **The cards are a real list, and this is the file that can say so.** A
+ * `TargetCard` renders a `<div>` because it cannot know how many of itself
+ * exist; this section does, so it owns the `<ul>`. The table it replaced
+ * announced its own size and moved cell to cell, and dropping the rows into a
+ * bare stack of `<div>`s would have quietly taken both away — a screen-reader
+ * user would hear four unrelated blocks where the level has four targets.
+ * `role="list"` is restated for the reason `ResolutionExplainer` restates it:
+ * Tailwind's preflight sets `list-style: none`, and Safari/VoiceOver drop list
+ * semantics when it is off, taking the count with them.
+ *
+ * **The card's name stays a link, not an `<h3>`.** Heading navigation on this
+ * screen is load-bearing for the lesson — the three `<h2>`s *are* the
+ * resolution order, which is what the first test in `Targets.test.tsx` pins —
+ * and burying them under fifty record names would cost more than it bought.
+ * The list already delivers the traversal and the count, and every name is
+ * still reachable by the links rotor.
  */
 export function ScopeSection({
   scope,
+  rows,
   page,
   onPageChange,
-  includeArchived,
+  isPending,
   names,
+  shadowersOf,
   onArchive,
   onRestore,
 }: {
   scope: TargetScope;
+  rows: Target[];
   page: number;
   onPageChange: (page: number) => void;
-  includeArchived: boolean;
+  isPending: boolean;
   names: ScopeNames;
+  shadowersOf: (target: Target) => Target[];
   onArchive: (target: Target) => void;
   onRestore: (target: Target) => void;
 }) {
   const { t } = useTranslation("app");
-  const locale = useFormatLocale();
-
-  const query: TargetListQuery = {
-    scope,
-    page,
-    include_archived: includeArchived || undefined,
-  };
-
-  const list = usePaginatedQuery({
-    queryKey: targetKeys.list(query),
-    queryFn: () => listTargets(query),
-    page,
-    onPageChange,
-  });
-
+  const slice = slicePage(rows, page);
   const headingId = `targets-${scope}`;
-
-  /**
-   * The ladder's first rung, as a real figure. "3 steps" is chrome where the
-   * rate is the fact, and `PRODUCT.md`'s first principle puts the figures in
-   * front — so the count only appears as the remainder.
-   */
-  const stepsSummary = (target: Target) => {
-    const [first, ...rest] = target.steps;
-    if (!first) return "—";
-
-    const summary = t("targets.stepSummary", {
-      rate: formatPercent(first.rate, locale),
-      period: t(`enums.period.${first.rate_period}`),
-      month: first.from_month,
-    });
-
-    return rest.length > 0
-      ? `${summary} · ${t("targets.moreSteps", { count: rest.length })}`
-      : summary;
-  };
-
-  const floorSummary = (target: Target) =>
-    target.loss_limit_pct && target.loss_limit_period
-      ? `${formatPercent(target.loss_limit_pct, locale)} ${t(
-          `enums.period.${target.loss_limit_period}`,
-        )}`
-      : "—";
 
   return (
     <section aria-labelledby={headingId} className="space-y-3">
-      <h2 id={headingId} className="text-sm font-medium">
-        {t(`enums.targetScope.${scope}`)}
-      </h2>
+      <div className="space-y-1">
+        <h2 id={headingId} className="text-sm font-medium">
+          {t(`enums.targetScope.${scope}`)}
+        </h2>
+        <p className="max-w-prose text-xs text-muted-foreground">
+          {t(`targets.levelHint.${scope}`)}
+        </p>
+      </div>
 
-      {list.error ? (
-        <ListError onRetry={() => void list.refetch()} />
-      ) : list.isPending ? (
+      {isPending ? (
         <ListSkeleton />
-      ) : list.count === 0 ? (
+      ) : slice.rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           {t("targets.sectionEmpty")}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("targets.columns.appliesTo")}</TableHead>
-                <TableHead>{t("targets.columns.steps")}</TableHead>
-                <TableHead>{t("targets.columns.floor")}</TableHead>
-                <TableHead className="w-12">
-                  <span className="sr-only">{t("structure.actions")}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {list.rows.map((target) => {
-                const name = targetScopeName(target, names, t);
-
-                return (
-                  <TableRow key={target.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={PATHS.TARGETS_EDIT}
-                          params={{ id: target.id }}
-                          className="hover:underline"
-                        >
-                          {name}
-                        </Link>
-                        {target.archived_at !== null && (
-                          <Badge variant="outline">
-                            {t("structure.archivedBadge")}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="tabular-nums">
-                      {stepsSummary(target)}
-                    </TableCell>
-                    <TableCell className="tabular-nums">
-                      {floorSummary(target)}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={t("structure.openMenu", { name })}
-                          >
-                            <IconDots aria-hidden />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link
-                              to={PATHS.TARGETS_EDIT}
-                              params={{ id: target.id }}
-                            >
-                              <IconPencil aria-hidden />
-                              {t("structure.edit")}
-                            </Link>
-                          </DropdownMenuItem>
-                          {target.archived_at === null ? (
-                            <DropdownMenuItem
-                              onSelect={() => onArchive(target)}
-                            >
-                              <IconArchive aria-hidden />
-                              {t("structure.archive")}
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onSelect={() => onRestore(target)}
-                            >
-                              <IconRestore aria-hidden />
-                              {t("structure.restore")}
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        <ul role="list" className="space-y-3">
+          {slice.rows.map((target) => (
+            <li key={target.id}>
+              <TargetCard
+                target={target}
+                names={names}
+                shadowers={shadowersOf(target)}
+                onArchive={onArchive}
+                onRestore={onRestore}
+              />
+            </li>
+          ))}
+        </ul>
       )}
 
       <ListPagination
-        page={list.page}
-        pageCount={list.pageCount}
-        hasPrevious={list.hasPrevious}
-        hasNext={list.hasNext}
-        onPageChange={list.setPage}
+        page={slice.page}
+        pageCount={slice.pageCount}
+        hasPrevious={slice.hasPrevious}
+        hasNext={slice.hasNext}
+        onPageChange={onPageChange}
       />
     </section>
   );

@@ -65,14 +65,26 @@ const existing: Target = {
   archived_at: null,
 };
 
+/**
+ * A second holding-level target, so a list of them has a length to announce
+ * and the first level of the explainer has a count worth reading. Its asset is
+ * deliberately one the asset list does not carry, which keeps its name
+ * distinct from `existing`'s.
+ */
+const alsoHolding: Target = {
+  ...existing,
+  id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  asset: "55555555-5555-4555-8555-555555555555",
+};
+
 function page<T>(results: T[], count = results.length) {
   return { status: 200, data: { count, next: null, previous: null, results } };
 }
 
 /**
- * The list makes one request per section plus one for the "is anything here at
- * all" count, so the handler answers by `scope`: rows only for the level they
- * belong to, and the whole set when no scope is asked for.
+ * The list walks `/api/targets/` once per level, so the handler answers by
+ * `scope`: rows only for the level they belong to. One page each — a walk that
+ * has to follow `next` is set up by the pagination test alone.
  */
 function signedIn(targets: Target[] = []) {
   return [
@@ -118,7 +130,12 @@ describe("the targets list", () => {
     await screen.findByText("BTC · Binance");
     const headings = screen.getAllByRole("heading", { level: 2 });
 
+    // The whole `<h2>` outline, not a filtered subset: it *is* the resolution
+    // rule, so the explainer heading it and the levels following in order are
+    // one assertion about one structure. A card's name is deliberately not in
+    // here — see `ScopeSection` on why the records stay out of the outline.
     expect(headings.map((node) => node.textContent)).toEqual([
+      app.targets.resolution.title,
       app.enums.targetScope.HOLDING,
       app.enums.targetScope.ACCOUNT_ARCHETYPE,
       app.enums.targetScope.PORTFOLIO_ARCHETYPE,
@@ -129,7 +146,7 @@ describe("the targets list", () => {
     server.use(...signedIn([existing]));
     mount(PATHS.TARGETS);
 
-    expect(await screen.findByText(app.targets.resolution)).toBeVisible();
+    expect(await screen.findByText(app.targets.resolution.rule)).toBeVisible();
   });
 
   it("names a target by its scope, since a target has no name of its own", async () => {
@@ -139,18 +156,56 @@ describe("the targets list", () => {
     expect(await screen.findByText("BTC · Binance")).toBeVisible();
   });
 
-  it("leads the steps column with the rate rather than a count", async () => {
-    server.use(...signedIn([existing]));
+  // The old assertion guarded a table cell that showed the first rung and
+  // "+2 more". There is no cell now and no remainder to hide: the card reads
+  // the whole ladder, which is what that test was protecting the spirit of.
+  it("reads the whole ladder on the card, with no hidden remainder", async () => {
+    const laddered: Target = {
+      ...existing,
+      steps: [
+        {
+          ...existing.steps[0],
+          from_month: 0,
+          rate: "0.03",
+          rate_period: "MONTHLY",
+        },
+        {
+          id: "44444444-4444-4444-8444-444444444444",
+          from_month: 3,
+          rate: "0.02",
+          rate_period: "MONTHLY",
+        },
+      ],
+    };
+
+    server.use(...signedIn([laddered]));
     mount(PATHS.TARGETS);
 
-    expect(
-      await screen.findByText(
-        app.targets.stepSummary
-          .replace("{{rate}}", "12%")
-          .replace("{{period}}", app.enums.period.ANNUAL)
-          .replace("{{month}}", "0"),
-      ),
-    ).toBeVisible();
+    const line = await screen.findByText(/3% monthly/);
+
+    expect(line).toHaveTextContent("2% monthly from month 3 onwards");
+    expect(line.textContent).not.toMatch(/\+\d+ more/);
+  });
+
+  it("lists a level's cards, so how many there are is announced", async () => {
+    server.use(...signedIn([existing, alsoHolding]));
+    mount(PATHS.TARGETS);
+
+    // The section exists before its rows do, so wait on a row rather than on
+    // the region — a skeleton would otherwise answer the list query.
+    await screen.findByText("BTC · Binance");
+
+    // Scoped to the level: the explainer is a list on this page too, and an
+    // unscoped list query would be ambiguous between them.
+    const section = screen.getByRole("region", {
+      name: app.enums.targetScope.HOLDING,
+    });
+    const items = within(within(section).getByRole("list")).getAllByRole(
+      "listitem",
+    );
+
+    expect(items).toHaveLength(2);
+    expect(within(items[0]).getByText("BTC · Binance")).toBeVisible();
   });
 
   it("keeps an empty level visible rather than dropping the lesson", async () => {
@@ -181,23 +236,27 @@ describe("the targets list", () => {
       id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index).padStart(12, "0")}`,
     }));
 
+    // This handler has to come first: `server.use` prepends, and the first
+    // match wins — `signedIn`'s own targets handler would otherwise answer.
     server.use(
       http.get(`${TEST_API_URL}/api/targets/`, ({ request }) => {
-        const scope = new URL(request.url).searchParams.get("scope");
+        const url = new URL(request.url);
+        const scope = url.searchParams.get("scope");
+        const pageNumber = Number(url.searchParams.get("page") ?? "1");
 
-        // The screen makes three scoped requests plus one unscoped count.
         // Only the holding level has a second page; the other two are empty,
         // or they would each grow a pagination control of their own.
-        if (scope === null) return HttpResponse.json(page([], 60));
         if (scope !== "HOLDING") return HttpResponse.json(page([]));
 
+        // The walk pulls both pages; the screen then cuts them locally.
         return HttpResponse.json({
           status: 200,
           data: {
             count: 60,
-            next: `${TEST_API_URL}/api/targets/?page=2`,
+            next:
+              pageNumber === 1 ? `${TEST_API_URL}/api/targets/?page=2` : null,
             previous: null,
-            results: many.slice(0, 50),
+            results: pageNumber === 1 ? many.slice(0, 50) : many.slice(50),
           },
         });
       }),
@@ -246,14 +305,44 @@ describe("the targets list", () => {
     expect(archived).toBe(true);
   });
 
-  it("offers no sortable header, because the endpoint declares no ordering", async () => {
-    server.use(...signedIn([existing]));
+  it("counts each level in the explainer", async () => {
+    // Two rows at the first level on purpose. Each row of the explainer shows
+    // its ordinal beside its count, so a level holding exactly as many targets
+    // as its position would let the assertion pass on the ordinal alone —
+    // level 1 shows "2" here, and level 3 shows "0" against an ordinal of 3.
+    server.use(...signedIn([existing, alsoHolding]));
     mount(PATHS.TARGETS);
 
+    // The counts read "—" until every level has landed, so wait on a row.
     await screen.findByText("BTC · Binance");
 
-    for (const header of screen.getAllByRole("columnheader")) {
-      expect(within(header).queryByRole("button")).toBeNull();
-    }
+    const explainer = screen.getByRole("region", {
+      name: app.targets.resolution.title,
+    });
+    const items = within(explainer).getAllByRole("listitem");
+
+    expect(items[0]).toHaveTextContent("2");
+    expect(items[2]).toHaveTextContent("0");
+  });
+
+  it("notes when a more specific target covers part of a broader one", async () => {
+    const portfolio: Target = {
+      id: "pppppppp-pppp-4ppp-8ppp-pppppppppppp",
+      scope: "PORTFOLIO_ARCHETYPE",
+      archetype: "CRYPTO",
+      loss_limit_pct: null,
+      loss_limit_period: null,
+      steps: existing.steps,
+      archived_at: null,
+    };
+
+    server.use(...signedIn([existing, portfolio]));
+    mount(PATHS.TARGETS);
+
+    expect(
+      await screen.findByText(
+        app.targets.shadowed_one.replace("{{names}}", "BTC · Binance"),
+      ),
+    ).toBeVisible();
   });
 });

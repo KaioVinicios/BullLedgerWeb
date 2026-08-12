@@ -54,9 +54,10 @@ const NAME_SEPARATOR = ", ";
  *
  * **A `<div>`, not an `<li>` or an `<article>`.** The card does not know how
  * many of it there are; the section that lists them does, and it owns the
- * wrapper. Declaring `<li>` here would break the moment one of these were
- * rendered on its own, and an `<article>` inside a future `<ul>` would be
- * invalid markup this file could not see.
+ * wrapper — `ScopeSection` puts each of these in an `<li>` of a real list.
+ * Declaring `<li>` here would break the moment one of these were rendered on
+ * its own, and the heading level is withheld for the same reason: the card
+ * cannot see what it sits under.
  */
 export function TargetCard({
   target,
