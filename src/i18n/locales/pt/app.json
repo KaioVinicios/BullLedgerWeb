@@ -860,6 +860,9 @@
       "ladderEmpty": "Preencha a escada de taxas para ver a descrição aqui."
     },
     "sectionEmpty": "Nenhuma meta neste nível.",
+    "shadowed_one": "1 meta mais específica cobre parte deste alcance: {{names}}",
+    "shadowed_other": "{{count}} metas mais específicas cobrem parte deste alcance: {{names}}",
+    "shadowedMore": "e mais {{count}}",
     "columns": {
       "appliesTo": "Aplica-se a",
       "steps": "Degraus",

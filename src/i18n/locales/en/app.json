@@ -860,6 +860,9 @@
       "ladderEmpty": "Fill in the rate ladder to see it described here."
     },
     "sectionEmpty": "No targets at this level.",
+    "shadowed_one": "1 more specific target covers part of this reach: {{names}}",
+    "shadowed_other": "{{count}} more specific targets cover part of this reach: {{names}}",
+    "shadowedMore": "and {{count}} more",
     "columns": {
       "appliesTo": "Applies to",
       "steps": "Steps",
