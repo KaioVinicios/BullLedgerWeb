@@ -101,6 +101,26 @@ describe("listAllTargetsInScope", () => {
 
     expect(includeArchived).toBeNull();
   });
+
+  it("asks for archived rows only when told to", async () => {
+    const seen: (string | null)[] = [];
+
+    server.use(
+      http.get(`${TEST_API_URL}/api/targets/`, ({ request }) => {
+        seen.push(new URL(request.url).searchParams.get("include_archived"));
+
+        return HttpResponse.json({
+          status: 200,
+          data: { count: 0, next: null, previous: null, results: [] },
+        });
+      }),
+    );
+
+    await listAllTargetsInScope("HOLDING");
+    await listAllTargetsInScope("HOLDING", true);
+
+    expect(seen).toEqual([null, "true"]);
+  });
 });
 
 describe("invalidateTargets", () => {

@@ -43,6 +43,23 @@ export const accountKeys = createResourceKeys<AccountListQuery>("accounts");
 export const listAccounts = (query: AccountListQuery) =>
   request(api.get<PaginatedAccountList>(ENDPOINTS.accounts, { params: query }));
 
+/** Every account, archived ones included. See `listAllAssets`. */
+export async function listAllAccounts(): Promise<Account[]> {
+  const rows: Account[] = [];
+
+  for (let page = 1; ; page += 1) {
+    const result = await listAccounts({ page, include_archived: true });
+    rows.push(...result.results);
+
+    if (!result.next) return rows;
+  }
+}
+
+export const allAccountsQuery = queryOptions({
+  queryKey: [...accountKeys.all, "all"] as const,
+  queryFn: listAllAccounts,
+});
+
 export const createAccount = (body: AccountRequest) =>
   request(api.post<AccountCreateEnvelope>(ENDPOINTS.accounts, body));
 

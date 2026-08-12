@@ -101,21 +101,35 @@ export const targetQuery = (id: string) =>
  */
 export async function listAllTargetsInScope(
   scope: TargetScope,
+  includeArchived = false,
 ): Promise<Target[]> {
   const rows: Target[] = [];
 
   for (let page = 1; ; page += 1) {
-    const result = await listTargets({ scope, page });
+    const result = await listTargets({
+      scope,
+      page,
+      include_archived: includeArchived || undefined,
+    });
     rows.push(...result.results);
 
     if (!result.next) return rows;
   }
 }
 
-export const targetsInScopeQuery = (scope: TargetScope) =>
+/**
+ * `includeArchived` is part of the key, not just the request: the create
+ * form's collision check asks for live rows only — an archived target does not
+ * occupy a scope — while the list screen's toggle asks for both, and the two
+ * answers must not share a cache entry.
+ */
+export const targetsInScopeQuery = (
+  scope: TargetScope,
+  includeArchived = false,
+) =>
   queryOptions({
-    queryKey: [...targetKeys.all, "all", scope] as const,
-    queryFn: () => listAllTargetsInScope(scope),
+    queryKey: [...targetKeys.all, "all", scope, includeArchived] as const,
+    queryFn: () => listAllTargetsInScope(scope, includeArchived),
   });
 
 /**

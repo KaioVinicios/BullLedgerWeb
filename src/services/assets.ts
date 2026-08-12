@@ -39,6 +39,32 @@ export const assetKeys = createResourceKeys<AssetListQuery>("assets");
 export const listAssets = (query: AssetListQuery) =>
   request(api.get<PaginatedAssetList>(ENDPOINTS.assets, { params: query }));
 
+/**
+ * Every asset, archived ones included — a lookup table rather than a list.
+ *
+ * The same shape as `listAllTargetsInScope`, for a related reason: the targets
+ * screen resolves an asset id to a name and to an archetype, and a page-1
+ * answer would silently mis-resolve both the moment a user owns 51 assets. A
+ * missing name shows a UUID; a missing archetype drops a shadow note, which
+ * looks exactly like no conflict. Archived rows are in because a target can
+ * name an archived asset and still has to be readable.
+ */
+export async function listAllAssets(): Promise<Asset[]> {
+  const rows: Asset[] = [];
+
+  for (let page = 1; ; page += 1) {
+    const result = await listAssets({ page, include_archived: true });
+    rows.push(...result.results);
+
+    if (!result.next) return rows;
+  }
+}
+
+export const allAssetsQuery = queryOptions({
+  queryKey: [...assetKeys.all, "all"] as const,
+  queryFn: listAllAssets,
+});
+
 export const getAsset = (id: string) =>
   request(api.get<AssetGetEnvelope>(ENDPOINTS.asset(id)));
 
