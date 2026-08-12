@@ -81,7 +81,8 @@ export const targetQuery = (id: string) =>
   });
 
 /**
- * Every non-archived target at one level, by walking the pages.
+ * Every target at one level, by walking the pages — archived rows included
+ * only when asked.
  *
  * The create form needs to answer "does this exact scope already have a
  * target?" before it lets a submit through, and `/api/targets/` publishes no
@@ -95,9 +96,8 @@ export const targetQuery = (id: string) =>
  * movements. The cost is paid on the create screen and nowhere else.
  * `docs/backend-requests/2026-08-04-targets.md` asks for the filters.
  *
- * Archived rows are excluded by the endpoint's own default, which is the
- * behaviour this needs: the server's rule is one target per scope *among
- * non-archived ones*.
+ * Archived rows are excluded by default: an archived target does not occupy
+ * a scope, so it must never count as one unless a caller says otherwise.
  */
 export async function listAllTargetsInScope(
   scope: TargetScope,
