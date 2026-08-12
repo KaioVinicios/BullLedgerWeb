@@ -840,7 +840,10 @@
     "resolution": {
       "title": "How a target is chosen",
       "rule": "A holding uses the first level that matches, whole — never a blend.",
-      "unknown": "—"
+      "unknown": "—",
+      "count_zero": "no targets",
+      "count_one": "{{count}} target",
+      "count_other": "{{count}} targets"
     },
     "levelHint": {
       "HOLDING": "Applies to that one asset in that one account. Wins over the other two.",

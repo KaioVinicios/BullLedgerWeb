@@ -840,10 +840,13 @@
     "resolution": {
       "title": "Como uma meta é escolhida",
       "rule": "Uma posição usa o primeiro nível que casar, inteiro — nunca uma mistura.",
-      "unknown": "—"
+      "unknown": "—",
+      "count_zero": "nenhuma meta",
+      "count_one": "{{count}} meta",
+      "count_other": "{{count}} metas"
     },
     "levelHint": {
-      "HOLDING": "Vale só para aquele ativo naquela conta. Vence as outras duas.",
+      "HOLDING": "Vale só para aquele ativo naquela conta. Vence os outros dois.",
       "ACCOUNT_ARCHETYPE": "Vale para toda posição daquele arquétipo dentro de uma conta.",
       "PORTFOLIO_ARCHETYPE": "Vale para toda posição daquele arquétipo, em qualquer conta."
     },

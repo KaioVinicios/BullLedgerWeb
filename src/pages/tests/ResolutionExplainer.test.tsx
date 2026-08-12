@@ -12,6 +12,12 @@ describe("ResolutionExplainer", () => {
       />,
     );
 
+    // The heading names the region, which is the whole point of the
+    // `aria-labelledby` → `<h2 id>` wiring: a `<section>` is only a landmark
+    // once it has an accessible name, so this fails if either half is dropped.
+    expect(
+      screen.getByRole("region", { name: app.targets.resolution.title }),
+    ).toBeInTheDocument();
     expect(screen.getByText(app.targets.resolution.rule)).toBeVisible();
 
     // The order is the rule, so it is carried by a real ordered list rather
@@ -28,14 +34,54 @@ describe("ResolutionExplainer", () => {
   it("shows each level's count", () => {
     render(
       <ResolutionExplainer
-        counts={{ HOLDING: 4, ACCOUNT_ARCHETYPE: 2, PORTFOLIO_ARCHETYPE: 5 }}
+        counts={{ HOLDING: 4, ACCOUNT_ARCHETYPE: 7, PORTFOLIO_ARCHETYPE: 5 }}
       />,
     );
 
     const items = within(screen.getByRole("list")).getAllByRole("listitem");
 
-    expect(items[0]).toHaveTextContent("4");
-    expect(items[1]).toHaveTextContent("2");
+    // Counts chosen so none can be confused with its own ordinal, and queried
+    // as their own element rather than as substrings of the row: `2` in row
+    // two would have matched the ordinal alone, and passed with the count cell
+    // deleted entirely.
+    expect(within(items[0]).getByText("4")).toBeInTheDocument();
+    expect(within(items[1]).getByText("7")).toBeInTheDocument();
+    expect(within(items[2]).getByText("5")).toBeInTheDocument();
+  });
+
+  it("gives every count a unit in text, not just a column position", () => {
+    render(
+      <ResolutionExplainer
+        counts={{ HOLDING: 4, ACCOUNT_ARCHETYPE: 1, PORTFOLIO_ARCHETYPE: 0 }}
+      />,
+    );
+
+    const items = within(screen.getByRole("list")).getAllByRole("listitem");
+
+    // Sighted readers get "these are one series, one per level" from a
+    // right-aligned column of tabular figures. That relationship is pure
+    // presentation, so WCAG 1.3.1 requires it in text too — and the bare digit
+    // is hidden from the accessibility tree so it is not announced twice.
+    expect(
+      within(items[0]).getByText(
+        app.targets.resolution.count_other.replace("{{count}}", "4"),
+      ),
+    ).toBeInTheDocument();
+    expect(within(items[0]).getByText("4")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+
+    // Singular and zero are their own strings: "1 targets" and "0 targets"
+    // are both wrong, and zero is the one a plural rule silently gets last.
+    expect(
+      within(items[1]).getByText(
+        app.targets.resolution.count_one.replace("{{count}}", "1"),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(items[2]).getByText(app.targets.resolution.count_zero),
+    ).toBeInTheDocument();
   });
 
   it("shows an em dash instead of a count while the load is in flight", () => {
@@ -66,9 +112,10 @@ describe("ResolutionExplainer", () => {
     const items = within(screen.getByRole("list")).getAllByRole("listitem");
 
     // A level with no targets is a fact the screen knows; only the pending
-    // load is unknown. This is the difference between `??` and `||`, and it is
-    // the kind of thing a later refactor flips without noticing.
-    expect(items[1]).toHaveTextContent("0");
+    // load is unknown. This is the difference between `count === null` and any
+    // falsy check, and it is the kind of thing a later refactor flips without
+    // noticing.
+    expect(within(items[1]).getByText("0")).toBeInTheDocument();
     expect(items[1]).not.toHaveTextContent("—");
   });
 

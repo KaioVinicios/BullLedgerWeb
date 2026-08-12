@@ -38,31 +38,54 @@ export function ResolutionExplainer({
         {t("targets.resolution.rule")}
       </p>
 
-      <ol className="space-y-1 text-sm">
-        {TARGET_SCOPES.map((scope, index) => (
-          <li key={scope} className="flex items-baseline gap-3">
-            {/*
-             * Spelled out rather than left to a list marker, and deliberately
-             * not `aria-hidden`. The marker is styled off, and the assistive
-             * technologies that drop list semantics when it is would take the
-             * order down with it — and the order is the whole rule. Hearing
-             * "item 1 of 3" twice costs less than not hearing it at all.
-             */}
-            <span className="w-4 shrink-0 text-muted-foreground tabular-nums">
-              {index + 1}
-            </span>
-            <a href={`#targets-${scope}`} className="flex-1 hover:underline">
-              {t(`enums.targetScope.${scope}`)}
-            </a>
-            {/*
-             * `??`, not `||`: a level with no targets is a fact the screen
-             * knows and prints as "0". Only the pending load is unknown.
-             */}
-            <span className="shrink-0 text-muted-foreground tabular-nums">
-              {counts[scope] ?? t("targets.resolution.unknown")}
-            </span>
-          </li>
-        ))}
+      {/*
+       * `role="list"` on an element that is already a list, on purpose:
+       * Tailwind's preflight sets `list-style: none`, and Safari/VoiceOver
+       * drop list semantics when it is off — taking "1 of 3", and therefore
+       * the rule, with them. Restating the role restores it.
+       */}
+      <ol role="list" className="space-y-1 text-sm">
+        {TARGET_SCOPES.map((scope, index) => {
+          const count = counts[scope];
+
+          return (
+            <li key={scope} className="flex items-baseline gap-3">
+              {/*
+               * Spelled out rather than left to a list marker, so the order
+               * survives on screen even where the marker is styled off.
+               */}
+              <span className="w-4 shrink-0 text-muted-foreground tabular-nums">
+                {index + 1}
+              </span>
+              <a href={`#targets-${scope}`} className="flex-1 hover:underline">
+                {t(`enums.targetScope.${scope}`)}
+              </a>
+              {/*
+               * The figures read as one series per level because they are
+               * right-aligned in a `tabular-nums` column — a relationship
+               * carried entirely by presentation, which WCAG 1.3.1 says must
+               * also exist in text. So the digit is hidden from the
+               * accessibility tree and a labelled twin carries the unit.
+               *
+               * `count === null`, not a falsy check: a level with no targets
+               * is a fact the screen knows and states. Only the pending load
+               * is unknown.
+               */}
+              <span className="shrink-0 text-muted-foreground tabular-nums">
+                {count === null ? (
+                  t("targets.resolution.unknown")
+                ) : (
+                  <>
+                    <span aria-hidden>{count}</span>
+                    <span className="sr-only">
+                      {t("targets.resolution.count", { count })}
+                    </span>
+                  </>
+                )}
+              </span>
+            </li>
+          );
+        })}
       </ol>
     </section>
   );
