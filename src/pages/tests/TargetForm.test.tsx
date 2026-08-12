@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
@@ -130,21 +130,25 @@ function Harness({
 const stepLabel = (template: string, index: number) =>
   template.replace("{{index}}", String(index));
 
+/** One rung's controls, reached by the sr-only legend that names it. */
+const rung = (index: number) =>
+  within(
+    screen.getByRole("group", {
+      name: stepLabel(app.targets.form.steps.rung, index),
+    }),
+  );
+
 describe("the steps editor", () => {
   it("starts at one step and adds another on request", async () => {
     render(<Harness />);
 
-    expect(
-      screen.getByLabelText(stepLabel(app.targets.form.steps.rate, 1)),
-    ).toBeVisible();
+    expect(screen.getByLabelText(app.targets.form.steps.rate)).toBeVisible();
 
     await userEvent.click(
       screen.getByRole("button", { name: app.targets.form.steps.add }),
     );
 
-    expect(
-      screen.getByLabelText(stepLabel(app.targets.form.steps.rate, 2)),
-    ).toBeVisible();
+    expect(rung(2).getByLabelText(app.targets.form.steps.rate)).toBeVisible();
   });
 
   it("will not remove the last step, because a target needs one", async () => {
@@ -184,12 +188,13 @@ describe("the steps editor", () => {
     );
 
     // The survivor is the second row's data, now renumbered as row 1.
-    expect(
-      screen.getByLabelText(stepLabel(app.targets.form.steps.rate, 1)),
-    ).toHaveValue("8");
-    expect(
-      screen.queryByLabelText(stepLabel(app.targets.form.steps.rate, 2)),
-    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText(app.targets.form.steps.rate)).toHaveValue("8");
+    // A count, not `queryByLabelText`: with the index gone from the label, a
+    // query for "the second row's rate" would find the survivor and the
+    // assertion would silently invert.
+    expect(screen.getAllByLabelText(app.targets.form.steps.rate)).toHaveLength(
+      1,
+    );
   });
 
   it("moves focus into the surviving row after a removal, never to nothing", async () => {
@@ -210,9 +215,7 @@ describe("the steps editor", () => {
 
     // The rate, not the month: row 1's month is fixed at 0 and renders as text,
     // so the rate is the first control that row has.
-    expect(
-      screen.getByLabelText(stepLabel(app.targets.form.steps.rate, 1)),
-    ).toHaveFocus();
+    expect(screen.getByLabelText(app.targets.form.steps.rate)).toHaveFocus();
   });
 
   it("fixes the first row's month rather than offering it as an input", () => {
@@ -226,17 +229,21 @@ describe("the steps editor", () => {
     );
 
     // The API requires a step at month 0 and rejects a ladder without one after
-    // the fact. Row 1 has no month control at all, so it cannot be authored
-    // wrong — but the number is still shown, because a hidden constraint is
-    // not the same as an enforced one.
+    // the fact. Two rows, and only one month input between them: row 1 has no
+    // month control at all, so it cannot be authored wrong.
     expect(
-      screen.queryByLabelText(stepLabel(app.targets.form.steps.fromMonth, 1)),
-    ).not.toBeInTheDocument();
+      screen.getAllByLabelText(app.targets.form.steps.fromMonth),
+    ).toHaveLength(1);
+    expect(screen.getByLabelText(app.targets.form.steps.fromMonth)).toHaveValue(
+      "24",
+    );
+
+    // The constraint is still stated, in row 1's own words where the month
+    // input would be — a hidden constraint is not the same as an enforced one.
     expect(
-      screen.getByLabelText(stepLabel(app.targets.form.steps.fromMonth, 2)),
-    ).toHaveValue("24");
-    expect(
-      screen.getByText(app.targets.form.steps.firstStepFixed, { exact: false }),
+      screen.getByText(app.targets.form.steps.firstMonthFixed, {
+        exact: false,
+      }),
     ).toBeInTheDocument();
   });
 
@@ -277,25 +284,64 @@ describe("the steps editor", () => {
       />,
     );
 
-    const second = screen.getByLabelText(
-      stepLabel(app.targets.form.steps.rate, 2),
-    );
+    const second = rung(2).getByLabelText(app.targets.form.steps.rate);
 
     expect(second).toHaveAttribute("aria-invalid", "true");
     expect(second).toHaveAccessibleDescription(/A valid number is required\./);
 
     // And not on the first, which the server said nothing about.
-    expect(
-      screen.getByLabelText(stepLabel(app.targets.form.steps.rate, 1)),
-    ).toHaveAttribute("aria-invalid", "false");
+    expect(rung(1).getByLabelText(app.targets.form.steps.rate)).toHaveAttribute(
+      "aria-invalid",
+      "false",
+    );
   });
 
   it("names each input with the server's own key, so no mapping table exists", () => {
     render(<Harness />);
 
+    expect(screen.getByLabelText(app.targets.form.steps.rate)).toHaveAttribute(
+      "id",
+      "steps.0.rate",
+    );
+  });
+
+  // The caption depends on the month alone, so it appears while the rate is
+  // still empty — which is exactly when a reader is deciding what to type.
+  it("echoes what each rung's month means, before its rate is filled in", async () => {
+    render(<Harness />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: app.targets.form.steps.add }),
+    );
+    await userEvent.type(
+      screen.getByLabelText(app.targets.form.steps.fromMonth),
+      "3",
+    );
+
+    expect(screen.getByText("for the first 3 months")).toBeVisible();
+    expect(screen.getByText("from month 3 onwards")).toBeVisible();
+  });
+
+  it("names each rung for assistive tech without printing an index", async () => {
+    render(<Harness />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: app.targets.form.steps.add }),
+    );
+
+    // The rung is a named group for a screen reader…
     expect(
-      screen.getByLabelText(stepLabel(app.targets.form.steps.rate, 1)),
-    ).toHaveAttribute("id", "steps.0.rate");
+      screen.getByRole("group", {
+        name: stepLabel(app.targets.form.steps.rung, 2),
+      }),
+    ).toBeInTheDocument();
+
+    // …and the visible labels carry no index, which is why both rows answer to
+    // the same one. Do not assert the legend is absent from the DOM: it is
+    // `sr-only`, so it is present and `queryByText` would find it.
+    expect(screen.getAllByLabelText(app.targets.form.steps.rate)).toHaveLength(
+      2,
+    );
   });
 });
 
@@ -418,7 +464,7 @@ describe("the target form", () => {
 
     // Two places, filled from the right: 12% is four keystrokes, not two.
     await userEvent.type(
-      await screen.findByLabelText(stepLabel(app.targets.form.steps.rate, 1)),
+      await screen.findByLabelText(app.targets.form.steps.rate),
       "1200",
     );
     await userEvent.click(
@@ -491,9 +537,7 @@ describe("the target form", () => {
     );
     mount(`/app/targets/${existing.id}/edit`);
 
-    const rate = await screen.findByLabelText(
-      stepLabel(app.targets.form.steps.rate, 1),
-    );
+    const rate = await screen.findByLabelText(app.targets.form.steps.rate);
     await userEvent.clear(rate);
     await userEvent.type(rate, "1500");
     await userEvent.click(
@@ -529,7 +573,7 @@ describe("the target form", () => {
 
     // Two places, filled from the right: 12% is four keystrokes, not two.
     await userEvent.type(
-      await screen.findByLabelText(stepLabel(app.targets.form.steps.rate, 1)),
+      await screen.findByLabelText(app.targets.form.steps.rate),
       "1200",
     );
     await userEvent.click(

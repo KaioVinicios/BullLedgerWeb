@@ -905,14 +905,15 @@
         "action": "Editar essa meta"
       },
       "steps": {
-        "title": "Degraus de taxa",
-        "description": "Escreva cada taxa no período em que você pensa. Um degrau começa em um número inteiro de meses contados desde a primeira aquisição da posição — e, para uma meta de conta ou de carteira, desde a primeira aquisição de cada posição correspondente.",
+        "title": "A escada de taxas",
+        "description": "Quanto você espera render, e a partir de quando. Os meses contam da primeira compra de cada posição.",
         "add": "Adicionar degrau",
         "remove": "Remover degrau {{index}}",
-        "fromMonth": "A partir do mês, degrau {{index}}",
-        "firstStepFixed": "O primeiro degrau começa no mês 0, para que a escada cubra sempre o período inteiro.",
-        "rate": "Taxa, degrau {{index}}",
-        "period": "Período, degrau {{index}}"
+        "rung": "Degrau {{index}}",
+        "fromMonth": "A partir do mês",
+        "firstMonthFixed": "Desde a primeira compra",
+        "rate": "Mirar",
+        "period": "Período"
       },
       "floor": {
         "toggle": "Definir um limite de perda",

@@ -905,14 +905,15 @@
         "action": "Edit that target"
       },
       "steps": {
-        "title": "Rate steps",
-        "description": "Author each rate in the period you think in. A step starts at a whole number of months counted from the holding's first acquisition — and for an account or portfolio target, from each matching holding's own first acquisition.",
-        "add": "Add step",
-        "remove": "Remove step {{index}}",
-        "fromMonth": "From month, step {{index}}",
-        "firstStepFixed": "The first step starts at month 0, so the ladder always covers the whole period.",
-        "rate": "Rate, step {{index}}",
-        "period": "Period, step {{index}}"
+        "title": "The rate ladder",
+        "description": "What you expect it to return, and from when. Months count from each holding's first purchase.",
+        "add": "Add a rung",
+        "remove": "Remove rung {{index}}",
+        "rung": "Rung {{index}}",
+        "fromMonth": "From month",
+        "firstMonthFixed": "From the first purchase",
+        "rate": "Aim for",
+        "period": "Period"
       },
       "floor": {
         "toggle": "Set a loss limit",

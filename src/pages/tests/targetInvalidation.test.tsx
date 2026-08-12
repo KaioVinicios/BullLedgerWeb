@@ -158,9 +158,7 @@ describe("writing a target", () => {
     ).toBe(false);
 
     await userEvent.type(
-      await screen.findByLabelText(
-        app.targets.form.steps.rate.replace("{{index}}", "1"),
-      ),
+      await screen.findByLabelText(app.targets.form.steps.rate),
       "12",
     );
     await userEvent.click(
