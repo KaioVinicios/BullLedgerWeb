@@ -1,9 +1,8 @@
-import Big from "big.js";
 import type { TFunction } from "i18next";
 
 import type { Period } from "@/schemas/apiEnums";
 import type { Target } from "@/services/targets";
-import { percentToFraction, SCALE } from "@/utils/decimal";
+import { formatPercent, percentToFraction } from "@/utils/decimal";
 import type { ScopeNames } from "@/utils/targetScope";
 import type { TargetFormValues } from "@/utils/targetWire";
 
@@ -29,20 +28,13 @@ import type { TargetFormValues } from "@/utils/targetWire";
  * typed. There is no derived ordinal anywhere, and therefore no off-by-one to
  * argue about between a field and the prose beside it.
  *
- * **A rate always shows two decimals.** `formatPercent` in `decimal.ts` trims
- * trailing zeros, which is right for a quantity or a price and wrong for a
- * ladder read as prose: "3%" beside "2.50%" reads as a typo, not a coincidence
- * of precision. `formatRate` below pads to the same two places `PercentField`
- * masks a typed value to, so a rung's rate is stable regardless of how many
- * zeros the user happened to type.
- *
  * **The floor is displayed signed and stored unsigned.** `loss_limit_pct` is a
  * positive magnitude on the wire — a negative is rejected with
  * `target_loss_limit_positive` — so the `−` is added here, at the last
  * possible moment, and `targetWire.ts` still never flips a sign.
  */
 export interface StepClause {
-  /** The figure, rendered emphasised. `"3.00% monthly"`. */
+  /** The figure, rendered emphasised. `"3% monthly"`. */
   rate: string;
   /** The qualifier, rendered muted. `"for the first 3 months"`. */
   when: string;
@@ -51,9 +43,9 @@ export interface StepClause {
 }
 
 export interface FloorClause {
-  /** `"−3.00% monthly"`. */
+  /** `"−3% monthly"`. */
   rate: string;
-  /** `"a floor of −3.00% monthly"`. */
+  /** `"a floor of −3% monthly"`. */
   text: string;
 }
 
@@ -74,34 +66,12 @@ export interface SentenceContext {
 /** What both entry points reduce to before any prose is built. */
 interface Rung {
   from_month: number;
-  /** Already localised, e.g. `"3.00%"`. */
+  /** Already localised, e.g. `"3%"`. */
   rate: string;
   rate_period: Period;
 }
 
 const SUMMARY_SEPARATOR = " · ";
-
-/** Minimum decimal places shown, matching `PercentField`'s own mask. */
-const MIN_RATE_PLACES = 2;
-
-/**
- * A fraction as a percentage, padded to at least two decimals.
- *
- * The twin of `formatPercent`, kept local rather than added to `decimal.ts`:
- * every other caller of `formatPercent` — quantities, prices, arbitrary
- * weights — wants trailing zeros trimmed, and widening the shared function
- * would change their display too. A rate ladder is the one place a trimmed
- * "3%" reads as a mistake rather than a precision.
- */
-function formatRate(fraction: string, locale: string): string {
-  const percent = new Big(fraction).times(100).toFixed();
-  const formatted = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: MIN_RATE_PLACES,
-    maximumFractionDigits: SCALE.rate,
-  }).format(percent as unknown as number);
-
-  return `${formatted}%`;
-}
 
 function rateText(rung: Rung, t: TFunction<"app">): string {
   return t("targets.sentence.rate", {
@@ -192,7 +162,7 @@ export function describeTarget(
 
   const rungs: Rung[] = target.steps.map((step) => ({
     from_month: step.from_month,
-    rate: formatRate(step.rate, locale),
+    rate: formatPercent(step.rate, locale),
     rate_period: step.rate_period,
   }));
 
@@ -202,7 +172,7 @@ export function describeTarget(
     floor: floorClause(
       target.loss_limit_pct == null
         ? null
-        : formatRate(target.loss_limit_pct, locale),
+        : formatPercent(target.loss_limit_pct, locale),
       target.loss_limit_period,
       ctx,
     ),
@@ -216,8 +186,8 @@ export function describeTarget(
  * — a half-typed rate must not make the panel claim a figure nobody entered —
  * and the surviving rungs are positioned among themselves, so the prose stays
  * coherent while the ladder is incomplete. Every rate goes out through
- * `percentToFraction` and back through `formatRate`, so `"3"` reads back as
- * `"3.00%"`: exactly the string the saved target will produce.
+ * `percentToFraction` to a fraction and back through `formatPercent`, so a
+ * draft and a saved target render the same rate identically.
  */
 export function describeDraft(
   values: TargetFormValues,
@@ -254,7 +224,7 @@ export function describeDraft(
     return [
       {
         from_month: month,
-        rate: formatRate(fraction, locale),
+        rate: formatPercent(fraction, locale),
         rate_period: draft.rate_period,
       },
     ];
@@ -268,7 +238,7 @@ export function describeDraft(
     scope,
     steps: toClauses(rungs, t),
     floor: floorClause(
-      floorFraction === null ? null : formatRate(floorFraction, locale),
+      floorFraction === null ? null : formatPercent(floorFraction, locale),
       values.loss_limit_period,
       ctx,
     ),

@@ -96,9 +96,9 @@ describe("describeTarget", () => {
   it("reads a single rung as running from the first purchase", () => {
     const [step] = describeTarget(holding([rung(0, "0.03")]), ctx).steps;
 
-    expect(step.rate).toBe("3.00% monthly");
+    expect(step.rate).toBe("3% monthly");
     expect(step.when).toBe("from the first purchase");
-    expect(step.text).toBe("3.00% monthly from the first purchase");
+    expect(step.text).toBe("3% monthly from the first purchase");
   });
 
   // The governing rule: every number in the sentence is a number the user
@@ -145,8 +145,8 @@ describe("describeTarget", () => {
   it("renders the floor with a minus sign, from a positive magnitude", () => {
     const clauses = describeTarget(holding([rung(0, "0.03")], "0.03"), ctx);
 
-    expect(clauses.floor?.rate).toBe("−3.00% monthly");
-    expect(clauses.floor?.text).toBe("a floor of −3.00% monthly");
+    expect(clauses.floor?.rate).toBe("−3% monthly");
+    expect(clauses.floor?.text).toBe("a floor of −3% monthly");
   });
 
   it("has no floor clause when no floor is set", () => {
@@ -168,9 +168,9 @@ describe("describeDraft", () => {
   });
 
   // The panel shows the canonical form of what was typed, so "3" reads back as
-  // "3.00%" — the same string the saved target will produce.
+  // "3%" — the same string the saved target will produce.
   it("normalises a typed rate the way a stored one renders", () => {
-    expect(describeDraft(draft(), ctx).steps[0].rate).toBe("3.00% monthly");
+    expect(describeDraft(draft(), ctx).steps[0].rate).toBe("3% monthly");
   });
 
   it("refuses to name a scope that is not chosen yet", () => {
@@ -235,7 +235,7 @@ describe("summarizeClauses", () => {
     );
 
     expect(summarizeClauses(clauses)).toBe(
-      "3.00% monthly for the first 3 months · 2.00% monthly from month 3 onwards · a floor of −3.00% monthly",
+      "3% monthly for the first 3 months · 2% monthly from month 3 onwards · a floor of −3% monthly",
     );
   });
 });
