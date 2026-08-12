@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
@@ -15,6 +16,22 @@ import { summarizeClauses, type TargetClauses } from "@/utils/targetSentence";
  * All the prose arrives pre-built from `targetSentence.ts`. This file decides
  * layout and weight and nothing else, which is what keeps the three surfaces
  * from drifting into three descriptions of the same target.
+ *
+ * **The rows are not a description list.** A `<dl>` was the obvious reach and
+ * the wrong one: it would make `−3% monthly` the term and `floor` its
+ * definition, so a screen reader announces the value before the label it
+ * answers to — backwards on every row. Reversing the DOM to fix the
+ * announcement would then desync reading order from visual order, trading one
+ * defect for another. These rows are a figure beside its qualifier, which is
+ * not a term/definition relationship at all, so they are plain elements and
+ * the weight alone carries the distinction.
+ *
+ * **The rows name what they describe.** They are grouped and labelled by the
+ * scope sentence above them, because a screen-reader user arriving at the
+ * group by landmark or list navigation would otherwise hear "3% monthly, for
+ * the first 3 months" with nothing saying which target that is. The id comes
+ * from `useId`: the panel and the holding's block can both be on one page, and
+ * a literal id would collide the moment they were.
  *
  * **The figures are `tabular-nums` but not `font-mono`**, unlike `MoneyValue`
  * and its neighbours. Those set a column; this sets a sentence, and the rate
@@ -36,6 +53,7 @@ export function TargetSentence({
   className?: string;
 }) {
   const { t } = useTranslation("app");
+  const scopeId = useId();
 
   if (layout === "line") {
     return (
@@ -47,7 +65,7 @@ export function TargetSentence({
 
   return (
     <div className={cn("space-y-3 text-sm", className)}>
-      <p>{clauses.scope}</p>
+      <p id={scopeId}>{clauses.scope}</p>
 
       {clauses.steps.length === 0 && (
         <p className="text-muted-foreground">
@@ -56,25 +74,32 @@ export function TargetSentence({
       )}
 
       {(clauses.steps.length > 0 || clauses.floor) && (
-        <dl className="space-y-1.5">
-          {clauses.steps.map((step) => (
+        <div role="group" aria-labelledby={scopeId} className="space-y-1.5">
+          {clauses.steps.map((step, index) => (
+            // The index, not the prose: three rungs left at the same month
+            // while the ladder is still being typed produce two identical
+            // `when` strings, and an identical rate beside them would collide
+            // a composite key. These rows hold no state and are derived
+            // wholly from the array, so position is the honest identity.
             <div
-              key={`${step.rate}-${step.when}`}
-              className="flex flex-wrap items-baseline gap-x-2"
+              key={index}
+              className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5"
             >
-              <dt className="font-medium tabular-nums">{step.rate}</dt>
-              <dd className="text-muted-foreground">{step.when}</dd>
+              <span className="font-medium tabular-nums">{step.rate}</span>
+              <span className="text-muted-foreground">{step.when}</span>
             </div>
           ))}
           {clauses.floor && (
-            <div className="flex flex-wrap items-baseline gap-x-2">
-              <dt className="font-medium tabular-nums">{clauses.floor.rate}</dt>
-              <dd className="text-muted-foreground">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="font-medium tabular-nums">
+                {clauses.floor.rate}
+              </span>
+              <span className="text-muted-foreground">
                 {t("targets.sentence.floorLabel")}
-              </dd>
+              </span>
             </div>
           )}
-        </dl>
+        </div>
       )}
     </div>
   );

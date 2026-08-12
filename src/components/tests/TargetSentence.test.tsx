@@ -65,4 +65,39 @@ describe("TargetSentence", () => {
     expect(screen.getByText("−3% monthly")).toBeVisible();
     expect(screen.getByText(app.targets.sentence.floorLabel)).toBeVisible();
   });
+
+  it("names the rows after the scope that introduces them", () => {
+    // Reached by list or landmark navigation, an unnamed group announces
+    // "3% monthly, for the first 3 months" and never says which target that
+    // describes.
+    render(<TargetSentence clauses={clauses} layout="stacked" />);
+
+    expect(
+      screen.getByRole("group", {
+        name: "This target covers BTC in Binance.",
+      }),
+    ).toBeVisible();
+  });
+
+  it("gives each instance its own scope id, so two on one page do not collide", () => {
+    render(
+      <>
+        <TargetSentence clauses={clauses} layout="stacked" />
+        <TargetSentence
+          clauses={{ ...clauses, scope: "This target covers ETH in Kraken." }}
+          layout="stacked"
+        />
+      </>,
+    );
+
+    const names = screen
+      .getAllByRole("group")
+      .map((group) => group.getAttribute("aria-labelledby"));
+
+    expect(names).toHaveLength(2);
+    expect(new Set(names).size).toBe(2);
+    expect(
+      screen.getByRole("group", { name: "This target covers ETH in Kraken." }),
+    ).toBeVisible();
+  });
 });
