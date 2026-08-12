@@ -95,11 +95,19 @@ export function describeMonths(
   const sorted = [...months].sort((a, b) => a - b);
 
   return sorted.map((month, index) => {
-    const isFirst = index === 0;
+    // Keyed on the month's own value, never on its position in the array.
+    // `StepsEditor` pins the genuine first rung to month 0, so month 0 is what
+    // "from the first purchase" means. Position would lie in the one case that
+    // matters: a ladder still being typed, whose month-0 rung has no rate yet.
+    // Its later rung is then the lowest entry present without being the first
+    // rung, and calling it "from the first purchase" would assert a rate runs
+    // from inception that nobody entered.
+    const startsAtInception = month === 0;
     const isLast = index === sorted.length - 1;
 
-    if (isFirst && isLast) return t("targets.sentence.when.only");
-    if (isFirst) return t("targets.sentence.when.first", { count: sorted[1] });
+    if (startsAtInception && isLast) return t("targets.sentence.when.only");
+    if (startsAtInception)
+      return t("targets.sentence.when.first", { count: sorted[1] });
     if (isLast) return t("targets.sentence.when.last", { from: month });
 
     return t("targets.sentence.when.middle", {
@@ -182,12 +190,15 @@ export function describeTarget(
 /**
  * The same description, from a form still being typed.
  *
- * A rung whose month or rate cannot be read is **skipped rather than guessed**
- * — a half-typed rate must not make the panel claim a figure nobody entered —
- * and the surviving rungs are positioned among themselves, so the prose stays
- * coherent while the ladder is incomplete. Every rate goes out through
- * `percentToFraction` to a fraction and back through `formatPercent`, so a
- * draft and a saved target render the same rate identically.
+ * A rung whose month or rate cannot be read is **skipped rather than
+ * guessed** — a half-typed rate must not make the panel claim a figure
+ * nobody entered, and a surviving rung must not be promoted into a missing
+ * one's timing either. `describeMonths` keys "from the first purchase" on
+ * month 0 itself, never on array position, so a survivor keeps the month it
+ * was typed at even while the ladder's true first rung is still blank. Every
+ * rate goes out through `percentToFraction` to a fraction and back through
+ * `formatPercent`, so a draft and a saved target render the same rate
+ * identically.
  */
 export function describeDraft(
   values: TargetFormValues,

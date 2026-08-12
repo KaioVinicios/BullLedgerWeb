@@ -179,6 +179,24 @@ describe("describeDraft", () => {
     );
   });
 
+  // The dangerous half of skipping: when the *first* rung is the unreadable
+  // one, the survivor keeps its own month rather than inheriting month 0's
+  // meaning.
+  it("does not promote a survivor into the missing first rung's timing", () => {
+    const clauses = describeDraft(
+      draft({
+        steps: [
+          { from_month: "0", rate: "", rate_period: "MONTHLY" },
+          { from_month: "3", rate: "2", rate_period: "MONTHLY" },
+        ],
+      }),
+      ctx,
+    );
+
+    expect(clauses.steps).toHaveLength(1);
+    expect(clauses.steps[0].when).toBe("from month 3 onwards");
+  });
+
   it("describes the rungs it can read and skips the ones it cannot", () => {
     const clauses = describeDraft(
       draft({
@@ -223,6 +241,17 @@ describe("describeMonths", () => {
     expect(describeMonths([6, 0], t)).toEqual([
       "for the first 6 months",
       "from month 6 onwards",
+    ]);
+  });
+
+  // Only a rung at month 0 runs from inception. A ladder whose month-0 rung is
+  // absent — which happens while one is still being typed — must not have its
+  // earliest surviving rung promoted into that claim.
+  it("does not call a month other than 0 the first purchase", () => {
+    expect(describeMonths([3], t)).toEqual(["from month 3 onwards"]);
+    expect(describeMonths([3, 12], t)).toEqual([
+      "from month 3 to 12",
+      "from month 12 onwards",
     ]);
   });
 });
