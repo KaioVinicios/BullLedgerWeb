@@ -102,7 +102,10 @@ describe("TargetCard", () => {
 
     expect(line).toHaveTextContent("2% monthly from month 3 onwards");
     expect(line).toHaveTextContent("a floor of −3% monthly");
-    expect(line.textContent).not.toMatch(/more/);
+    // The old `+N more` affordance specifically, not the word "more": the card
+    // states every rung, so there is no remainder left to count. A bare /more/
+    // would fail on any future copy that happens to contain the word.
+    expect(line.textContent).not.toMatch(/\+\d+ more/);
   });
 
   it("names what covers part of its reach, without calling it an error", async () => {
@@ -141,11 +144,20 @@ describe("TargetCard", () => {
       />,
     );
 
-    expect(
-      screen.getByText(
-        new RegExp(app.targets.shadowedMore.replace("{{count}}", "2")),
-      ),
-    ).toBeVisible();
+    // `exact: false` is a substring match, not `new RegExp(copy)`: the pattern
+    // would otherwise be compiled from translated prose, and the day that
+    // string gains a `(`, `+` or `.` it silently stops meaning what it reads
+    // as.
+    const note = screen.getByText(
+      app.targets.shadowedMore.replace("{{count}}", "2"),
+      { exact: false },
+    );
+
+    expect(note).toBeVisible();
+    // The truncation itself, which the remainder clause alone does not prove:
+    // three names shown, and the fourth is not among them.
+    expect(note).toHaveTextContent("asset-2 · Binance");
+    expect(note).not.toHaveTextContent("asset-3");
   });
 
   it("shows no note when nothing covers it", async () => {

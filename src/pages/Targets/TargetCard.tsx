@@ -26,6 +26,14 @@ import { targetScopeName, type ScopeNames } from "@/utils/targetScope";
 /** Past this, the list of names is noise and the count is the fact. */
 const NAMES_SHOWN = 3;
 
+/**
+ * A plain comma, and deliberately not `Intl.ListFormat`.
+ *
+ * List-format supplies its own conjunction, which would collide with the one
+ * `shadowedMore` already carries: `"A, B, and C, and 2 more"`. The remainder
+ * clause is the last item in this list rather than a suffix appended after it,
+ * so the join has to stay dumb.
+ */
 const NAME_SEPARATOR = ", ";
 
 /**
