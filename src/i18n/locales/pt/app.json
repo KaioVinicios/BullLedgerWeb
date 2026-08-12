@@ -837,7 +837,16 @@
   },
   "targets": {
     "add": "Nova meta",
-    "resolution": "Vence a correspondência mais específica: a meta da própria posição, depois a meta do arquétipo na conta, depois a da carteira. O status de uma posição vem de exatamente uma delas — nunca de uma mistura.",
+    "resolution": {
+      "title": "Como uma meta é escolhida",
+      "rule": "Uma posição usa o primeiro nível que casar, inteiro — nunca uma mistura.",
+      "unknown": "—"
+    },
+    "levelHint": {
+      "HOLDING": "Vale só para aquele ativo naquela conta. Vence as outras duas.",
+      "ACCOUNT_ARCHETYPE": "Vale para toda posição daquele arquétipo dentro de uma conta.",
+      "PORTFOLIO_ARCHETYPE": "Vale para toda posição daquele arquétipo, em qualquer conta."
+    },
     "sentence": {
       "scope": {
         "HOLDING": "Esta meta cobre {{asset}} na conta {{account}}.",
@@ -1050,9 +1059,9 @@
       "FIFO": "FIFO / lote específico"
     },
     "targetScope": {
-      "HOLDING": "Posição",
-      "ACCOUNT_ARCHETYPE": "Conta × arquétipo",
-      "PORTFOLIO_ARCHETYPE": "Carteira × arquétipo"
+      "HOLDING": "Um ativo em uma conta",
+      "ACCOUNT_ARCHETYPE": "Um arquétipo em uma conta",
+      "PORTFOLIO_ARCHETYPE": "Um arquétipo na carteira toda"
     },
     "period": {
       "MONTHLY": "ao mês",

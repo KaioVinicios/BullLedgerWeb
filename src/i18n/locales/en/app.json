@@ -837,7 +837,16 @@
   },
   "targets": {
     "add": "New target",
-    "resolution": "The most specific match wins: a holding's own target, then its account's archetype target, then the portfolio's. A holding's status comes from exactly one of them — never a blend.",
+    "resolution": {
+      "title": "How a target is chosen",
+      "rule": "A holding uses the first level that matches, whole — never a blend.",
+      "unknown": "—"
+    },
+    "levelHint": {
+      "HOLDING": "Applies to that one asset in that one account. Wins over the other two.",
+      "ACCOUNT_ARCHETYPE": "Applies to every holding of that archetype inside one account.",
+      "PORTFOLIO_ARCHETYPE": "Applies to every holding of that archetype, in any account."
+    },
     "sentence": {
       "scope": {
         "HOLDING": "This target covers {{asset}} in {{account}}.",
@@ -1050,9 +1059,9 @@
       "FIFO": "FIFO / specific lot"
     },
     "targetScope": {
-      "HOLDING": "Holding",
-      "ACCOUNT_ARCHETYPE": "Account × archetype",
-      "PORTFOLIO_ARCHETYPE": "Portfolio × archetype"
+      "HOLDING": "An asset in one account",
+      "ACCOUNT_ARCHETYPE": "An archetype in one account",
+      "PORTFOLIO_ARCHETYPE": "An archetype across the portfolio"
     },
     "period": {
       "MONTHLY": "monthly",
