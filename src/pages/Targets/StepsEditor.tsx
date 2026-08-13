@@ -73,7 +73,18 @@ export function StepsEditor({
       steps.map((step, at) => (at === index ? { ...step, ...patch } : step)),
     );
 
-  const add = () => emit([...steps, { ...EMPTY_STEP }]);
+  /**
+   * A new rung starts with **no month**, not month 0.
+   *
+   * Month 0 is the one month a new rung certainly cannot have: the first rung
+   * already holds it, and the server refuses a ladder with two rungs at one
+   * month. Prefilling it filled in a value guaranteed to be wrong. Blank fills
+   * in nothing and asks for the one fact only the user has — when this rung
+   * starts — which they must supply before submit regardless. The row simply
+   * carries no caption until its month reads, which is already the rule for
+   * any unreadable month.
+   */
+  const add = () => emit([...steps, { ...EMPTY_STEP, from_month: "" }]);
 
   const remove = (index: number) => {
     emit(steps.filter((_, at) => at !== index));
@@ -104,11 +115,11 @@ export function StepsEditor({
    * not readable yet simply has no caption.
    *
    * Months are deduplicated first. `describeMonths` bounds each rung by the
-   * *next* month in the ladder, so a repeated month would bound a rung by
-   * itself and caption it "for the first 0 months" — which is what a freshly
-   * added rung, defaulted to month 0 like the first, would otherwise read as
-   * the instant it appeared. Two rows at one month have one honest answer
-   * between them, and the duplicate itself is refused at submit.
+   * *next* month in the ladder, so a month typed twice would bound a rung by
+   * itself: `[0, 0]` captions "for the first 0 months" and `[0, 12, 12]`
+   * captions "from month 12 to 12". Two rows at one month have one honest
+   * answer between them, and the duplicate itself is refused at submit. It
+   * also makes the `indexOf` below unambiguous by construction.
    */
   const readableMonths = [
     ...new Set(
@@ -121,9 +132,17 @@ export function StepsEditor({
 
   const whens = describeMonths(readableMonths, t);
 
-  const captionFor = (step: StepDraft): string | null => {
+  const captionFor = (step: StepDraft, index: number): string | null => {
     const month = step.from_month.trim();
     if (!/^\d+$/.test(month)) return null;
+
+    // A lone rung's caption is `when.only` — "from the first purchase", which
+    // is `firstMonthFixed` word for word. The first row already states that
+    // where its month input would be, so captioning it too would print the
+    // same sentence twice in one card. From two rungs up, row 0's caption is
+    // "for the first N months", which is information the fixed text does not
+    // carry, so it stays.
+    if (index === 0 && readableMonths.length <= 1) return null;
 
     return whens[readableMonths.indexOf(Number(month))] ?? null;
   };
@@ -139,7 +158,7 @@ export function StepsEditor({
 
       <div ref={rowsRef} className="space-y-3">
         {steps.map((step, index) => {
-          const caption = captionFor(step);
+          const caption = captionFor(step, index);
 
           return (
             <fieldset

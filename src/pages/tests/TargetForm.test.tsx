@@ -240,10 +240,13 @@ describe("the steps editor", () => {
 
     // The constraint is still stated, in row 1's own words where the month
     // input would be — a hidden constraint is not the same as an enforced one.
+    //
+    // Scoped, and exact: `when.only` is this same string lowercased, and
+    // `{ exact: false }` is case-insensitive substring matching, so an
+    // unscoped fuzzy query would throw "found multiple elements" the moment a
+    // fixture put both on the page.
     expect(
-      screen.getByText(app.targets.form.steps.firstMonthFixed, {
-        exact: false,
-      }),
+      rung(1).getByText(app.targets.form.steps.firstMonthFixed),
     ).toBeInTheDocument();
   });
 
@@ -320,6 +323,34 @@ describe("the steps editor", () => {
 
     expect(screen.getByText("for the first 3 months")).toBeVisible();
     expect(screen.getByText("from month 3 onwards")).toBeVisible();
+  });
+
+  // A lone rung's caption is `when.only` — the same sentence row 1 already
+  // states where its month input would be. The form opens in exactly this
+  // state, so getting it wrong prints the sentence twice on first render, and
+  // three times after one add.
+  it("states the fixed first month once, not once as text and again as a caption", async () => {
+    render(<Harness />);
+
+    // Case-insensitive substring, deliberately: `when.only` is this string
+    // lowercased, so a lenient matcher is what catches the restatement.
+    const stated = () =>
+      screen.getAllByText(app.targets.form.steps.firstMonthFixed, {
+        exact: false,
+      });
+
+    expect(stated()).toHaveLength(1);
+    expect(stated()[0]).toBeVisible();
+
+    // A second rung starts with no month, so it earns no caption either.
+    await userEvent.click(
+      screen.getByRole("button", { name: app.targets.form.steps.add }),
+    );
+
+    expect(
+      rung(2).getByLabelText(app.targets.form.steps.fromMonth),
+    ).toHaveValue("");
+    expect(stated()).toHaveLength(1);
   });
 
   it("names each rung for assistive tech without printing an index", async () => {
