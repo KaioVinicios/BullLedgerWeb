@@ -20,7 +20,7 @@ export function TargetEditPage() {
   if (!target) return <PageSkeleton />;
 
   return (
-    <PageContainer width="form">
+    <PageContainer width="form-wide">
       <PageHeader
         title={t("targets.form.editTitle")}
         description={t("targets.form.editDescription")}

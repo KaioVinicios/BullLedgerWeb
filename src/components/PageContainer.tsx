@@ -12,12 +12,16 @@ import { cn } from "@/lib/utils";
  *   region. Forms, settings, and prose read worse wide, not better: a 1000px
  *   text input weakens the tie between a label and its field, and a line of
  *   prose past ~75 characters loses the reader on the carriage return.
+ * - `form-wide` — a form that reads beside something. The target form puts a
+ *   live summary panel next to its fields, and the pair needs more than the
+ *   form measure without becoming a full-width table screen.
  */
-export type PageWidth = "full" | "form";
+export type PageWidth = "full" | "form" | "form-wide";
 
 const WIDTH: Record<PageWidth, string> = {
   full: "",
   form: "max-w-3xl",
+  "form-wide": "max-w-5xl",
 };
 
 interface PageContainerProps {

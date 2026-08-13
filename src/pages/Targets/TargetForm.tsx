@@ -18,6 +18,13 @@
  * the rest of the form is replaced by a block naming that target and linking to
  * it. An absent option could not have said *why*, and here the why — you
  * already own one, edit it — is the useful part.
+ *
+ * **The fields read beside what they add up to.** `TargetSummaryPanel` renders
+ * the draft through the same `describeDraft` the list card and the holding
+ * block use, so a user reads the target in the app's words *while* authoring it
+ * rather than discovering them after saving. The three field groups are their
+ * own components — this file assembles them, holds the form state, and owns the
+ * wire.
  */
 import { useMemo, useState } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
@@ -32,11 +39,7 @@ import { FormError } from "@/components/FormError";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
-import { PercentField } from "@/forms/PercentField";
-import { SelectField } from "@/forms/SelectField";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   claimFieldErrors,
   translateServerErrors,
@@ -44,18 +47,14 @@ import {
 } from "@/forms/serverErrors";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { ApiClientError } from "@/lib/apiError";
+import { FloorField } from "@/pages/Targets/FloorField";
+import { ScopeField } from "@/pages/Targets/ScopeField";
 import { StepsEditor } from "@/pages/Targets/StepsEditor";
+import { TargetSummaryPanel } from "@/pages/Targets/TargetSummaryPanel";
 import { PATHS } from "@/routes/path";
-import {
-  ARCHETYPES,
-  PERIODS,
-  TARGET_SCOPES,
-  type Archetype,
-  type Period,
-  type TargetScope,
-} from "@/schemas/apiEnums";
-import { accountKeys, listAccounts } from "@/services/accounts";
-import { assetKeys, listAssets } from "@/services/assets";
+import { ARCHETYPES, PERIODS, TARGET_SCOPES } from "@/schemas/apiEnums";
+import { allAccountsQuery } from "@/services/accounts";
+import { allAssetsQuery } from "@/services/assets";
 import {
   createTarget,
   invalidateTargets,
@@ -70,6 +69,7 @@ import {
   targetScopeName,
   type ScopeSelection,
 } from "@/utils/targetScope";
+import { describeDraft } from "@/utils/targetSentence";
 import {
   defaultFormValues,
   toTargetRequest,
@@ -99,8 +99,6 @@ const CLAIMED_FIELDS = [
   "loss_limit_period",
 ] as const;
 
-const LIVE = {} as const;
-
 export function TargetForm({
   target,
   prefill = {},
@@ -121,18 +119,39 @@ export function TargetForm({
     {},
   );
 
-  const { data: accountsPage } = useQuery({
-    queryKey: accountKeys.list(LIVE),
-    queryFn: () => listAccounts(LIVE),
-  });
-  const { data: assetsPage } = useQuery({
-    queryKey: assetKeys.list(LIVE),
-    queryFn: () => listAssets(LIVE),
-  });
+  // Every page, not the first fifty — the same lookups the list screen walks.
+  // A target names an account and an asset by id and carries no label of its
+  // own, so a form that only held page one would print a UUID at the fifty-
+  // first account, in the summary panel and in the success toast alike.
+  const accountList = useQuery(allAccountsQuery);
+  const assetList = useQuery(allAssetsQuery);
 
-  const accounts = useMemo(() => accountsPage?.results ?? [], [accountsPage]);
-  const assets = useMemo(() => assetsPage?.results ?? [], [assetsPage]);
+  const accounts = useMemo(() => accountList.data ?? [], [accountList.data]);
+  const assets = useMemo(() => assetList.data ?? [], [assetList.data]);
 
+  /**
+   * Whether an empty list means "none exist" yet.
+   *
+   * An array that has not arrived and an array with nothing in it are the same
+   * `[]`, and `ScopeField` turns an empty one into "no accounts to choose
+   * from" — a sentence that would be wrong for as long as the request is in
+   * flight. The query state is the only thing that tells them apart and it
+   * lives here, so the scope block waits rather than guessing. `LotSelect`
+   * settles the same question the same way; an errored query counts as settled
+   * there and here, because a list that failed to load is not going to fill in
+   * by being waited on.
+   */
+  const listsSettled =
+    (accountList.isSuccess || accountList.isError) &&
+    (assetList.isSuccess || assetList.isError);
+
+  /**
+   * Names resolve from **every** row, archived included: a target authored
+   * before its account was archived still has to say that account's name on
+   * edit. The options offered below are live-only, which is what the
+   * non-archived queries this replaced returned — archiving something is a
+   * statement that it should stop being chosen.
+   */
   const names = useMemo(
     () => ({
       accountName: (id: string) =>
@@ -141,6 +160,15 @@ export function TargetForm({
         assets.find((row) => row.id === id)?.name ?? id,
     }),
     [accounts, assets],
+  );
+
+  const liveAccounts = useMemo(
+    () => accounts.filter((row) => row.archived_at === null),
+    [accounts],
+  );
+  const liveAssets = useMemo(
+    () => assets.filter((row) => row.archived_at === null),
+    [assets],
   );
 
   const schema = useMemo(
@@ -248,27 +276,40 @@ export function TargetForm({
 
   // Read at render time rather than inside a Subscribe, because the
   // taken-scope query keys off it — a hook cannot live inside a render prop.
-  const selection = useStore(
-    form.store,
-    (state) => state.values as ScopeSelection,
-  );
+  // The summary panel needs the same object, so the whole form value is read
+  // here and the fields below are handed plain values: with this subscription
+  // already re-rendering on every keystroke, a nested `Subscribe` around them
+  // would gate nothing.
+  const values = useStore(form.store, (state) => state.values);
+
+  /**
+   * The schema's own refusals, which reach a field through its meta and not
+   * through `serverErrors` — "Choose an account." is raised by `superRefine`
+   * before any request is made, so there is no response to carry it. The three
+   * `form.Field` wrappers this replaced merged `field.state.meta.errors` in at
+   * each select; `ScopeField` takes one errors object, so the merge happens
+   * here instead. Dropping it would make the create button fail in silence.
+   */
+  const fieldMeta = useStore(form.store, (state) => state.fieldMeta);
 
   const inScope = useQuery({
-    ...targetsInScopeQuery(selection.scope),
+    ...targetsInScopeQuery(values.scope),
     // Only on create: on edit the scope is not a control, so nothing can
     // collide with it.
-    enabled: !target && isScopeComplete(selection),
+    enabled: !target && isScopeComplete(values),
   });
 
   const taken = target
     ? undefined
-    : inScope.data?.find((row) => matchesScope(row, selection));
+    : inScope.data?.find((row) => matchesScope(row, values));
 
   const scopeName = target
     ? targetScopeName(target, names, t)
-    : selectionScopeName(selection, names, t);
+    : selectionScopeName(values, names, t);
 
   const stepErrors = { ...clientErrors, ...serverErrors.fieldErrors };
+
+  const clauses = describeDraft(values, { names, t, locale });
 
   return (
     <form
@@ -285,252 +326,168 @@ export function TargetForm({
         {target ? t("targets.form.editTitle") : t("targets.form.createTitle")}
       </span>
 
-      <Card>
-        <CardContent className="space-y-8">
-          {target ? (
-            <div className="space-y-2">
-              <span className="text-sm font-medium">
-                {t("targets.form.scopeFixed")}
-              </span>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">
-                  {t(`enums.targetScope.${target.scope}`)}
-                </Badge>
-                <span className="font-medium">{scopeName}</span>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+        <Card>
+          <CardContent className="space-y-8">
+            {/* No section heading above these three: `ScopeField`,
+                `StepsEditor`, and `FloorField` each render their own, and a
+                wrapper heading here would print "Where it applies" twice on
+                one screen. */}
+            {target ? (
+              <div className="space-y-2">
+                <span className="text-sm font-medium">
+                  {t("targets.form.scopeFixed")}
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Task 7 rewrote these values into plain language, so this
+                      badge reads "An asset in one account" rather than
+                      "Holding" — longer than a chip usually carries, and kept
+                      anyway. The pill names the *level* and the text beside it
+                      names the *instance*, and with three levels in the
+                      hierarchy the level is not derivable from "BTC · Binance"
+                      alone. `Badge` is `h-5 whitespace-nowrap overflow-hidden`,
+                      so the risk worth checking was clipping: the longest
+                      value in either bundle is "An archetype across the
+                      portfolio", ~200px at `text-xs`, inside a `flex-wrap` row
+                      in a card that is ~288px at the narrowest supported
+                      width. It wraps to its own line and never clips. */}
+                  <Badge variant="secondary">
+                    {t(`enums.targetScope.${target.scope}`)}
+                  </Badge>
+                  <span className="font-medium">{scopeName}</span>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <form.Field name="scope">
-                {(field) => (
-                  <div className="space-y-2">
-                    {/* No <fieldset>: Radix's RadioGroup already renders
-                        role="radiogroup", so a fieldset would nest a second
-                        group naming itself off the same text and be announced
-                        twice. Phase 4 settled this on the profile screen. */}
-                    <span
-                      id="target-scope-label"
-                      className="text-sm font-medium"
-                    >
-                      {t("targets.form.scope")}
-                    </span>
-                    <RadioGroup
-                      aria-labelledby="target-scope-label"
-                      value={field.state.value}
-                      onValueChange={(value) =>
-                        field.handleChange(value as TargetScope)
-                      }
-                      className="gap-2"
-                    >
-                      {TARGET_SCOPES.map((scope) => (
-                        <div key={scope} className="flex items-center gap-2">
-                          <RadioGroupItem value={scope} id={`scope-${scope}`} />
-                          <Label
-                            htmlFor={`scope-${scope}`}
-                            className="font-normal"
-                          >
-                            {t(`enums.targetScope.${scope}`)}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-                )}
-              </form.Field>
+            ) : listsSettled ? (
+              <ScopeField
+                scope={values.scope}
+                onScopeChange={(next) => form.setFieldValue("scope", next)}
+                account={values.account}
+                onAccountChange={(next) => form.setFieldValue("account", next)}
+                asset={values.asset}
+                onAssetChange={(next) => form.setFieldValue("asset", next)}
+                archetype={values.archetype}
+                onArchetypeChange={(next) =>
+                  form.setFieldValue("archetype", next)
+                }
+                accounts={liveAccounts}
+                assets={liveAssets}
+                errors={{
+                  account: [
+                    ...(fieldMeta.account?.errors ?? []),
+                    ...(serverErrors.fieldErrors.account ?? []),
+                  ],
+                  asset: [
+                    ...(fieldMeta.asset?.errors ?? []),
+                    ...(serverErrors.fieldErrors.asset ?? []),
+                  ],
+                  archetype: [
+                    ...(fieldMeta.archetype?.errors ?? []),
+                    ...(serverErrors.fieldErrors.archetype ?? []),
+                  ],
+                }}
+              />
+            ) : (
+              <div className="space-y-6" aria-busy="true">
+                <span className="sr-only" role="status">
+                  {t("loading")}
+                </span>
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-24 w-full max-w-sm" />
+                <Skeleton className="h-9 w-full max-w-sm" />
+              </div>
+            )}
 
-              <form.Subscribe selector={(state) => state.values.scope}>
-                {(scope) => (
-                  <div className="space-y-6">
-                    {scope !== "PORTFOLIO_ARCHETYPE" && (
-                      <form.Field name="account">
-                        {(field) => (
-                          <SelectField
-                            name="account"
-                            label={t("targets.form.account")}
-                            value={field.state.value}
-                            options={accounts.map((row) => row.id)}
-                            renderOption={(id) =>
-                              accounts.find((row) => row.id === id)?.name ?? id
-                            }
-                            onChange={field.handleChange}
-                            errors={[
-                              ...field.state.meta.errors,
-                              ...(serverErrors.fieldErrors.account ?? []),
-                            ]}
-                          />
-                        )}
-                      </form.Field>
-                    )}
-
-                    {scope === "HOLDING" && (
-                      <form.Field name="asset">
-                        {(field) => (
-                          <SelectField
-                            name="asset"
-                            label={t("targets.form.asset")}
-                            value={field.state.value}
-                            options={assets.map((row) => row.id)}
-                            renderOption={(id) =>
-                              assets.find((row) => row.id === id)?.name ?? id
-                            }
-                            onChange={field.handleChange}
-                            errors={[
-                              ...field.state.meta.errors,
-                              ...(serverErrors.fieldErrors.asset ?? []),
-                            ]}
-                          />
-                        )}
-                      </form.Field>
-                    )}
-
-                    {scope !== "HOLDING" && (
-                      <form.Field name="archetype">
-                        {(field) => (
-                          <SelectField
-                            name="archetype"
-                            label={t("targets.form.archetype")}
-                            value={field.state.value}
-                            options={ARCHETYPES}
-                            renderOption={(archetype: Archetype) =>
-                              t(`enums.archetype.${archetype}`)
-                            }
-                            onChange={field.handleChange}
-                            errors={[
-                              ...field.state.meta.errors,
-                              ...(serverErrors.fieldErrors.archetype ?? []),
-                            ]}
-                          />
-                        )}
-                      </form.Field>
-                    )}
-                  </div>
-                )}
-              </form.Subscribe>
-            </div>
-          )}
-
-          {taken ? (
-            <div className="space-y-3 rounded-xl border bg-muted/50 p-4">
-              <p className="font-medium">
-                {t("targets.form.taken.title", { name: scopeName })}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {t("targets.form.taken.description")}
-              </p>
-              <Button asChild variant="outline">
-                <Link to={PATHS.TARGETS_EDIT} params={{ id: taken.id }}>
-                  {t("targets.form.taken.action")}
-                  <IconArrowRight aria-hidden />
-                </Link>
-              </Button>
-            </div>
-          ) : (
-            <>
-              <form.Field name="steps">
-                {(field) => (
-                  <StepsEditor
-                    steps={field.state.value}
-                    onChange={field.handleChange}
-                    fieldErrors={stepErrors}
-                  />
-                )}
-              </form.Field>
-
-              <div className="space-y-4">
-                <form.Field name="floorEnabled">
+            {taken ? (
+              <div className="space-y-3 rounded-xl border bg-muted/50 p-4">
+                <p className="font-medium">
+                  {t("targets.form.taken.title", { name: scopeName })}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t("targets.form.taken.description")}
+                </p>
+                <Button asChild variant="outline">
+                  <Link to={PATHS.TARGETS_EDIT} params={{ id: taken.id }}>
+                    {t("targets.form.taken.action")}
+                    <IconArrowRight aria-hidden />
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <form.Field name="steps">
                   {(field) => (
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        id="floor-enabled"
-                        checked={field.state.value}
-                        onCheckedChange={field.handleChange}
-                      />
-                      <Label htmlFor="floor-enabled" className="font-normal">
-                        {t("targets.form.floor.toggle")}
-                      </Label>
-                    </div>
+                    <StepsEditor
+                      steps={field.state.value}
+                      onChange={field.handleChange}
+                      fieldErrors={stepErrors}
+                    />
                   )}
                 </form.Field>
 
-                <p className="text-xs text-muted-foreground">
-                  {t("targets.form.floor.description")}
-                </p>
-
-                <form.Subscribe selector={(state) => state.values.floorEnabled}>
-                  {(enabled) =>
-                    enabled ? (
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <form.Field name="loss_limit_pct">
-                          {(field) => (
-                            <PercentField
-                              name="loss_limit_pct"
-                              label={t("targets.form.floor.rate")}
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={field.handleChange}
-                              errors={[
-                                ...field.state.meta.errors,
-                                ...(stepErrors.loss_limit_pct ?? []),
-                              ]}
-                            />
-                          )}
-                        </form.Field>
-
-                        <form.Field name="loss_limit_period">
-                          {(field) => (
-                            <SelectField
-                              name="loss_limit_period"
-                              label={t("targets.form.floor.period")}
-                              value={field.state.value}
-                              options={PERIODS}
-                              renderOption={(period: Period) =>
-                                t(`enums.period.${period}`)
-                              }
-                              onChange={field.handleChange}
-                              errors={[
-                                ...field.state.meta.errors,
-                                ...(serverErrors.fieldErrors
-                                  .loss_limit_period ?? []),
-                              ]}
-                            />
-                          )}
-                        </form.Field>
-                      </div>
-                    ) : null
+                <FloorField
+                  enabled={values.floorEnabled}
+                  onEnabledChange={(next) =>
+                    form.setFieldValue("floorEnabled", next)
                   }
-                </form.Subscribe>
-              </div>
+                  pct={values.loss_limit_pct}
+                  onPctChange={(next) =>
+                    form.setFieldValue("loss_limit_pct", next)
+                  }
+                  period={values.loss_limit_period}
+                  onPeriodChange={(next) =>
+                    form.setFieldValue("loss_limit_period", next)
+                  }
+                  errors={stepErrors.loss_limit_pct ?? []}
+                  periodErrors={serverErrors.fieldErrors.loss_limit_period}
+                />
 
-              <FormError errors={serverErrors.formErrors} />
-            </>
+                <FormError errors={serverErrors.formErrors} />
+              </>
+            )}
+          </CardContent>
+
+          {!taken && (
+            <CardFooter className="justify-end gap-2">
+              <form.Subscribe selector={(state) => state.isSubmitting}>
+                {(isSubmitting) => (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      disabled={isSubmitting}
+                      onClick={() => void navigate({ to: PATHS.TARGETS })}
+                    >
+                      {t("targets.form.cancel")}
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting && (
+                        <IconLoader2 className="animate-spin" aria-hidden />
+                      )}
+                      {target
+                        ? t("targets.form.save")
+                        : t("targets.form.create")}
+                    </Button>
+                  </>
+                )}
+              </form.Subscribe>
+            </CardFooter>
           )}
-        </CardContent>
+        </Card>
 
-        {!taken && (
-          <CardFooter className="justify-end gap-2">
-            <form.Subscribe selector={(state) => state.isSubmitting}>
-              {(isSubmitting) => (
-                <>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    disabled={isSubmitting}
-                    onClick={() => void navigate({ to: PATHS.TARGETS })}
-                  >
-                    {t("targets.form.cancel")}
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && (
-                      <IconLoader2 className="animate-spin" aria-hidden />
-                    )}
-                    {target ? t("targets.form.save") : t("targets.form.create")}
-                  </Button>
-                </>
-              )}
-            </form.Subscribe>
-          </CardFooter>
-        )}
-      </Card>
+        {/* Source order puts the panel after the fields, so a keyboard walk
+            reaches the inputs first, and the grid column places it right on
+            wide screens without `lg:order-last`. Below `lg` that puts it after
+            the submit controls; `TargetSummaryPanel`'s docblock carries the
+            reason that is the accepted reading rather than a slip.
+
+            Held back until the lookups settle, for the same reason the scope
+            block is. `ScopeNames` falls back to the id it was asked about, and
+            the panel's scope clause is a *sentence* — so painting it early
+            does not degrade to a blank, it degrades to "This target covers
+            22222222-2222-… in 11111111-1111-…", which is worse than saying
+            nothing yet. */}
+        {!taken && listsSettled && <TargetSummaryPanel clauses={clauses} />}
+      </div>
     </form>
   );
 }

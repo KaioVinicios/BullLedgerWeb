@@ -938,6 +938,8 @@
       "save": "Save changes",
       "created": "Target created for {{name}}.",
       "saved": "Target saved.",
+      "summaryTitle": "In summary",
+      "reportsOnly": "BullLedger only reports — it never sells, rebalances, or alerts.",
       "errors": {
         "account": "Choose an account.",
         "asset": "Choose an asset.",

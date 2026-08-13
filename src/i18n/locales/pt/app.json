@@ -938,6 +938,8 @@
       "save": "Salvar alterações",
       "created": "Meta criada para {{name}}.",
       "saved": "Meta salva.",
+      "summaryTitle": "Em resumo",
+      "reportsOnly": "O BullLedger só relata — nunca vende, rebalanceia nem avisa.",
       "errors": {
         "account": "Escolha uma conta.",
         "asset": "Escolha um ativo.",

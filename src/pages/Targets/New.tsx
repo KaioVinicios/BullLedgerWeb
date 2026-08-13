@@ -13,7 +13,7 @@ export function TargetNewPage() {
   const search = route.useSearch();
 
   return (
-    <PageContainer width="form">
+    <PageContainer width="form-wide">
       <PageHeader
         title={t("targets.form.createTitle")}
         description={t("targets.form.createDescription")}

@@ -627,4 +627,122 @@ describe("the target form", () => {
       loss_limit_period: "ANNUAL",
     });
   });
+
+  // The schema's `superRefine` is the only thing that says "Choose an
+  // account.", and it reaches the select through the form's field meta rather
+  // than through `serverErrors` — nothing on the server round-trip populates it,
+  // because there is no round-trip: the submit is refused before one. Without
+  // this the create button would fail silently, which is the defect this
+  // file's own docblock exists to prevent.
+  it("names the missing coordinate instead of refusing the submit in silence", async () => {
+    server.use(...signedIn());
+    mount(PATHS.TARGETS_NEW);
+
+    // Holding is the default level and nothing prefilled it, so both
+    // coordinates are empty. The rate is filled so the ladder is not what is
+    // being complained about.
+    await userEvent.type(
+      await screen.findByLabelText(app.targets.form.steps.rate),
+      "300",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: app.targets.form.create }),
+    );
+
+    expect(
+      await screen.findByText(app.targets.form.errors.account),
+    ).toBeVisible();
+    expect(screen.getByText(app.targets.form.errors.asset)).toBeVisible();
+  });
+
+  it("rewrites the summary as the ladder is typed", async () => {
+    server.use(...signedIn());
+    mount(
+      `${PATHS.TARGETS_NEW}?scope=HOLDING&account=${account.id}&asset=${btc.id}`,
+    );
+
+    const panel = await screen.findByRole("complementary", {
+      name: app.targets.form.summaryTitle,
+    });
+
+    // The scope arrived from the prefill, so the panel describes it before a
+    // rate is typed — the positive anchor for the "and then it changes"
+    // assertions below.
+    expect(
+      within(panel).getByText(
+        app.targets.sentence.scope.HOLDING.replace("{{asset}}", "BTC").replace(
+          "{{account}}",
+          "Binance",
+        ),
+      ),
+    ).toBeVisible();
+    expect(
+      within(panel).getByText(app.targets.sentence.ladderEmpty),
+    ).toBeVisible();
+
+    // Two places, filled from the right — the same mask the neighbouring
+    // submit test types against: 3% is four keystrokes at two mask places.
+    await userEvent.type(
+      screen.getByLabelText(app.targets.form.steps.rate),
+      "300",
+    );
+
+    expect(within(panel).getByText("3% annual")).toBeVisible();
+    expect(within(panel).getByText("from the first purchase")).toBeVisible();
+    expect(
+      within(panel).queryByText(app.targets.sentence.ladderEmpty),
+    ).not.toBeInTheDocument();
+  });
+
+  // The field shows −3,00% and the wire must still receive 0.03. A negative is
+  // rejected by the API with `target_loss_limit_positive`, so a well-meaning
+  // "fix" to the displayed sign would break saving. This is the guard.
+  it("sends the floor as a positive magnitude despite the minus on screen", async () => {
+    let body: unknown;
+
+    server.use(
+      ...signedIn(),
+      http.post(`${TEST_API_URL}/api/targets/`, async ({ request }) => {
+        body = await request.json();
+
+        return HttpResponse.json(
+          { status: 201, data: existing },
+          { status: 201 },
+        );
+      }),
+    );
+    mount(
+      `${PATHS.TARGETS_NEW}?scope=HOLDING&account=${account.id}&asset=${btc.id}`,
+    );
+
+    const panel = await screen.findByRole("complementary", {
+      name: app.targets.form.summaryTitle,
+    });
+
+    await userEvent.type(
+      await screen.findByLabelText(app.targets.form.steps.rate),
+      "300",
+    );
+    await userEvent.click(
+      screen.getByRole("switch", { name: app.targets.form.floor.toggle }),
+    );
+    await userEvent.type(
+      screen.getByLabelText(app.targets.form.floor.rate),
+      "300",
+    );
+
+    // The minus really is on screen: the guard below is only meaningful if the
+    // sign it protects against is actually being displayed. U+2212, the
+    // character `targets.sentence.floorRate` carries.
+    expect(within(panel).getByText("−3% annual")).toBeVisible();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: app.targets.form.create }),
+    );
+
+    await screen.findByText(
+      app.targets.form.created.replace("{{name}}", "BTC · Binance"),
+    );
+    expect(body).toMatchObject({ loss_limit_pct: "0.03" });
+  });
 });
