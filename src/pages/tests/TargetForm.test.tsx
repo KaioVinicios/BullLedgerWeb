@@ -50,6 +50,19 @@ const btc: Asset = {
   chain: "",
 };
 
+/**
+ * An account that has been archived, and a target that was authored on it
+ * before it was. The lookups this form walks pass `include_archived: true`, so
+ * both of these arrive in the same array the selects are built from — which is
+ * exactly why the options are filtered and the name lookup is not.
+ */
+const archivedAccount: Account = {
+  ...account,
+  id: "44444444-4444-4444-8444-444444444444",
+  name: "Old Broker",
+  archived_at: "2025-01-01T00:00:00Z",
+};
+
 const existing: Target = {
   id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   scope: "HOLDING",
@@ -66,6 +79,13 @@ const existing: Target = {
     },
   ],
   archived_at: null,
+};
+
+/** The same target, at a scope whose account has since been archived. */
+const onArchived: Target = {
+  ...existing,
+  id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+  account: archivedAccount.id,
 };
 
 function page<T>(results: T[], count = results.length) {
@@ -626,6 +646,92 @@ describe("the target form", () => {
       loss_limit_pct: "0.1",
       loss_limit_period: "ANNUAL",
     });
+  });
+
+  // The other door onto the silent refusal. While the lookups walk their pages
+  // the scope block is a skeleton, but the footer is on screen — so a submit
+  // taken here would raise "Choose an account." into an unmounted `ScopeField`
+  // and render it nowhere. `listAllAccounts` walks pages sequentially, so this
+  // window is as long as the tenant is large.
+  it("will not take a submit while the scope selector is still a skeleton", async () => {
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    // Ahead of `signedIn()`, which registers its own `/api/accounts/` handler:
+    // MSW takes the first match, so an override has to come first.
+    server.use(
+      http.get(`${TEST_API_URL}/api/accounts/`, async () => {
+        await held;
+
+        return HttpResponse.json(page([account]));
+      }),
+      ...signedIn(),
+    );
+    mount(
+      `${PATHS.TARGETS_NEW}?scope=HOLDING&account=${account.id}&asset=${btc.id}`,
+    );
+
+    const create = await screen.findByRole("button", {
+      name: app.targets.form.create,
+    });
+
+    expect(create).toBeDisabled();
+    // Cancel is the escape hatch and stays live: it navigates away and cannot
+    // reach the refusal the submit can.
+    expect(
+      screen.getByRole("button", { name: app.targets.form.cancel }),
+    ).toBeEnabled();
+
+    release();
+
+    // And it releases — the gate is on the lookup settling, not on something
+    // that never resolves.
+    await waitFor(() => expect(create).toBeEnabled());
+    expect(screen.getByLabelText(app.targets.form.account)).toBeVisible();
+  });
+
+  // The pair that pins the two-source arrangement: archived rows are kept out
+  // of the *options*, while the *name* lookup still sees them. One filter
+  // without the other, or neither, breaks exactly one of these two.
+  it("keeps an archived account out of the scope selector", async () => {
+    server.use(
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
+        HttpResponse.json(page([account, archivedAccount])),
+      ),
+      ...signedIn(),
+    );
+    mount(PATHS.TARGETS_NEW);
+
+    await userEvent.click(
+      await screen.findByRole("combobox", { name: app.targets.form.account }),
+    );
+
+    // The live one is offered — the anchor, so this cannot pass against a list
+    // that simply failed to open.
+    expect(screen.getByRole("option", { name: "Binance" })).toBeVisible();
+    expect(
+      screen.queryByRole("option", { name: "Old Broker" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("still names an archived account on a target already scoped to it", async () => {
+    server.use(
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
+        HttpResponse.json(page([account, archivedAccount])),
+      ),
+      ...signedIn([onArchived]),
+      http.get(`${TEST_API_URL}/api/targets/${onArchived.id}/`, () =>
+        HttpResponse.json({ status: 200, data: onArchived }),
+      ),
+    );
+    mount(`/app/targets/${onArchived.id}/edit`);
+
+    // Archiving an account does not un-name the targets already on it. If the
+    // name lookup were built from the filtered list this would read
+    // "BTC · 44444444-4444-4444-8444-444444444444".
+    expect(await screen.findByText("BTC · Old Broker")).toBeVisible();
   });
 
   // The schema's `superRefine` is the only thing that says "Choose an

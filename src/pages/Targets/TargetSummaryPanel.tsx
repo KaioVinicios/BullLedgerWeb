@@ -22,6 +22,16 @@ import type { TargetClauses } from "@/utils/targetSentence";
  * whole time — the summary is read *while* authoring; below `lg` it degrades
  * honestly into a closing recap rather than pretending to be a gate.
  *
+ * **Deliberately not a live region.** This rewrites on every keystroke, so an
+ * `aria-live="polite"` here would queue an announcement of the whole summary
+ * after each keypress and talk over the field being typed into — the control's
+ * own label and value are what a user needs at that moment, not a re-reading of
+ * the sentence they are halfway through composing. The content stays reachable
+ * on demand instead: it is a `complementary` landmark with a heading, so it can
+ * be jumped to by landmark or heading navigation at the moment it is wanted.
+ * Adding `aria-live` here would look like an accessibility improvement and be a
+ * regression.
+ *
  * The closing line is `BR-SCOPE`: BullLedger derives and displays a verdict and
  * does nothing else. It is stated exactly once, here, at the point where a
  * user is deciding what a target should do.

@@ -27,6 +27,21 @@ describe("PageContainer", () => {
     expect(screen.getByText("fields").parentElement).toHaveClass("max-w-3xl");
   });
 
+  it("gives a form that reads beside something more room than the form measure", () => {
+    render(
+      <PageContainer width="form-wide">
+        <p>fields and a summary</p>
+      </PageContainer>,
+    );
+
+    // The target form puts a live summary panel next to its fields. Pinned to
+    // the token rather than to "wider than form", because the point of this
+    // module is that the number lives in one place.
+    expect(screen.getByText("fields and a summary").parentElement).toHaveClass(
+      "max-w-5xl",
+    );
+  });
+
   it("does not centre the column", () => {
     render(
       <PageContainer width="form">

@@ -146,6 +146,20 @@ export function TargetForm({
     (assetList.isSuccess || assetList.isError);
 
   /**
+   * Whether the scope is answerable — either it is not a control at all, or its
+   * controls are on screen rather than still a skeleton.
+   *
+   * The submit is held on this, and not only the fields. While the lookups walk
+   * their pages the scope block is a skeleton, but the footer is still there:
+   * without this a user could type a rate and press Create, `superRefine` would
+   * raise "Choose an account.", and that message would be handed to an
+   * unmounted `ScopeField` and render nowhere — the same silent refusal, reached
+   * through a different door. `listAllAccounts` walks pages *sequentially*, so
+   * on a large tenant that window is several serial round trips, not a frame.
+   */
+  const scopeReady = Boolean(target) || listsSettled;
+
+  /**
    * Names resolve from **every** row, archived included: a target authored
    * before its account was archived still has to say that account's name on
    * edit. The options offered below are live-only, which is what the
@@ -451,6 +465,10 @@ export function TargetForm({
               <form.Subscribe selector={(state) => state.isSubmitting}>
                 {(isSubmitting) => (
                   <>
+                    {/* Cancel stays live while the lookups walk. It navigates
+                        away and cannot reach the refusal the submit can, and
+                        taking the only escape hatch away for the length of a
+                        multi-page walk would be the worse trade. */}
                     <Button
                       type="button"
                       variant="ghost"
@@ -459,7 +477,10 @@ export function TargetForm({
                     >
                       {t("targets.form.cancel")}
                     </Button>
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting || !scopeReady}
+                    >
                       {isSubmitting && (
                         <IconLoader2 className="animate-spin" aria-hidden />
                       )}
