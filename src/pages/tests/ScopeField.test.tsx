@@ -11,6 +11,40 @@ const accounts: Account[] = [];
 const assets: Asset[] = [];
 const noop = () => undefined;
 
+/** Two real rows, for the half of the behavior an empty list cannot reach. */
+const twoAccounts: Account[] = [
+  {
+    id: "11111111-1111-4111-8111-111111111111",
+    name: "Binance",
+    institution: null,
+    country: "BR",
+    registration: "BR_TAXABLE",
+    base_currency: "BRL",
+    account_number: "",
+    contribution_room: null,
+    plan_type: null,
+    deductible: null,
+    tax_regime: null,
+    taxed_on: null,
+    archived_at: null,
+  },
+  {
+    id: "22222222-2222-4222-8222-222222222222",
+    name: "Nubank",
+    institution: null,
+    country: "BR",
+    registration: "BR_TAXABLE",
+    base_currency: "BRL",
+    account_number: "",
+    contribution_room: null,
+    plan_type: null,
+    deductible: null,
+    tax_regime: null,
+    taxed_on: null,
+    archived_at: null,
+  },
+];
+
 const base = {
   account: "",
   onAccountChange: noop,
@@ -106,6 +140,15 @@ describe("ScopeField", () => {
     expect(
       list.getByText(app.targets.form.archetypeGloss.CASH_DEPOSIT),
     ).toBeVisible();
+
+    // A partial tripwire for the other half, since jsdom cannot evaluate it:
+    // dropping this variant from ScopeField puts a two-line option back inside
+    // a fixed 36px trigger. It does NOT catch the other way that breaks —
+    // renaming `data-slot="select-value"` in ui/select.tsx leaves this class
+    // present and inert, and only the compiled CSS would show it.
+    expect(
+      list.getByText(app.targets.form.archetypeGloss.NAV_FUND),
+    ).toHaveClass("[[data-slot=select-value]_&]:hidden");
   });
 
   // First render of a fresh account: the lists arrive empty, and an empty
@@ -119,5 +162,35 @@ describe("ScopeField", () => {
     expect(
       screen.getByRole("combobox", { name: app.targets.form.asset }),
     ).toHaveAccessibleDescription(app.targets.form.noAssets);
+  });
+
+  // The other side of that hint, and the only test with rows in it: an empty
+  // fixture never runs `renderOption`'s name lookup, and never proves the hint
+  // stops firing once there is something to choose.
+  it("lists accounts by name, and drops the hint once there are some", async () => {
+    render(
+      <ScopeField
+        scope="ACCOUNT_ARCHETYPE"
+        onScopeChange={noop}
+        {...base}
+        accounts={twoAccounts}
+      />,
+    );
+
+    const trigger = screen.getByRole("combobox", {
+      name: app.targets.form.account,
+    });
+
+    expect(trigger).not.toHaveAccessibleDescription();
+
+    await userEvent.click(trigger);
+
+    const list = within(screen.getByRole("listbox"));
+
+    expect(list.getByText("Binance")).toBeVisible();
+    expect(list.getByText("Nubank")).toBeVisible();
+    // The `?? id` fallback is for a value with no matching row; with rows
+    // present the reader gets a name, never a uuid.
+    expect(list.queryByText(twoAccounts[0].id)).toBeNull();
   });
 });
