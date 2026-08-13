@@ -917,9 +917,11 @@
       },
       "floor": {
         "toggle": "Definir um limite de perda",
-        "description": "Um piso abaixo do qual a posição é lida como rompida. Opcional, e ainda assim apenas um relato.",
+        "description": "Opcional. Uma posição que cair além disso é lida como abaixo do piso — e nada mais acontece.",
         "rate": "Limite de perda",
-        "period": "Período do limite de perda"
+        "period": "Período do limite de perda",
+        "hint": "Abaixo de {{rate}} a posição é lida como fora do piso.",
+        "hintEmpty": "Informe quanta perda você tolera."
       },
       "cancel": "Cancelar",
       "create": "Criar meta",

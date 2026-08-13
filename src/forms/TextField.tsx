@@ -11,6 +11,8 @@ type TextFieldProps = Omit<ComponentProps<typeof Input>, "id"> & {
   hint?: ReactNode;
   /** Control pinned inside the input, e.g. the password reveal toggle. */
   trailing?: ReactNode;
+  /** Static text pinned inside the input's left edge, e.g. a sign. */
+  leading?: ReactNode;
 };
 
 // Single owner of the label ↔ input ↔ hint ↔ error wiring. `aria-describedby`
@@ -22,6 +24,7 @@ export function TextField({
   errors,
   hint,
   trailing,
+  leading,
   ...input
 }: TextFieldProps) {
   const invalid = errors.length > 0;
@@ -34,6 +37,7 @@ export function TextField({
     <div className="space-y-2">
       <Label htmlFor={name}>{label}</Label>
       <div className="relative">
+        {leading}
         <Input
           id={name}
           name={name}

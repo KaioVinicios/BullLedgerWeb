@@ -917,9 +917,11 @@
       },
       "floor": {
         "toggle": "Set a loss limit",
-        "description": "A floor the holding reads as breached below. Optional, and still only a report.",
+        "description": "Optional. A holding that falls past this reads as below the floor — and nothing else happens.",
         "rate": "Loss limit",
-        "period": "Loss limit period"
+        "period": "Loss limit period",
+        "hint": "Below {{rate}} the holding reads as below the floor.",
+        "hintEmpty": "Enter how much loss you will tolerate."
       },
       "cancel": "Cancel",
       "create": "Create target",

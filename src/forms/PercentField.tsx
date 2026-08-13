@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { TextField } from "@/forms/TextField";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { useNumericInput } from "@/hooks/useNumericInput";
+import { cn } from "@/lib/utils";
 import { PERCENT_SCALE } from "@/utils/decimal";
 import { separatorsFor } from "@/utils/numericInput";
 
@@ -17,6 +18,12 @@ type PercentFieldProps = {
   value: string;
   onBlur: () => void;
   onChange: (value: string) => void;
+  /**
+   * Prints a `−` inside the input's left edge. For a field whose value is a
+   * magnitude the reader must read as a loss — the sign is displayed, never
+   * typed and never stored.
+   */
+  sign?: "negative";
 };
 
 /**
@@ -24,6 +31,13 @@ type PercentFieldProps = {
  * fraction (`0.1375`), and the ÷100 happens at submit through Big — a string
  * decimal shift, never a float. The twin of `MoneyField`, with the unit pinned
  * beside the input because it is part of the reading, not the typing.
+ *
+ * `sign="negative"` pins a `−` to the other edge on the same terms, for a
+ * field whose stored value is a magnitude the reader must read as a loss. It
+ * is `aria-hidden` like the `%`, because the input's value really is the
+ * magnitude and announcing a sign it does not contain would be a lie; the
+ * caller carries that reading in the field's `hint` instead, which `TextField`
+ * wires into `aria-describedby`.
  *
  * It types like `MoneyField` too, filling from the right at two places. That
  * mask is narrower than the data model: every percent-backed field is
@@ -46,6 +60,7 @@ export function PercentField({
   value,
   onBlur,
   onChange,
+  sign,
 }: PercentFieldProps) {
   const locale = useFormatLocale();
   const [freeForm] = useState(() => exceedsMask(value, locale));
@@ -67,7 +82,21 @@ export function PercentField({
       value={value}
       onBlur={onBlur}
       onChange={handleChange}
-      className="pr-9 tabular-nums"
+      className={cn("pr-9 tabular-nums", sign === "negative" && "pl-7")}
+      leading={
+        sign === "negative" ? (
+          <span
+            // Decorative: the input's value is the magnitude, and announcing a
+            // sign that is not in it would be a lie. The reading the sign
+            // carries reaches assistive tech through the field's hint, which
+            // `TextField` wires into `aria-describedby`.
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-3 flex items-center font-mono text-sm text-muted-foreground"
+          >
+            −
+          </span>
+        ) : undefined
+      }
       trailing={
         <span
           aria-hidden
