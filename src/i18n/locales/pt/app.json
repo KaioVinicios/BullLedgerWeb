@@ -896,9 +896,19 @@
       "editDescription": "O escopo é fixo — uma meta para outro escopo é outra meta. Altere os degraus de taxa ou o piso.",
       "scope": "Escopo",
       "scopeFixed": "Aplica-se a",
+      "scopeLegend": "Onde se aplica",
       "account": "Conta",
+      "noAccounts": "Nenhuma conta para escolher. Cadastre uma conta primeiro.",
       "asset": "Ativo",
+      "noAssets": "Nenhum ativo para escolher. Cadastre um ativo primeiro.",
       "archetype": "Arquétipo",
+      "archetypeGloss": {
+        "CASH_DEPOSIT": "Poupança, CDB, dinheiro parado remunerado",
+        "FIXED_INCOME": "Títulos e papéis com rendimento declarado",
+        "EXCHANGE_SECURITY": "Ações, ETFs e afins negociados em bolsa",
+        "NAV_FUND": "Fundos precificados por valor de cota",
+        "CRYPTO": "Bitcoin, Ethereum e afins"
+      },
       "taken": {
         "title": "{{name}} já tem uma meta.",
         "description": "Um escopo comporta uma meta por vez. Edite a existente em vez de criar uma segunda.",

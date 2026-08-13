@@ -896,9 +896,19 @@
       "editDescription": "The scope is fixed — a target for another scope is another target. Change the rate steps or the floor.",
       "scope": "Scope",
       "scopeFixed": "Applies to",
+      "scopeLegend": "Where it applies",
       "account": "Account",
+      "noAccounts": "No accounts to choose from. Add an account first.",
       "asset": "Asset",
+      "noAssets": "No assets to choose from. Add an asset first.",
       "archetype": "Archetype",
+      "archetypeGloss": {
+        "CASH_DEPOSIT": "Savings, CDs, money kept as cash",
+        "FIXED_INCOME": "Bonds, notes, anything with a stated yield",
+        "EXCHANGE_SECURITY": "Listed shares, ETFs, and the like",
+        "NAV_FUND": "Funds priced by net asset value",
+        "CRYPTO": "Bitcoin, Ethereum, and the like"
+      },
       "taken": {
         "title": "{{name}} already has a target.",
         "description": "A scope holds one target at a time. Edit the existing one rather than creating a second.",
