@@ -831,6 +831,7 @@
         "ACCOUNT_ARCHETYPE": "Da sua meta de {{archetype}} em {{account}}.",
         "PORTFOLIO_ARCHETYPE": "Da sua meta de {{archetype}} para a carteira toda."
       },
+      "measuredAgainst": "{{provenance}} {{sentence}}",
       "none": "Nenhuma meta se aplica a esta posição.",
       "set": "Definir uma"
     }

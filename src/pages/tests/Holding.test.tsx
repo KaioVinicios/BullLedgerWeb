@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
 import { createQueryClient } from "@/lib/queryClient";
@@ -12,6 +12,7 @@ import type { Account } from "@/services/accounts";
 import type { Asset } from "@/services/assets";
 import type { ContributionLimit } from "@/services/contributionLimits";
 import type { HoldingDetail } from "@/services/portfolio";
+import { targetKeys, type Target } from "@/services/targets";
 
 const user = { pk: 1, email: "ana@example.com", first_name: "", last_name: "" };
 
@@ -111,8 +112,34 @@ function signedIn(
   account: Account = brAccount,
   asset: Asset = brAsset,
   limits: ContributionLimit[] = [],
+  /**
+   * The target the verdict resolved from. `TargetStatusResult.source` names it
+   * but does not carry it, so the block reads it separately — which means
+   * every holding carrying a verdict issues that request, and an unstubbed one
+   * would be an unhandled request rather than a quiet no-op.
+   *
+   * Left out, the read 404s. That is deliberate: the tests that assert the
+   * provenance line as an exact string are asserting it *alone*, and a stub
+   * that answered would append the sentence and break them for a reason that
+   * has nothing to do with what they cover.
+   */
+  target: Target | null = null,
 ) {
   return [
+    ...(holding.target
+      ? [
+          http.get(
+            `${TEST_API_URL}/api/targets/${holding.target.source.id}/`,
+            () =>
+              target
+                ? HttpResponse.json({ status: 200, data: target })
+                : HttpResponse.json(
+                    { status: 404, message: "Not found.", errors: {} },
+                    { status: 404 },
+                  ),
+          ),
+        ]
+      : []),
     http.get(`${TEST_API_URL}/api/auth/user/`, () => HttpResponse.json(user)),
     http.get(
       `${TEST_API_URL}/api/portfolio/holdings/${ACCOUNT_ID}/${ASSET_ID}/`,
@@ -393,10 +420,39 @@ describe("cost basis and tax context", () => {
 });
 
 describe("the holding's target block", () => {
+  const TARGET_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
   const withTarget = (target: HoldingDetail["target"]): HoldingDetail => ({
     ...singleCurrency,
     target,
   });
+
+  const onTrack: HoldingDetail["target"] = {
+    status: "ON_TRACK",
+    actual: "0.041",
+    expected: "0.03",
+    band: "0.005",
+    source: { scope: "HOLDING", id: TARGET_ID },
+  };
+
+  /** The target `onTrack.source` names, as the API would answer for it. */
+  const resolved: Target = {
+    id: TARGET_ID,
+    scope: "HOLDING",
+    account: ACCOUNT_ID,
+    asset: ASSET_ID,
+    loss_limit_pct: null,
+    loss_limit_period: null,
+    steps: [
+      {
+        id: "33333333-3333-4333-8333-333333333333",
+        from_month: 0,
+        rate: "0.03",
+        rate_period: "MONTHLY",
+      },
+    ],
+    archived_at: null,
+  };
 
   it("renders the verdict with its label and the three figures", async () => {
     server.use(
@@ -473,6 +529,98 @@ describe("the holding's target block", () => {
         /\/app\/targets\/[^/]+\/edit/,
       );
     }
+  });
+
+  it("says what the verdict is measured against once the target arrives", async () => {
+    server.use(
+      ...signedIn(withTarget(onTrack), brAccount, brAsset, [], resolved),
+    );
+    await mount();
+
+    const block = await screen.findByRole("region", {
+      name: app.holding.target.title,
+    });
+
+    // One exact string carrying both halves: the sentence is an addition to
+    // the provenance line, never a replacement for it. `within` the block
+    // because the figures above it are the kind of adjacent content a loose
+    // match would settle for.
+    expect(
+      await within(block).findByText(
+        `${app.holding.target.from.HOLDING} 3% monthly from the first purchase`,
+      ),
+    ).toBeVisible();
+  });
+
+  it("keeps the provenance line alone while the target is still loading", async () => {
+    server.use(
+      // Never answers. The pending state is the subject here, and a handler
+      // that resolved would race the assertions below against its own fetch.
+      http.get(`${TEST_API_URL}/api/targets/${TARGET_ID}/`, () =>
+        delay("infinite"),
+      ),
+      ...signedIn(withTarget(onTrack)),
+    );
+    await mount();
+
+    const block = await screen.findByRole("region", {
+      name: app.holding.target.title,
+    });
+
+    // The verdict first: it proves the block finished rendering, so the exact
+    // match below is a statement about the copy rather than about an empty
+    // section that never painted its second half.
+    expect(
+      within(block).getByText(app.enums.targetStatus.ON_TRACK),
+    ).toBeVisible();
+    // Exact, and load-bearing: an appended sentence would not match this.
+    expect(
+      within(block).getByText(app.holding.target.from.HOLDING),
+    ).toBeVisible();
+  });
+
+  it("falls back to the provenance line when the target cannot be read", async () => {
+    let reads = 0;
+
+    server.use(
+      // A 500, and a well-formed error body so it normalizes to `kind:
+      // "server"` — the one kind `createQueryClient`'s default policy retries.
+      // That is what makes the block's own `retry: false` observable: with the
+      // guard deleted this endpoint is read three times, and `reads` below
+      // fails. A 400 would never retry, and would prove nothing.
+      http.get(`${TEST_API_URL}/api/targets/${TARGET_ID}/`, () => {
+        reads += 1;
+
+        return HttpResponse.json(
+          {
+            status: 500,
+            message: "Server error.",
+            errors: { detail: ["boom"] },
+          },
+          { status: 500 },
+        );
+      }),
+      ...signedIn(withTarget(onTrack)),
+    );
+    const { queryClient } = await mount();
+
+    // The read really failed, rather than merely not having arrived yet —
+    // which is what an assertion made a tick too early would have measured.
+    await waitFor(() =>
+      expect(
+        queryClient.getQueryState(targetKeys.detail(TARGET_ID))?.status,
+      ).toBe("error"),
+    );
+
+    const block = screen.getByRole("region", {
+      name: app.holding.target.title,
+    });
+
+    expect(
+      within(block).getByText(app.holding.target.from.HOLDING),
+    ).toBeVisible();
+    expect(within(block).queryByText(/from the first purchase/)).toBeNull();
+    expect(reads).toBe(1);
   });
 
   it("treats no target as no status, not as a failure", async () => {

@@ -831,6 +831,7 @@
         "ACCOUNT_ARCHETYPE": "From your {{archetype}} target in {{account}}.",
         "PORTFOLIO_ARCHETYPE": "From your portfolio-wide {{archetype}} target."
       },
+      "measuredAgainst": "{{provenance}} {{sentence}}",
       "none": "No target applies to this holding.",
       "set": "Set one"
     }

@@ -1,11 +1,15 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { IconArrowRight } from "@tabler/icons-react";
 
 import { PercentValue } from "@/components/PercentValue";
 import { TargetStatusBadge } from "@/components/TargetStatusBadge";
+import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { PATHS } from "@/routes/path";
 import type { HoldingDetail } from "@/services/portfolio";
+import { targetQuery } from "@/services/targets";
+import { describeTarget, summarizeClauses } from "@/utils/targetSentence";
 
 /**
  * The server's verdict on this holding, and where it came from.
@@ -25,8 +29,9 @@ import type { HoldingDetail } from "@/services/portfolio";
  * roadmap says so explicitly, and the copy carries no tone to match.
  *
  * The provenance sentence is built from `source.scope` plus what this screen
- * already holds (the account name, the archetype), so naming the level costs no
- * second request.
+ * already holds (the account name, the archetype), so naming the *level* costs
+ * no second request. Naming what the verdict is measured *against* does — see
+ * `resolved` below.
  */
 export function TargetBlock({
   holding,
@@ -36,7 +41,47 @@ export function TargetBlock({
   accountName: string;
 }) {
   const { t } = useTranslation("app");
+  const locale = useFormatLocale();
   const target = holding.target;
+
+  /**
+   * `TargetStatusResult.source` names the winning target but does not carry
+   * it — it is `{ scope, id }` — so describing the target the verdict is
+   * measured against costs one read.
+   *
+   * It is deliberately allowed to fail, and `retry: false` says so: the
+   * provenance line is the whole account this screen owes the reader, and the
+   * sentence is an addition to it rather than a replacement for it. Re-sending
+   * a read whose only payload is one extra clause would spend a retry budget
+   * on something nothing here depends on.
+   */
+  const resolved = useQuery({
+    ...targetQuery(target?.source.id ?? ""),
+    enabled: Boolean(target),
+    retry: false,
+  });
+
+  const sentence = resolved.data
+    ? summarizeClauses(
+        describeTarget(resolved.data, {
+          // `describeTarget` calls both to build the scope clause, and
+          // `summarizeClauses` then drops that clause — the provenance line
+          // beside it already says where the target came from. So these are
+          // invoked and their result is discarded: `ScopeNames` requires
+          // them, and nothing on screen depends on what they return.
+          names: { accountName: () => accountName, assetName: () => "" },
+          t,
+          locale,
+        }),
+      )
+    : null;
+
+  const provenance = target
+    ? t(`holding.target.from.${target.source.scope}`, {
+        archetype: t(`enums.archetype.${holding.archetype}`),
+        account: accountName,
+      })
+    : null;
 
   return (
     <section
@@ -81,10 +126,9 @@ export function TargetBlock({
           </dl>
 
           <p className="text-xs text-muted-foreground">
-            {t(`holding.target.from.${target.source.scope}`, {
-              archetype: t(`enums.archetype.${holding.archetype}`),
-              account: accountName,
-            })}
+            {sentence
+              ? t("holding.target.measuredAgainst", { provenance, sentence })
+              : provenance}
           </p>
         </>
       ) : (
