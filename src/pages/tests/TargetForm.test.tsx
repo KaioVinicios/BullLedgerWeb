@@ -15,7 +15,7 @@ import { PATHS } from "@/routes/path";
 import { createAppRouter } from "@/routes/router";
 import type { Account } from "@/services/accounts";
 import type { Asset } from "@/services/assets";
-import type { Target } from "@/services/targets";
+import { targetsInScopeQuery, type Target } from "@/services/targets";
 import { EMPTY_STEP, type StepDraft } from "@/utils/targetWire";
 
 const user = { pk: 1, email: "ana@example.com", first_name: "", last_name: "" };
@@ -466,6 +466,50 @@ describe("the target form", () => {
     expect(
       screen.getByRole("link", { name: app.targets.form.taken.action }),
     ).toHaveAttribute("href", `/app/targets/${existing.id}/edit`);
+  });
+
+  // The third reader of `names`, and the worst of the three: the badge degrades
+  // to an id inside a chip, while this degrades a whole *sentence* — "You
+  // already have a target for 22222222-… · 11111111-…". Reachable without a
+  // single click, because the holding detail's "Set one" link arrives with the
+  // scope already complete: the collision check fires at mount and can answer
+  // before two sequential page walks finish.
+  it("holds the taken block back rather than naming the scope with UUIDs", async () => {
+    server.use(
+      // Neither ever answers, so the lookups are still walking when the
+      // collision check lands — which is the whole window under test.
+      http.get(`${TEST_API_URL}/api/accounts/`, () => delay("infinite")),
+      http.get(`${TEST_API_URL}/api/assets/`, () => delay("infinite")),
+      ...signedIn([existing]),
+    );
+    const { queryClient } = mount(
+      `${PATHS.TARGETS_NEW}?scope=HOLDING&account=${account.id}&asset=${btc.id}`,
+    );
+
+    // The gate, and it is world-independent: the collision check really
+    // answered, rather than merely not having answered yet — which is what an
+    // assertion made a tick early would have measured.
+    await waitFor(() =>
+      expect(
+        queryClient.getQueryState(targetsInScopeQuery("HOLDING").queryKey)
+          ?.status,
+      ).toBe("success"),
+    );
+
+    // The exact sentence the fallback would produce, not a loose pattern.
+    expect(
+      screen.queryByText(
+        app.targets.form.taken.title.replace(
+          "{{name}}",
+          `${btc.id} · ${account.id}`,
+        ),
+      ),
+    ).toBeNull();
+    // And the screen is authoring rather than blank: the taken block arrives
+    // once the names do, which the test below this one already covers.
+    expect(
+      screen.getByLabelText(app.targets.form.steps.rate),
+    ).toBeInTheDocument();
   });
 
   it("never asks for archived rows when checking whether a scope is taken", async () => {

@@ -313,9 +313,27 @@ export function TargetForm({
     enabled: !target && isScopeComplete(values),
   });
 
-  const taken = target
-    ? undefined
-    : inScope.data?.find((row) => matchesScope(row, values));
+  /**
+   * The scope already holds a target — and the third place `names` is read,
+   * gated on `listsSettled` for the same reason the other two are.
+   *
+   * This is the worst of the three degradations, not the mildest: the badge
+   * falls back to an id inside a chip, while this block's title is a
+   * *sentence* — "22222222-… · 11111111-… already has a target." Prose
+   * degrading to UUIDs is the case PLAN DEFECT #13 called unsurvivable.
+   *
+   * The window is reached without a click: the holding detail's "Set one" link
+   * prefills scope, account, and asset, so `isScopeComplete` holds at mount and
+   * this query can answer before two *sequential* page walks do.
+   *
+   * Waiting introduces no new swap — `taken` is already undefined until the
+   * check answers, and the ladder already renders in the meantime. It only
+   * delays an existing transition until the screen can name what it found.
+   */
+  const taken =
+    target || !listsSettled
+      ? undefined
+      : inScope.data?.find((row) => matchesScope(row, values));
 
   const scopeName = target
     ? targetScopeName(target, names, t)
