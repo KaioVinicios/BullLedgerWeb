@@ -57,9 +57,7 @@ test("surfaces a taken scope before submission, not after", async ({
   await expect(
     page.getByRole("button", { name: app.targets.form.create }),
   ).toHaveCount(0);
-  await expect(
-    page.getByLabel(app.targets.form.steps.rate.replace("{{index}}", "1")),
-  ).toHaveCount(0);
+  await expect(page.getByLabel(app.targets.form.steps.rate)).toHaveCount(0);
 
   // And the useful next move is offered: edit the one that already exists.
   await page.getByRole("link", { name: app.targets.form.taken.action }).click();

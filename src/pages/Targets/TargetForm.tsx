@@ -347,7 +347,37 @@ export function TargetForm({
                 `StepsEditor`, and `FloorField` each render their own, and a
                 wrapper heading here would print "Where it applies" twice on
                 one screen. */}
-            {target ? (
+            {!listsSettled ? (
+              /* One gate, two shapes. Both branches below name the scope from
+                 `names`, which falls back to the id it was asked about — so
+                 painting either early does not degrade to a blank, it degrades
+                 to a UUID. The edit branch is the worse of the two, because its
+                 badge row is *prose* rather than a select: it reads
+                 "22222222-2222-… · 11111111-1111-…" for as long as two
+                 sequential page walks take.
+                 The submit is deliberately NOT held on this when editing —
+                 `scopeReady` short-circuits on `target` — because the scope is
+                 not a control there and no field can be left unmounted holding
+                 a refusal. This gate is about what the screen says, not about
+                 what it will accept. */
+              <div
+                aria-busy="true"
+                className={target ? "space-y-2" : "space-y-6"}
+              >
+                <span className="sr-only" role="status">
+                  {t("loading")}
+                </span>
+                <Skeleton className="h-4 w-32" />
+                {target ? (
+                  <Skeleton className="h-6 w-56" />
+                ) : (
+                  <>
+                    <Skeleton className="h-24 w-full max-w-sm" />
+                    <Skeleton className="h-9 w-full max-w-sm" />
+                  </>
+                )}
+              </div>
+            ) : target ? (
               <div className="space-y-2">
                 <span className="text-sm font-medium">
                   {t("targets.form.scopeFixed")}
@@ -371,7 +401,7 @@ export function TargetForm({
                   <span className="font-medium">{scopeName}</span>
                 </div>
               </div>
-            ) : listsSettled ? (
+            ) : (
               <ScopeField
                 scope={values.scope}
                 onScopeChange={(next) => form.setFieldValue("scope", next)}
@@ -400,15 +430,6 @@ export function TargetForm({
                   ],
                 }}
               />
-            ) : (
-              <div className="space-y-6" aria-busy="true">
-                <span className="sr-only" role="status">
-                  {t("loading")}
-                </span>
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-24 w-full max-w-sm" />
-                <Skeleton className="h-9 w-full max-w-sm" />
-              </div>
             )}
 
             {taken ? (

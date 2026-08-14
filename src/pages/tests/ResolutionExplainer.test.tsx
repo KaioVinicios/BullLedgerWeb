@@ -9,6 +9,7 @@ describe("ResolutionExplainer", () => {
     render(
       <ResolutionExplainer
         counts={{ HOLDING: 4, ACCOUNT_ARCHETYPE: 2, PORTFOLIO_ARCHETYPE: 5 }}
+        linked
       />,
     );
 
@@ -35,6 +36,7 @@ describe("ResolutionExplainer", () => {
     render(
       <ResolutionExplainer
         counts={{ HOLDING: 4, ACCOUNT_ARCHETYPE: 7, PORTFOLIO_ARCHETYPE: 5 }}
+        linked
       />,
     );
 
@@ -53,6 +55,7 @@ describe("ResolutionExplainer", () => {
     render(
       <ResolutionExplainer
         counts={{ HOLDING: 4, ACCOUNT_ARCHETYPE: 1, PORTFOLIO_ARCHETYPE: 0 }}
+        linked
       />,
     );
 
@@ -92,6 +95,7 @@ describe("ResolutionExplainer", () => {
           ACCOUNT_ARCHETYPE: null,
           PORTFOLIO_ARCHETYPE: null,
         }}
+        linked
       />,
     );
 
@@ -106,15 +110,16 @@ describe("ResolutionExplainer", () => {
     render(
       <ResolutionExplainer
         counts={{ HOLDING: 1, ACCOUNT_ARCHETYPE: 0, PORTFOLIO_ARCHETYPE: 0 }}
+        linked
       />,
     );
 
     const items = within(screen.getByRole("list")).getAllByRole("listitem");
 
-    // A level with no targets is a fact the screen knows; only the pending
-    // load is unknown. This is the difference between `count === null` and any
-    // falsy check, and it is the kind of thing a later refactor flips without
-    // noticing.
+    // A level with no targets is a fact the screen knows; a load still in
+    // flight and a load that failed are both the screen not knowing. This is
+    // the difference between `count === null` and any falsy check, and it is
+    // the kind of thing a later refactor flips without noticing.
     expect(within(items[1]).getByText("0")).toBeInTheDocument();
     expect(items[1]).not.toHaveTextContent("—");
   });
@@ -123,6 +128,7 @@ describe("ResolutionExplainer", () => {
     render(
       <ResolutionExplainer
         counts={{ HOLDING: 1, ACCOUNT_ARCHETYPE: 0, PORTFOLIO_ARCHETYPE: 0 }}
+        linked
       />,
     );
 
@@ -133,5 +139,28 @@ describe("ResolutionExplainer", () => {
     expect(
       screen.getByRole("link", { name: app.enums.targetScope.HOLDING }),
     ).toHaveAttribute("href", "#targets-HOLDING");
+  });
+
+  // The list page replaces all three sections with an error or an empty state
+  // and keeps the explainer, so on those two screens the anchors would point
+  // at ids that do not exist — navigation that looks live and goes nowhere.
+  it("names the levels without linking when there are no sections to reach", () => {
+    render(
+      <ResolutionExplainer
+        counts={{
+          HOLDING: null,
+          ACCOUNT_ARCHETYPE: null,
+          PORTFOLIO_ARCHETYPE: null,
+        }}
+        linked={false}
+      />,
+    );
+
+    // The lesson is still on screen — dropping the anchors must not drop the
+    // levels with them.
+    const items = within(screen.getByRole("list")).getAllByRole("listitem");
+
+    expect(items[0]).toHaveTextContent(app.enums.targetScope.HOLDING);
+    expect(screen.queryAllByRole("link")).toHaveLength(0);
   });
 });

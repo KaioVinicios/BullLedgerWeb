@@ -15,14 +15,27 @@ import { TARGET_SCOPES, type TargetScope } from "@/schemas/apiEnums";
  * bracket would be decoration a screen reader steps over. Each row links to
  * its section, so the explainer doubles as the screen's table of contents.
  *
+ * **The table of contents is optional; the lesson is not.** The list page
+ * replaces all three sections with a single error or empty state, and on those
+ * two screens the anchors point at ids that do not exist — a link that looks
+ * like navigation and does nothing, which is worse than plain text for
+ * everyone and worst in the links rotor. The explainer still renders there, on
+ * purpose: it is the only thing on an empty targets screen that says what the
+ * three levels are *for*, and moving it inside the branch that draws them
+ * would take the lesson away from the reader with the least else to read. So
+ * `linked` drops the affordance and keeps the lesson.
+ *
  * Counts come from the loaded arrays, so they agree with the archived toggle
  * rather than reporting a different population than the sections below.
  */
 export function ResolutionExplainer({
   counts,
+  linked,
 }: {
   /** `null` while the load is in flight, and after one that failed. */
   counts: Record<TargetScope, number | null>;
+  /** Whether the three sections this indexes are on the page to be reached. */
+  linked: boolean;
 }) {
   const { t } = useTranslation("app");
 
@@ -57,9 +70,18 @@ export function ResolutionExplainer({
               <span className="w-4 shrink-0 text-muted-foreground tabular-nums">
                 {index + 1}
               </span>
-              <a href={`#targets-${scope}`} className="flex-1 hover:underline">
-                {t(`enums.targetScope.${scope}`)}
-              </a>
+              {linked ? (
+                <a
+                  href={`#targets-${scope}`}
+                  className="flex-1 hover:underline"
+                >
+                  {t(`enums.targetScope.${scope}`)}
+                </a>
+              ) : (
+                <span className="flex-1">
+                  {t(`enums.targetScope.${scope}`)}
+                </span>
+              )}
               {/*
                * The figures read as one series per level because they are
                * right-aligned in a `tabular-nums` column — a relationship

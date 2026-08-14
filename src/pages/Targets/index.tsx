@@ -119,6 +119,27 @@ export function TargetsPage() {
     accountList,
   ];
   const isPending = queries.some((query) => query.isPending);
+
+  /**
+   * **One failed query blanks the whole screen, and that is the point.**
+   *
+   * The obvious improvement here is to degrade gracefully — render whatever
+   * arrived and let the rest fail quietly. Do not. `archetypeOf` above is built
+   * from `assetList`, and `findShadowers` needs an asset's archetype to decide
+   * whether a HOLDING target covers part of a broader one. If the asset walk
+   * failed and this screen carried on, `archetypeOf` would return `undefined`
+   * for every asset, `findShadowers` would return nothing for every card, and
+   * **every shadow note would silently vanish** — leaving a screen that looks
+   * exactly like a portfolio with no overlaps at all. The design says why that
+   * is unacceptable in one line: *a missing warning looks exactly like no
+   * conflict.*
+   *
+   * The account walk is genuinely degradable — `names` falls back to the id —
+   * and the three target walks are not, since a missing level would read as an
+   * empty one. So the blunt shared error state is protecting an invariant, not
+   * merely being blunt. Narrowing it means giving the shadow note its own
+   * failure state first, not dropping `assetList` from this list.
+   */
   const error = queries.find((query) => query.error)?.error;
   const isEmpty = !isPending && everyTarget.length === 0;
 
@@ -174,7 +195,10 @@ export function TargetsPage() {
       />
 
       <div className="space-y-6">
-        <ResolutionExplainer counts={counts} />
+        {/* The explainer outlives the sections it indexes — an errored or
+            wholly empty screen still gets the lesson — so it is told whether
+            the anchors it would write have anything to land on. */}
+        <ResolutionExplainer counts={counts} linked={!error && !isEmpty} />
 
         <div className="flex justify-end">
           <ShowArchivedToggle

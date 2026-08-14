@@ -923,7 +923,7 @@
         "description": "Opcional. Uma posição que cair além disso é lida como abaixo do piso — e nada mais acontece.",
         "rate": "Limite de perda",
         "period": "Período do limite de perda",
-        "hint": "Abaixo de {{rate}} a posição é lida como fora do piso.",
+        "hint": "Abaixo de {{rate}} a posição é lida como abaixo do piso.",
         "hintEmpty": "Informe quanta perda você tolera."
       },
       "cancel": "Cancelar",

@@ -212,6 +212,46 @@ describe("describeDraft", () => {
     expect(clauses.steps[0].when).toBe("from the first purchase");
   });
 
+  // A month typed twice would otherwise bound a rung by itself. The panel sits
+  // one column from `StepsEditor`'s row captions, which deduplicate their own
+  // months — so without this the two surfaces contradict each other on screen:
+  // the row reads "from month 12 onwards" and the panel "from month 12 to 12".
+  it("describes a month typed twice once, keeping the rung authored first", () => {
+    const clauses = describeDraft(
+      draft({
+        steps: [
+          { from_month: "0", rate: "3", rate_period: "MONTHLY" },
+          { from_month: "0", rate: "2", rate_period: "MONTHLY" },
+        ],
+      }),
+      ctx,
+    );
+
+    expect(clauses.steps).toHaveLength(1);
+    expect(clauses.steps[0].rate).toBe("3% monthly");
+    // Not "for the first 0 months", which is what the second rung at month 0
+    // used to make the first one say.
+    expect(clauses.steps[0].when).toBe("from the first purchase");
+  });
+
+  it("does not bound a repeated later month by itself", () => {
+    const clauses = describeDraft(
+      draft({
+        steps: [
+          { from_month: "0", rate: "3", rate_period: "MONTHLY" },
+          { from_month: "12", rate: "2", rate_period: "MONTHLY" },
+          { from_month: "12", rate: "1", rate_period: "MONTHLY" },
+        ],
+      }),
+      ctx,
+    );
+
+    expect(clauses.steps.map((step) => step.when)).toEqual([
+      "for the first 12 months",
+      "from month 12 onwards",
+    ]);
+  });
+
   it("omits the floor while its switch is off, even with a value typed", () => {
     expect(
       describeDraft(draft({ floorEnabled: false, loss_limit_pct: "3" }), ctx)
@@ -241,6 +281,24 @@ describe("describeMonths", () => {
     expect(describeMonths([6, 0], t)).toEqual([
       "for the first 6 months",
       "from month 6 onwards",
+    ]);
+  });
+
+  // The contract, stated so the coupling is visible: this function bounds each
+  // month by the *next* one, so it takes DISTINCT months and both callers
+  // deduplicate before calling it — `describeDraft` over its readable rungs,
+  // `StepsEditor` over its readable row months. Fed a repeat it bounds a rung
+  // by itself, and this pins that so the dedupe cannot be removed from either
+  // caller without a test saying why it was there.
+  it("bounds a repeated month by itself, which is why callers deduplicate", () => {
+    expect(describeMonths([0, 0], t)).toEqual([
+      "for the first 0 months",
+      "from the first purchase",
+    ]);
+    expect(describeMonths([0, 12, 12], t)).toEqual([
+      "for the first 12 months",
+      "from month 12 to 12",
+      "from month 12 onwards",
     ]);
   });
 

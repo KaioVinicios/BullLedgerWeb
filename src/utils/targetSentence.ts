@@ -199,6 +199,18 @@ export function describeTarget(
  * rate goes out through `percentToFraction` to a fraction and back through
  * `formatPercent`, so a draft and a saved target render the same rate
  * identically.
+ *
+ * **A month typed twice is described once.** `describeMonths` bounds each rung
+ * by the *next* month in the ladder, so a repeated month would bound a rung by
+ * itself: `[0, 0]` reads "for the first 0 months" and `[0, 12, 12]` reads
+ * "from month 12 to 12". Two rungs at one month have one honest answer between
+ * them, and the duplicate is refused at submit anyway. The rule lives here
+ * rather than in either caller, because the panel and the ladder editor's row
+ * captions are the two surfaces this module exists to keep saying the same
+ * thing — `StepsEditor` deduplicates the months it captions from for the same
+ * reason, and a rule enforced in one consumer and not the other is exactly the
+ * drift this file is for. A saved `Target` cannot reach this: the API refuses a
+ * ladder with two rungs at one month, so `describeTarget` needs no such guard.
  */
 export function describeDraft(
   values: TargetFormValues,
@@ -224,6 +236,7 @@ export function describeDraft(
     scope = t("targets.sentence.scope.incomplete");
   }
 
+  const described = new Set<number>();
   const rungs = values.steps.flatMap<Rung>((draft) => {
     const month = /^\d+$/.test(draft.from_month.trim())
       ? Number(draft.from_month.trim())
@@ -231,6 +244,11 @@ export function describeDraft(
     const fraction = percentToFraction(draft.rate, locale);
 
     if (month === null || fraction === null) return [];
+    // The first readable rung at a month wins, in the order they were
+    // authored — the same one `StepsEditor` keeps, so the row caption and this
+    // panel bound that month identically.
+    if (described.has(month)) return [];
+    described.add(month);
 
     return [
       {

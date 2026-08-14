@@ -273,6 +273,41 @@ describe("the targets list", () => {
     expect(router.state.location.search).toMatchObject({ holdingPage: 2 });
   });
 
+  // The other half of the contract, and the half that was unpinned: the test
+  // above proves clicking "next" *writes* `holdingPage`, not that arriving with
+  // it written *reads* the right rows. Trading server pagination for a local
+  // slice was justified on the bookmark surviving, so the read direction is the
+  // proof — swapping two entries in `PAGE_PARAM` breaks it and nothing else in
+  // the suite would notice.
+  it("opens a bookmarked page on the rows that page holds", async () => {
+    // Distinct assets, so each card has a distinguishable name: the asset list
+    // carries only BTC, and `names` falls back to the id it was asked about.
+    const asset = (index: number) =>
+      `55555555-5555-4555-8555-${String(index).padStart(12, "0")}`;
+    const many = Array.from({ length: 60 }, (_, index) => ({
+      ...existing,
+      id: `aaaaaaaa-aaaa-4aaa-8aaa-${String(index).padStart(12, "0")}`,
+      asset: asset(index),
+    }));
+
+    server.use(...signedIn(many));
+    mount(`${PATHS.TARGETS}?holdingPage=2`);
+
+    // The 51st row — the first one page 2 holds at `PAGE_SIZE` 50.
+    expect(await screen.findByText(`${asset(50)} · Binance`)).toBeVisible();
+    // And page 1's rows are not also on screen, which a slice that ignored the
+    // parameter would leave them.
+    expect(screen.queryByText(`${asset(0)} · Binance`)).toBeNull();
+
+    const section = screen.getByRole("region", {
+      name: app.enums.targetScope.HOLDING,
+    });
+
+    expect(
+      within(within(section).getByRole("list")).getAllByRole("listitem"),
+    ).toHaveLength(10);
+  });
+
   it("archives through the shared confirmation, worded as archival", async () => {
     let archived = false;
 

@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { QueryClientProvider } from "@tanstack/react-query";
 import {
   RouterProvider,
   createMemoryHistory,
@@ -9,10 +10,16 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
+import { http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
+import { createQueryClient } from "@/lib/queryClient";
+import { TEST_API_URL } from "@/mocks/env";
+import { server } from "@/mocks/server";
+import { TargetBlock } from "@/pages/Holding/TargetBlock";
 import { TargetCard } from "@/pages/Targets/TargetCard";
 import { PATHS } from "@/routes/path";
+import type { HoldingDetail } from "@/services/portfolio";
 import type { Target } from "@/services/targets";
 
 const ACCOUNT = "11111111-1111-4111-8111-111111111111";
@@ -22,6 +29,9 @@ const names = {
   accountName: (id: string) => (id === ACCOUNT ? "Binance" : id),
   assetName: (id: string) => (id === ASSET ? "BTC" : id),
 };
+
+/** A figure the target block never prints; it only has to typecheck. */
+const money = { amount: 0, currency: "BRL" as const };
 
 const step = (from_month: number, rate: string) => ({
   id: `step-${from_month}`,
@@ -211,6 +221,100 @@ describe("TargetCard", () => {
 
     await userEvent.keyboard("{Enter}");
     expect(onArchive).toHaveBeenCalledWith(holding);
+  });
+
+  /**
+   * The design's load-bearing claim, asserted across two surfaces at once
+   * rather than against the bundle twice.
+   *
+   * Every other test here — and every one in `Holding.test.tsx` — composes its
+   * expected string from `en/app.json` independently, which proves each surface
+   * says something correct and not that they say the *same* thing. These two
+   * are the pair that can genuinely drift: the card renders the sentence
+   * through `TargetSentence`'s `line` layout, while `TargetBlock` composes it
+   * inline from `describeTarget` + `summarizeClauses` because it sets the prose
+   * inside a larger sentence of its own. One fixture, one expected string, and
+   * the card's own rendered text is what the block is measured against — so the
+   * day one of them grows a formatter the other does not, this fails.
+   */
+  it("says the same words on the card and on the holding block", async () => {
+    const detail: HoldingDetail = {
+      account: ACCOUNT,
+      asset: ASSET,
+      archetype: "CRYPTO",
+      on_date: "2026-08-13",
+      holding_start: "2025-02-10",
+      holding_period_days: 549,
+      registration: "BR_TAXABLE",
+      tax_advantaged: false,
+      reporting_currency: "BRL",
+      quantity: "1",
+      principal: null,
+      current_value: null,
+      cost_basis_remaining: { native: money, base: money },
+      invested: { native: money, base: money },
+      realized_gain: { native: money, base: money },
+      unrealized_gain: null,
+      income_received: { native: money, base: money },
+      costs: { native: money, base: money },
+      total_return: null,
+      reporting: {
+        value: null,
+        invested: null,
+        realized_gain: null,
+        unrealized_gain: null,
+        income_received: null,
+      },
+      real_return: null,
+      target: {
+        status: "ON_TRACK",
+        actual: "0.031",
+        expected: "0.03",
+        band: "0.005",
+        source: { scope: "HOLDING", id: holding.id },
+      },
+      lots: [],
+    };
+
+    server.use(
+      http.get(`${TEST_API_URL}/api/targets/${holding.id}/`, () =>
+        HttpResponse.json({ status: 200, data: holding }),
+      ),
+    );
+
+    await mount(
+      <QueryClientProvider client={createQueryClient()}>
+        {/* A wrapper the queries can be scoped to: both surfaces render the
+            same words, so an unscoped query would resolve to two nodes. */}
+        <div data-testid="card-surface">
+          <TargetCard
+            target={holding}
+            names={names}
+            shadowers={[]}
+            onArchive={vi.fn()}
+            onRestore={vi.fn()}
+          />
+        </div>
+        <TargetBlock holding={detail} accountName="Binance" />
+      </QueryClientProvider>,
+    );
+
+    const card = within(screen.getByTestId("card-surface")).getByText(
+      /3% monthly/,
+    );
+    const block = await screen.findByRole("region", {
+      name: app.holding.target.title,
+    });
+
+    // The block's own line, once the target it names has arrived — the
+    // provenance sentence plus the card's sentence, verbatim.
+    expect(
+      await within(block).findByText(
+        app.holding.target.measuredAgainst
+          .replace("{{provenance}}", app.holding.target.from.HOLDING)
+          .replace("{{sentence}}", card.textContent ?? ""),
+      ),
+    ).toBeVisible();
   });
 
   it("offers restore, not archive, once the target is archived", async () => {

@@ -4,7 +4,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
 import { createQueryClient } from "@/lib/queryClient";
@@ -567,6 +567,41 @@ describe("the target form", () => {
     expect(
       screen.queryByLabelText(app.targets.form.account),
     ).not.toBeInTheDocument();
+  });
+
+  // The badge names its scope through `names`, which falls back to the id it
+  // was asked about — so painting it before the lookups land does not degrade
+  // to a blank, it degrades to a pair of UUIDs in prose. The summary panel is
+  // held back for exactly this reason; this is the other place that reads.
+  it("holds the edit badge back rather than naming the scope with UUIDs", async () => {
+    server.use(
+      // Neither ever answers: the walk still in flight is the subject, and a
+      // handler that resolved would race the assertions against its own fetch.
+      http.get(`${TEST_API_URL}/api/accounts/`, () => delay("infinite")),
+      http.get(`${TEST_API_URL}/api/assets/`, () => delay("infinite")),
+      ...signedIn([existing]),
+      http.get(`${TEST_API_URL}/api/targets/${existing.id}/`, () =>
+        HttpResponse.json({ status: 200, data: existing }),
+      ),
+    );
+    mount(`/app/targets/${existing.id}/edit`);
+
+    // The form painted: the ladder only renders once the target read landed,
+    // so the absences below are statements about the scope block rather than
+    // about a screen that never rendered at all.
+    expect(
+      await screen.findByLabelText(app.targets.form.steps.rate),
+    ).toBeVisible();
+
+    // The exact string the fallback would produce, not a loose pattern.
+    expect(
+      screen.queryByText(`${existing.asset} · ${existing.account}`),
+    ).toBeNull();
+    expect(
+      screen.queryByText(app.targets.form.scopeFixed),
+    ).not.toBeInTheDocument();
+    // And the wait is announced rather than left as a silent gap.
+    expect(screen.getAllByText(app.loading).length).toBeGreaterThan(0);
   });
 
   it("sends only the mutable surface on save", async () => {

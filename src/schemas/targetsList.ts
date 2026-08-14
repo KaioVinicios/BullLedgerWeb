@@ -14,11 +14,15 @@ import { pageSchema } from "@/schemas/pagination";
  * whoever edited the address bar.
  *
  * **Three page parameters rather than one.** The list renders one section per
- * level and each is its own query, so a shared `page` would step all three
- * together — which is not a thing anyone means. The cost is three parameters in
- * a URL that, in the common case, carries none of them: each section holds
- * fewer rows than a page, and `ListPagination` renders nothing on a single
- * page.
+ * level and each is paged independently, so a shared `page` would step all
+ * three together — which is not a thing anyone means. Each parameter now
+ * indexes a local slice rather than selecting a server page: the screen loads
+ * every target once and cuts it with `slicePage`, at the same `PAGE_SIZE` the
+ * server pages by, so the meaning of `?holdingPage=2` is unchanged and a
+ * bookmark made before that change still lands on the same rows. The cost is
+ * three parameters in a URL that, in the common case, carries none of them:
+ * each section holds fewer rows than a page, and `ListPagination` renders
+ * nothing on a single page.
  *
  * `include_archived` is deliberately **not** per section. Archival is a
  * property of a target, not of a level, and three toggles for one idea would be

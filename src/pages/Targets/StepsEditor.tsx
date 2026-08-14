@@ -120,6 +120,14 @@ export function StepsEditor({
    * captions "from month 12 to 12". Two rows at one month have one honest
    * answer between them, and the duplicate itself is refused at submit. It
    * also makes the `indexOf` below unambiguous by construction.
+   *
+   * `describeDraft` now deduplicates too, and this is **not** the redundant
+   * half of that pair. It captions from months alone — a row is captionable
+   * the moment its month reads, which is before its rate does — so it never
+   * passes through `describeDraft`, whose rungs require both. A ladder of
+   * `[{0, "3"}, {0, ""}]` reaches `describeDraft` as one readable rung and
+   * reaches this list as two identical months. Both need the rule; neither can
+   * hand it to the other.
    */
   const readableMonths = [
     ...new Set(
