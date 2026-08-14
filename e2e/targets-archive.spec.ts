@@ -97,19 +97,35 @@ test("archives a target softly, and the holding it covered loses its status", as
     .click();
 
   // Gone from the list…
-  await expect(
-    holdings.getByRole("row", { name: new RegExp(asset.name) }),
-  ).toHaveCount(0);
+  //
+  // The level lists cards, not table rows, so the target is its named link.
+  // The name is load-bearing: an unnamed `getByRole("link")` would count every
+  // link in the section, and could only reach zero by the section emptying.
+  const inSection = holdings.getByRole("link", {
+    name: new RegExp(asset.name),
+  });
+
+  await expect(inSection).toHaveCount(0);
 
   // …but not deleted: it returns under "show archived", labelled as archived.
   await page.getByRole("switch", { name: app.structure.showArchived }).click();
 
-  const archivedRow = holdings.getByRole("row", {
-    name: new RegExp(asset.name),
-  });
-  await expect(archivedRow).toBeVisible();
+  await expect(inSection).toBeVisible();
+
+  // The badge is asserted on that target's own card rather than anywhere in
+  // the level, so a badge rendered beside the wrong target still fails.
+  //
+  // `has` takes a locator rooted at `page`, not the `inSection` one above:
+  // Playwright resolves the inner selector relative to each outer match, so a
+  // locator already scoped to the section would be looked for *inside* the
+  // card and never found.
   await expect(
-    archivedRow.getByText(app.structure.archivedBadge),
+    holdings
+      .getByRole("listitem")
+      .filter({
+        has: page.getByRole("link", { name: new RegExp(asset.name) }),
+      })
+      .getByText(app.structure.archivedBadge),
   ).toBeVisible();
 
   // ---- The half that matters --------------------------------------------

@@ -21,7 +21,7 @@ import { TARGET_SCOPES, type TargetScope } from "@/schemas/apiEnums";
 export function ResolutionExplainer({
   counts,
 }: {
-  /** `null` while the load is in flight. */
+  /** `null` while the load is in flight, and after one that failed. */
   counts: Record<TargetScope, number | null>;
 }) {
   const { t } = useTranslation("app");
@@ -68,8 +68,9 @@ export function ResolutionExplainer({
                * accessibility tree and a labelled twin carries the unit.
                *
                * `count === null`, not a falsy check: a level with no targets
-               * is a fact the screen knows and states. Only the pending load
-               * is unknown.
+               * is a fact the screen knows and states. `null` is the screen
+               * not knowing — the load still in flight, or the load that
+               * failed.
                */}
               <span className="shrink-0 text-muted-foreground tabular-nums">
                 {count === null ? (

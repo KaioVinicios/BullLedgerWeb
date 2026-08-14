@@ -876,13 +876,6 @@
     "shadowed_one": "1 meta mais específica cobre parte deste alcance: {{names}}",
     "shadowed_other": "{{count}} metas mais específicas cobrem parte deste alcance: {{names}}",
     "shadowedMore": "e mais {{count}}",
-    "columns": {
-      "appliesTo": "Aplica-se a",
-      "steps": "Degraus",
-      "floor": "Piso"
-    },
-    "stepSummary": "{{rate}} {{period}} a partir do mês {{month}}",
-    "moreSteps": "+{{count}}",
     "empty": {
       "title": "Nenhuma meta ainda",
       "description": "Uma meta é uma taxa contra a qual você mede uma posição. Nada acontece quando ela é atingida ou perdida — o BullLedger relata e nunca age.",
@@ -895,7 +888,6 @@
       "createDescription": "A taxa contra a qual medir, e onde ela se aplica.",
       "editTitle": "Editar meta",
       "editDescription": "O escopo é fixo — uma meta para outro escopo é outra meta. Altere os degraus de taxa ou o piso.",
-      "scope": "Escopo",
       "scopeFixed": "Aplica-se a",
       "scopeLegend": "Onde se aplica",
       "account": "Conta",

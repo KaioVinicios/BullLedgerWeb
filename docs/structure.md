@@ -40,7 +40,7 @@ Generic, reusable UI components that are not tied to a specific page or business
 
 `shell/` holds the authenticated application frame — sidebar, header, account menu, and the in-shell not-found and error surfaces. It is reusable chrome rather than any one route's page, which is why it lives here and not in `pages/`. Page-composition primitives shared by every screen (`PageHeader`, `EmptyState`, `PageSkeleton`, `PageContainer`) sit directly in `components/`: screens compose them, and the shell does not own them.
 
-`PageContainer` is where a screen's width is decided, and the only place a width belongs. Two values: `full` (the default — the content region *is* the measure, for tables, projections, and dashboards) and `form` (the content has an optimal measure of its own, for forms, settings, and prose). Wrap the whole screen including its `PageHeader`, so the heading and its action share the content's edge. The column is left-aligned rather than centred on purpose: centring would move the content's left edge horizontally on every navigation between a narrow screen and a wide one, and a fixed left edge is worth more than symmetric whitespace.
+`PageContainer` is where a screen's width is decided, and the only place a width belongs. Three values: `full` (the default — the content region *is* the measure, for tables, projections, and dashboards), `form` (the content has an optimal measure of its own, for forms, settings, and prose), and `form-wide` (a form that reads *beside* something — the target form sets a live summary panel next to its fields, and the pair needs more than the form measure without becoming a full-width table screen). Wrap the whole screen including its `PageHeader`, so the heading and its action share the content's edge. The column is left-aligned rather than centred on purpose: centring would move the content's left edge horizontally on every navigation between a narrow screen and a wide one, and a fixed left edge is worth more than symmetric whitespace.
 
 The resource-list pattern lives here too, as four small pieces every structure screen
 composes rather than a `ResourceTable` component that would have to grow a prop for every
@@ -67,6 +67,18 @@ take the neutral `outline` variant and only `BELOW_FLOOR` takes `destructive`, w
 incumbent pair already used elsewhere rather than a new colour this phase introduced. That
 pair's measured contrast is still unrecorded; the file says so rather than implying it was
 checked.
+
+`TargetSentence.tsx` is the layout half of `utils/targetSentence.ts`, and it decides layout
+and weight only — every word arrives pre-built. Two shapes: `line` for the list card (the
+rungs and the floor joined, scope omitted because the card's title already names it) and
+`stacked` for the form's summary panel (the scope as a sentence, then one row per rung with
+the figure carrying the weight and the qualifier deferring to it). Two of the three
+surfaces, not three: the holding's target block composes its one line straight from
+`describeTarget` and `summarizeClauses`, because it sets that prose inside a larger sentence
+of its own and has no layout for this file to decide. The rows are deliberately **not** a
+`<dl>` — that would make `−3% monthly` the term and `floor` its definition, announcing every
+value before the label it answers to — so they are plain elements grouped and labelled by
+the scope sentence above them, under an id from `useId` rather than a literal one.
 
 `AllocationBar.tsx` is decorative **by design and marked as such**: it is
 `aria-hidden`, carries no text, and every label, value, and weight lives in the
@@ -214,6 +226,18 @@ One file (or folder) per route. Page components compose smaller components and h
 returned. A sibling of `Holding/` rather than a replacement: that screen answers what a
 position is worth now, this one what a contribution returned when it was disposed of.
 
+`Targets/` loads **once, not three times**. The screen used to run a paged query per level;
+it now fetches every target at every level up front, plus every asset and every account,
+because the shadow note on any one card has to compare it against levels the reader is not
+looking at — a note that can only be drawn from data three sections away cannot be drawn by
+a section that loaded only its own page. So the three sections take rows already in hand and
+cut them locally with `slicePage`, and the three URL page parameters survived the change
+unaltered: `?holdingPage=2` still means the second fifty of the holding level, still
+independent of the other two, and still bookmarkable. What changed is only what the number
+indexes — a local slice rather than a request. The whole screen goes pending and errors
+together now, which is why `ScopeSection` carries `aria-busy` rather than three sections
+each announcing their own load.
+
 ### `routes/`
 TanStack Router route definitions. The route tree and lazy-loaded route files live here. Keep routing config separate from page UI.
 
@@ -282,9 +306,12 @@ product decision rather than a missing control.
 
 `targetsList.ts` holds the targets screen's URL state, and carries **three** page
 parameters — `holdingPage`, `accountPage`, `portfolioPage` — where every other list in the
-app has one. That is the cost of the three-section layout, paid rather than dodged: the
-sections are three independent queries, and a single shared `page` would step all three
-lists together, which is not a thing anyone means. It also holds `newTargetSearchSchema`,
+app has one. That is the cost of the three-section layout, paid rather than dodged: a single
+shared `page` would step all three lists together, which is not a thing anyone means. Still
+three, and still for that reason, but they no longer name three requests — the screen loads
+every target at once and each parameter now indexes a local `slicePage` cut. The addresses
+did not change with the loading, so a bookmarked `?accountPage=2` still lands where it did.
+It also holds `newTargetSearchSchema`,
 the prefill the holding detail links with; every field there is `.catch(undefined)`, so a
 hand-edited URL degrades to an empty form rather than to a crash.
 
@@ -370,7 +397,18 @@ before it offers a submit, and a page-1 answer would be confidently wrong the mo
 owns 51 targets — the Phase 8 contribution-limits trap, which was survivable there because
 a missing limit is visible and is not here, because a missing collision looks exactly like
 no collision. `docs/backend-requests/2026-08-04-targets.md` asks for the filters; the walk
-comes out when they land.
+comes out when they land. It now takes `includeArchived`, and `targetsInScopeQuery` keys on
+it — two populations, two cache entries. Folding them into one key would serve the
+unarchived set to a reader who had just asked to see the archived rows, which is the archive
+toggle appearing to do nothing.
+
+`assets.ts` and `accounts.ts` carry the same walk, as `listAllAssets` / `allAssetsQuery` and
+`listAllAccounts` / `allAccountsQuery`, and for a related reason: the targets screen resolves
+an asset id to a name *and* to an archetype, and a page-1 answer would mis-resolve both the
+moment a user owns 51 of either. A missing name shows a UUID, which is visibly wrong; a
+missing archetype drops a shadow note, which looks exactly like no conflict. **Both walks
+include archived rows** — a target can name an archived asset or an archived account and
+still has to be readable.
 
 `invalidateTargets` sweeps `PORTFOLIO_KEY` alongside the target keys, and that line is
 asserted by a test rather than trusted. A target changes no *figure* the projections
@@ -426,6 +464,36 @@ occupies it. Pure and React-free, taking `t` as an argument the way `translateSe
 does, because the same target has to be called the same thing in the list, the archive
 dialog, the create form, and the edit screen. A target carries **no name of its own**:
 nothing on any member of the union is a label, so every name here is built from the scope.
+
+`targetSentence.ts` is one description of a target, for the three surfaces that describe
+one: the list card, the form's live summary panel, and the holding's target block. Pure and
+taking `t` as an argument, for `targetScope.ts`'s reason — three components writing their
+own prose is three descriptions of the same target, drifting apart one copy change at a
+time. It returns **clauses rather than a string** because the summary panel gives the figure
+typographic weight and the qualifier none, and a single string cannot be split that way
+without `<Trans>`, a pattern this project uses nowhere; each rung comes back as `{ rate,
+when }` plus the two already joined as `text`, and the join itself is a translatable key, so
+a locale needing qualifier-first order can have it. `describeMonths` is exported separately
+because the ladder editor captions a row as soon as its **month** is readable, which is
+before its rate is. Every number printed is a number the user typed: there is no derived
+ordinal anywhere, so no field and the prose beside it can disagree by one.
+
+`targetShadow.ts` answers which more-specific targets cover part of a broader one's reach —
+**part**, and the copy beside it says so. `business-rules.md` takes the first matching level
+whole, so a portfolio Crypto default still governs every crypto holding that no narrower
+target names; reporting that as a conflict would be the hierarchy working, described as a
+fault. It takes an `archetypeOf` lookup rather than the asset list, so it never has to know
+what an `Asset` is, and an **unknown archetype never matches**: a note invented from a cache
+miss would be worse than one that arrives a frame late. An archived target neither shadows
+nor is shadowed.
+
+`slicePage.ts` cuts a page out of an array already in hand, at the same `PAGE_SIZE` the
+server pages by — so a bookmarked `?holdingPage=2` lands on the rows it used to. The targets
+screen needs it because that screen loads every target at once (the shadow note has to
+compare levels the reader is not looking at), and asking the server for page 2 of something
+already downloaded would be a request that buys nothing. It **clamps**: a page past the end
+is a hand-edited URL or a row removed under the reader, and both read better as the last
+real page than as an empty list beside a live "previous" button.
 
 `decimal.ts` gained the percent↔fraction pair (`percentToFraction`, `fractionToPercent`,
 `localizeDecimal`). The ÷100 shift now has one home rather than a copy per form — it was

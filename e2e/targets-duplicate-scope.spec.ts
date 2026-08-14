@@ -64,7 +64,12 @@ test("surfaces a taken scope before submission, not after", async ({
   // And the useful next move is offered: edit the one that already exists.
   await page.getByRole("link", { name: app.targets.form.taken.action }).click();
   await expect(page).toHaveURL(new RegExp(`${existing.id}`));
-  await expect(page.getByText(app.targets.form.scopeFixed)).toBeVisible();
+  // `exact`, because the create form's per-level hints all open with these two
+  // words. A substring match resolves to three of them and cannot tell a
+  // still-mounted create form from the edit screen this line is asserting.
+  await expect(
+    page.getByText(app.targets.form.scopeFixed, { exact: true }),
+  ).toBeVisible();
 });
 
 test("still offers a scope one level up, which is a different scope", async ({

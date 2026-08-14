@@ -9,13 +9,16 @@ import { summarizeClauses, type TargetClauses } from "@/utils/targetSentence";
  *
  * `line` is the list card: the rungs and the floor joined, scope omitted
  * because the card's title already names it. `stacked` is the form's summary
- * panel and the holding's block: the scope as a sentence, then one row per
- * rung with the figure carrying the weight and the qualifier deferring to it —
- * `PRODUCT.md`'s first principle inside a sentence rather than instead of one.
+ * panel: the scope as a sentence, then one row per rung with the figure
+ * carrying the weight and the qualifier deferring to it — `PRODUCT.md`'s first
+ * principle inside a sentence rather than instead of one.
  *
- * All the prose arrives pre-built from `targetSentence.ts`. This file decides
- * layout and weight and nothing else, which is what keeps the three surfaces
- * from drifting into three descriptions of the same target.
+ * **Two of the three surfaces, not all three.** The holding's target block
+ * composes its one line straight from `describeTarget` and `summarizeClauses`,
+ * because it sets that prose inside a larger sentence of its own and has no
+ * layout for this file to decide. What keeps the three from drifting is the
+ * words all coming from `targetSentence.ts`; this file decides layout and
+ * weight for the two that need one, and nothing else.
  *
  * **The rows are not a description list.** A `<dl>` was the obvious reach and
  * the wrong one: it would make `−3% monthly` the term and `floor` its
@@ -30,8 +33,8 @@ import { summarizeClauses, type TargetClauses } from "@/utils/targetSentence";
  * scope sentence above them, because a screen-reader user arriving at the
  * group by landmark or list navigation would otherwise hear "3% monthly, for
  * the first 3 months" with nothing saying which target that is. The id comes
- * from `useId`: the panel and the holding's block can both be on one page, and
- * a literal id would collide the moment they were.
+ * from `useId`: nothing stops two stacked sentences sharing a page, and a
+ * literal id would collide the moment they did.
  *
  * **The figures are `tabular-nums` but not `font-mono`**, unlike `MoneyValue`
  * and its neighbours. Those set a column; this sets a sentence, and the rate
