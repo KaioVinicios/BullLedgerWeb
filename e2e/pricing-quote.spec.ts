@@ -2,7 +2,12 @@ import app from "@/i18n/locales/en/app.json" with { type: "json" };
 import { PATHS } from "@/routes/path";
 
 import { expect, test } from "./support/fixtures";
-import { recordMovement, seedAccount, seedSecurity } from "./support/structure";
+import {
+  accountName,
+  recordMovement,
+  seedAccount,
+  seedSecurity,
+} from "./support/structure";
 import { createSignedInAccount, freshUser } from "./support/users";
 
 /**
@@ -42,7 +47,7 @@ test("names a holding with no price, then prices it", async ({ page }) => {
   });
   await expect(coverage).toBeVisible();
   await expect(coverage.getByText(asset.name)).toBeVisible();
-  await expect(coverage.getByText(account.name)).toBeVisible();
+  await expect(coverage.getByText(accountName(account))).toBeVisible();
 
   await coverage
     .getByRole("link", { name: app.pricing.coverage.priceIt })

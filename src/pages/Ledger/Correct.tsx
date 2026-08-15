@@ -25,6 +25,7 @@ import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { useVoidMovement } from "@/hooks/useVoidMovement";
 import { MovementForm } from "@/pages/Ledger/MovementForm";
 import { PATHS } from "@/routes/path";
+import { labelAccountById } from "@/utils/accountLabel";
 import { accountKeys, listAccounts } from "@/services/accounts";
 import { assetKeys, listAssets } from "@/services/assets";
 import {
@@ -124,7 +125,7 @@ function ReadOnlyMovement({ movement }: { movement: Movement }) {
               {formatCalendarDate(movement.occurred_on as CalendarDate, locale)}
             </Fact>
             <Fact label={t("ledger.columns.account")}>
-              {nameOf(accounts?.results, movement.account)}
+              {labelAccountById(accounts?.results, movement.account, t)}
             </Fact>
             <Fact label={t("ledger.columns.asset")}>
               {nameOf(assets?.results, movement.asset)}

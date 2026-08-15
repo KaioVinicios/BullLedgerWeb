@@ -65,7 +65,10 @@ test("archives one of each resource, and restores one", async ({ page }) => {
   await archiveRow(page, "Poupança antiga");
 
   await page.goto(PATHS.ACCOUNTS);
-  await archiveRow(page, "Conta antiga");
+  // By the label the row shows, not the nickname alone: the account's name is
+  // derived from its institution (`docs/backend/business-rules.md`), and the
+  // menu is named after what the reader sees.
+  await archiveRow(page, "Banco Velho · Conta antiga");
 
   await page.goto(PATHS.INSTITUTIONS);
   await archiveRow(page, "Banco Velho");

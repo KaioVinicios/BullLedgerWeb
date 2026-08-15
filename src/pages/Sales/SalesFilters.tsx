@@ -45,6 +45,7 @@ import {
 import { accountKeys, listAccounts } from "@/services/accounts";
 import { assetKeys, listAssets } from "@/services/assets";
 import { toCalendarDate } from "@/utils/date";
+import { accountLabel } from "@/utils/accountLabel";
 
 /** Radix select values are strings; "no filter" needs one of its own. */
 const ALL = "all";
@@ -102,7 +103,7 @@ export function SalesFilters({
         allLabel={t("sales.filters.all")}
         options={(accounts?.results ?? []).map((row) => ({
           value: row.id,
-          label: row.name,
+          label: accountLabel(row, t),
         }))}
       />
       <FilterSelect

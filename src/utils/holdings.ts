@@ -3,6 +3,7 @@ import Big from "big.js";
 import type { Account } from "@/services/accounts";
 import type { Asset } from "@/services/assets";
 import type { Institution } from "@/services/institutions";
+import { compareAccounts } from "@/utils/accountLabel";
 import type {
   AccountGroup,
   HoldingSummary,
@@ -132,7 +133,7 @@ function toAccountGroup(
 function byAccountName(a: CustodyAccountGroup, b: CustodyAccountGroup): number {
   if (a.account === null) return b.account === null ? 0 : 1;
   if (b.account === null) return -1;
-  return a.account.name.localeCompare(b.account.name);
+  return compareAccounts(a.account, b.account);
 }
 
 /** The unaffiliated group sorts last, after every named institution. */
@@ -362,9 +363,9 @@ function byValueDescending(a: AssetGroup, b: AssetGroup): number {
   return (b.value?.amount ?? 0) - (a.value?.amount ?? 0);
 }
 
-/** Named accounts alphabetically, an unnamed one last. */
+/** By the label the reader sees — institution first — an unresolved one last. */
 function byAccountLabel(a: AssetHoldingRow, b: AssetHoldingRow): number {
   if (a.account === null) return b.account === null ? 0 : 1;
   if (b.account === null) return -1;
-  return a.account.name.localeCompare(b.account.name);
+  return compareAccounts(a.account, b.account);
 }

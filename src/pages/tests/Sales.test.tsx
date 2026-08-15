@@ -31,7 +31,12 @@ const singleSale: SaleRow = {
     id: "b722438a-1577-4e56-8e96-484091aeb2ba",
     label: "Lot — 2025-03-12",
   },
-  account: { id: "8d3cc69f-d2c9-4981-9819-ccadbe93b0d0", name: "XP Corretora" },
+  account: {
+    id: "8d3cc69f-d2c9-4981-9819-ccadbe93b0d0",
+    name: "XP Corretora",
+    institution_name: "XP Investimentos",
+    registration: "BR_TAXABLE",
+  },
   asset: {
     id: "669049fb-9333-4c4d-bbde-959e9202700e",
     name: "Petrobras PN",
@@ -69,7 +74,12 @@ const twoTranches: SaleRow = {
     id: "1565c4ae-ced2-4d4e-8f54-3bfb6d139593",
     label: "Lot — 2025-04-12",
   },
-  account: { id: "5c5b285a-7706-46fb-ba9f-42c4b44720c5", name: "XP Corretora" },
+  account: {
+    id: "5c5b285a-7706-46fb-ba9f-42c4b44720c5",
+    name: "XP Corretora",
+    institution_name: "XP Investimentos",
+    registration: "BR_TAXABLE",
+  },
   asset: {
     id: "94e50510-ff06-40bb-a8c8-ca8d8ad0aa1d",
     name: "iShares Ibovespa",
@@ -117,7 +127,12 @@ const principalBased: SaleRow = {
     id: "f80f5d32-0c24-45c9-be02-1c7670784b81",
     label: "Lot — 2025-04-10",
   },
-  account: { id: "bbccc838-bf35-49f2-8282-e61e1918a7e1", name: "Conta Nubank" },
+  account: {
+    id: "bbccc838-bf35-49f2-8282-e61e1918a7e1",
+    name: "Conta Nubank",
+    institution_name: "XP Investimentos",
+    registration: "BR_TAXABLE",
+  },
   asset: {
     id: "ed801771-bbe1-41d3-8184-a1b1e8d1faad",
     name: "CDB Nubank 110% CDI",
@@ -294,6 +309,7 @@ const account: Account = {
   id: "8d3cc69f-d2c9-4981-9819-ccadbe93b0d0",
   name: "XP Corretora",
   institution: null,
+  institution_name: "",
   country: "BR",
   registration: "BR_TAXABLE",
   base_currency: "BRL",

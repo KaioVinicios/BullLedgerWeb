@@ -104,6 +104,7 @@ import {
   type MovementFormValues,
   type QuantityDirection,
 } from "@/utils/movementWire";
+import { accountLabel } from "@/utils/accountLabel";
 
 const NO_SERVER_ERRORS: PartitionedServerErrors = {
   fieldErrors: {},
@@ -600,7 +601,7 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                   <SelectContent>
                     {accountRows.map((row) => (
                       <SelectItem key={row.id} value={row.id}>
-                        {row.name}
+                        {accountLabel(row, t)}
                       </SelectItem>
                     ))}
                   </SelectContent>

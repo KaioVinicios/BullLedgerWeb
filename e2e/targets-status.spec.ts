@@ -4,6 +4,7 @@ import { PATHS } from "@/routes/path";
 import { expect, test } from "./support/fixtures";
 import { routeTo } from "./support/config";
 import {
+  accountName,
   recordMovement,
   seedAccount,
   seedPriceQuote,
@@ -143,7 +144,7 @@ test("names the account level when the target resolved from there", async ({
       app.holding.target.from.ACCOUNT_ARCHETYPE.replace(
         "{{archetype}}",
         app.enums.archetype.EXCHANGE_SECURITY,
-      ).replace("{{account}}", account.name),
+      ).replace("{{account}}", accountName(account)),
     ),
   ).toBeVisible();
 

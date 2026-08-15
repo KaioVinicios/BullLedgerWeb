@@ -21,6 +21,7 @@ const account: Account = {
   id: "11111111-1111-4111-8111-111111111111",
   name: "Binance",
   institution: null,
+  institution_name: "",
   country: "BR",
   registration: "BR_TAXABLE",
   base_currency: "BRL",

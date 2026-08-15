@@ -42,10 +42,12 @@ const anAccount = (
   id: string,
   name: string,
   institution: string | null,
+  institutionName = "",
 ): Account => ({
   id,
   name,
   institution,
+  institution_name: institutionName,
   country: "BR",
   registration: "BR_TAXABLE",
   base_currency: "BRL",

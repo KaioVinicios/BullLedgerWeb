@@ -45,6 +45,7 @@ import {
 } from "@/services/targets";
 import { findShadowers } from "@/utils/targetShadow";
 import { targetScopeName } from "@/utils/targetScope";
+import { labelAccountById } from "@/utils/accountLabel";
 
 const route = getRouteApi(PATHS.TARGETS);
 
@@ -92,12 +93,12 @@ export function TargetsPage() {
 
   const names = useMemo(
     () => ({
-      accountName: (id: string) =>
-        accounts.find((row) => row.id === id)?.name ?? id,
+      // The label, not the nickname: most accounts carry no nickname at all.
+      accountName: (id: string) => labelAccountById(accounts, id, t, id),
       assetName: (id: string) =>
         assets.find((row) => row.id === id)?.name ?? id,
     }),
-    [accounts, assets],
+    [accounts, assets, t],
   );
 
   const archetypeOf = useMemo(() => {

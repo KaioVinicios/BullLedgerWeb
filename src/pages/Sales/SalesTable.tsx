@@ -34,6 +34,7 @@ import type { SaleExit, SaleRow } from "@/services/sales";
 import { type CalendarDate, formatCalendarDate } from "@/utils/date";
 import { formatDecimal, SCALE } from "@/utils/decimal";
 import { formatUnitPrice } from "@/utils/money";
+import { accountLabel } from "@/utils/accountLabel";
 
 export function SalesTable({ rows }: { rows: SaleRow[] }) {
   const { t } = useTranslation("app");
@@ -109,7 +110,7 @@ export function SaleLotRow({ row }: { row: SaleRow }) {
             <div>
               <div>{row.asset.name}</div>
               <div className="text-xs text-muted-foreground">
-                {row.account.name}
+                {accountLabel(row.account, t)}
               </div>
             </div>
           </div>

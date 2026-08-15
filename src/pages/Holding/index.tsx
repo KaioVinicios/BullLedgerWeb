@@ -40,6 +40,7 @@ import { accountQuery } from "@/services/accounts";
 import { assetQuery } from "@/services/assets";
 import { holdingQuery } from "@/services/portfolio";
 import { formatCalendarDate, type CalendarDate } from "@/utils/date";
+import { accountLabel } from "@/utils/accountLabel";
 
 const route = getRouteApi(PATHS.HOLDING_DETAIL);
 
@@ -114,7 +115,10 @@ export function HoldingPage() {
         )}
 
         {account && (
-          <TargetBlock holding={holding} accountName={account.name} />
+          <TargetBlock
+            holding={holding}
+            accountName={accountLabel(account, t)}
+          />
         )}
 
         {account && <TaxContext holding={holding} account={account} />}

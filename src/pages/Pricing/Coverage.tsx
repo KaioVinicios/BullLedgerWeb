@@ -21,6 +21,7 @@ import type { Account } from "@/services/accounts";
 import type { Asset } from "@/services/assets";
 import type { PortfolioOverview } from "@/services/portfolio";
 import { formatCalendarDate, type CalendarDate } from "@/utils/date";
+import { labelAccountById } from "@/utils/accountLabel";
 
 export function Coverage({
   overview,
@@ -74,6 +75,11 @@ export function Coverage({
     id: string | null,
   ) => (id ? (rows.find((row) => row.id === id)?.name ?? "—") : "—");
 
+  // Accounts derive their label from the institution and registration, so they
+  // get their own resolver; assets stay on `nameOf` (business-rules.md).
+  const accountNameOf = (id: string | null) =>
+    labelAccountById(accounts, id, t);
+
   // A row with no asset names no asset to price, so it gets no button.
   const unpriced = overview.missing.filter(
     (row) => row.reason === "NO_QUOTE" && row.asset !== null,
@@ -118,7 +124,7 @@ export function Coverage({
                   {nameOf(assets, row.asset)}
                   <span className="text-muted-foreground">
                     {" · "}
-                    {nameOf(accounts, row.account)}
+                    {accountNameOf(row.account)}
                   </span>
                 </span>
                 <Button asChild variant="outline" size="sm">
@@ -153,7 +159,7 @@ export function Coverage({
               <li key={`${row.account}-${row.asset ?? "cash"}`}>
                 <UnpricedNote
                   reason="NO_FX"
-                  subject={`${nameOf(assets, row.asset)} · ${nameOf(accounts, row.account)}`}
+                  subject={`${nameOf(assets, row.asset)} · ${accountNameOf(row.account)}`}
                 />
               </li>
             ))}

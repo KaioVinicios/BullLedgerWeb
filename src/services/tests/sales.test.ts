@@ -15,7 +15,12 @@ const saleRow: SaleRow = {
     id: "b722438a-1577-4e56-8e96-484091aeb2ba",
     label: "Lot — 2025-03-12",
   },
-  account: { id: "8d3cc69f-d2c9-4981-9819-ccadbe93b0d0", name: "XP Corretora" },
+  account: {
+    id: "8d3cc69f-d2c9-4981-9819-ccadbe93b0d0",
+    name: "XP Corretora",
+    institution_name: "XP Investimentos",
+    registration: "BR_TAXABLE",
+  },
   asset: {
     id: "669049fb-9333-4c4d-bbde-959e9202700e",
     name: "Petrobras PN",

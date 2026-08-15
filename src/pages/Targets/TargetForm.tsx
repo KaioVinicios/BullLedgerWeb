@@ -77,6 +77,7 @@ import {
   validateFormValues,
   type TargetFormValues,
 } from "@/utils/targetWire";
+import { labelAccountById } from "@/utils/accountLabel";
 
 const NO_SERVER_ERRORS: PartitionedServerErrors = {
   fieldErrors: {},
@@ -168,12 +169,12 @@ export function TargetForm({
    */
   const names = useMemo(
     () => ({
-      accountName: (id: string) =>
-        accounts.find((row) => row.id === id)?.name ?? id,
+      // The label, not the nickname: most accounts carry no nickname at all.
+      accountName: (id: string) => labelAccountById(accounts, id, t, id),
       assetName: (id: string) =>
         assets.find((row) => row.id === id)?.name ?? id,
     }),
-    [accounts, assets],
+    [accounts, assets, t],
   );
 
   const liveAccounts = useMemo(

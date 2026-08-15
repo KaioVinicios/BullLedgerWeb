@@ -26,6 +26,7 @@ const brAccount: Account = {
   id: ACCOUNT_ID,
   name: "Corretora XP",
   institution: null,
+  institution_name: "",
   country: "BR",
   registration: "BR_TAXABLE",
   base_currency: "BRL",

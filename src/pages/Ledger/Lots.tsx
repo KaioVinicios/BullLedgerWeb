@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/table";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { PATHS } from "@/routes/path";
+import { accountLabel } from "@/utils/accountLabel";
 import { accountKeys, listAccounts } from "@/services/accounts";
 import { assetKeys, listAssets } from "@/services/assets";
 import { holdingQuery, type LotProjection } from "@/services/portfolio";
@@ -88,7 +89,10 @@ export function LedgerLotsPage() {
             id="lots-account"
             label={t("ledger.filters.account")}
             value={search.account}
-            options={accounts?.results ?? []}
+            options={(accounts?.results ?? []).map((row) => ({
+              id: row.id,
+              name: accountLabel(row, t),
+            }))}
             onChange={(account) =>
               void navigate({ search: (prev) => ({ ...prev, account }) })
             }

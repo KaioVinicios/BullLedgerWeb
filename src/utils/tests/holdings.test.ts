@@ -90,10 +90,16 @@ const institution = (id: string, name: string): Institution => ({
   archived_at: null,
 });
 
-const account = (id: string, name: string, inst: string | null): Account => ({
+const account = (
+  id: string,
+  name: string,
+  inst: string | null,
+  institutionName = "",
+): Account => ({
   id,
   name,
   institution: inst,
+  institution_name: institutionName,
   country: "BR",
   registration: "BR_TAXABLE",
   base_currency: "BRL",
@@ -498,5 +504,26 @@ describe("groupByAsset", () => {
     );
 
     expect(result.map((g) => g.asset?.name)).toEqual(["PETR4", "MGLU3"]);
+  });
+
+  it("orders an asset's rows by their account label, not by the raw nickname", () => {
+    // The unnamed account belongs to Zeta and must sort after Alpha's. Sorting
+    // on the raw name put its empty string first, above every named account.
+    const rows = [
+      account(BROKER_ID, "Zulu", XP_ID, "Alpha"),
+      account(WALLET_ID, "", NU_ID, "Zeta"),
+    ];
+
+    const result = groupByAsset(
+      twoAccounts(),
+      rows,
+      [asset(PETR_ID, "PETR4")],
+      [institution(XP_ID, "Alpha"), institution(NU_ID, "Zeta")],
+    );
+
+    expect(result[0].rows.map((row) => row.account?.institution_name)).toEqual([
+      "Alpha",
+      "Zeta",
+    ]);
   });
 });

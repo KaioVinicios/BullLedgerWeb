@@ -52,7 +52,7 @@ export async function createAccountUI(
   },
 ): Promise<void> {
   await page.goto(PATHS.ACCOUNTS_NEW);
-  await page.getByLabel(app.accounts.form.name).fill(options.name);
+  await page.getByLabel(app.accounts.form.nickname).fill(options.name);
   await page.getByRole("radio", { name: options.country, exact: true }).click();
   await page.getByRole("radio", { name: options.registration }).click();
 
@@ -162,6 +162,17 @@ export function seedAccount(
 }
 
 /** An exchange-traded security, which is what most ledger journeys need. */
+/**
+ * The label the app renders for a seeded account.
+ *
+ * `name` is optional on the wire — an account backed by an institution derives
+ * its label from that instead — but every account seeded here carries an
+ * explicit one and no institution, and for those the name *is* the label.
+ */
+export function accountName(account: Account): string {
+  return account.name ?? "";
+}
+
 export function seedSecurity(
   page: Page,
   options: { name: string; ticker: string; currency?: "BRL" | "USD" | "CAD" },

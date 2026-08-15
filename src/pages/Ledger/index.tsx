@@ -62,6 +62,7 @@ import { cn } from "@/lib/utils";
 import { usePaginatedQuery } from "@/hooks/usePaginatedQuery";
 import { useVoidMovement } from "@/hooks/useVoidMovement";
 import { PATHS } from "@/routes/path";
+import { accountLabel, labelAccountById } from "@/utils/accountLabel";
 import { MOVEMENT_TYPES, type MovementType } from "@/schemas/apiEnums";
 import { accountKeys, listAccounts } from "@/services/accounts";
 import { assetKeys, listAssets } from "@/services/assets";
@@ -132,6 +133,11 @@ export function LedgerPage() {
     id: string | null,
   ) => (id ? (rows?.find((row) => row.id === id)?.name ?? "—") : "—");
 
+  // Accounts are not named by `name` alone — their label derives from the
+  // institution and the registration (business-rules.md). Assets keep `nameOf`.
+  const accountNameOf = (id: string | null) =>
+    labelAccountById(accounts?.results, id, t);
+
   const setFilter = (next: Partial<typeof search>) =>
     void navigate({ search: (prev) => ({ ...prev, ...next, page: 1 }) });
 
@@ -190,7 +196,7 @@ export function LedgerPage() {
               allLabel={t("ledger.filters.all")}
               options={(accounts?.results ?? []).map((row) => ({
                 value: row.id,
-                label: row.name,
+                label: accountLabel(row, t),
               }))}
             />
             <FilterSelect
@@ -326,7 +332,7 @@ export function LedgerPage() {
                     key={movement.id}
                     movement={movement}
                     locale={locale}
-                    accountName={nameOf(accounts?.results, movement.account)}
+                    accountName={accountNameOf(movement.account)}
                     assetName={nameOf(assets?.results, movement.asset)}
                     onVoid={() => voiding.ask(movement)}
                   />

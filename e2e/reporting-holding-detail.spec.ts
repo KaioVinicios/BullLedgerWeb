@@ -3,6 +3,7 @@ import { PATHS } from "@/routes/path";
 
 import { expect, test } from "./support/fixtures";
 import {
+  accountName,
   recordMovement,
   seedAccount,
   seedPriceQuote,
@@ -67,7 +68,7 @@ test("reads a holding built from several movements, including a sale", async ({
   await page.goto(`${PATHS.APP}/holdings/${account.id}/${asset.id}`);
 
   await expect(page.getByRole("heading", { name: asset.name })).toBeVisible();
-  await expect(page.getByText(account.name)).toBeVisible();
+  await expect(page.getByText(accountName(account))).toBeVisible();
 
   // Every figure 8.3 asks for is present and internally consistent: 60 units
   // left at 28.00 is 1,680.00, and the realized gain on 40 sold at 26.00
