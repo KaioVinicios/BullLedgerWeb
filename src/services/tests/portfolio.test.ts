@@ -89,9 +89,13 @@ describe("getAllocation", () => {
   });
 
   it("keys under the projection root beside the overview", () => {
+    // The trailing slot is the account scope, and the portfolio scope leaves
+    // it `undefined` rather than omitting it — an account's allocation is a
+    // different read, so it must not share this key.
     expect(allocationQuery().queryKey).toEqual([
       ...PORTFOLIO_KEY,
       "allocation",
+      undefined,
     ]);
   });
 });

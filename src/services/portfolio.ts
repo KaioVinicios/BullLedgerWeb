@@ -88,11 +88,92 @@ export type AllocationSlice = components["schemas"]["AllocationSlice"];
 type PortfolioAllocationEnvelope =
   components["schemas"]["PortfolioAllocationEnvelope"];
 
-export const getAllocation = () =>
-  request(api.get<PortfolioAllocationEnvelope>(ENDPOINTS.portfolioAllocation));
+/** `undefined` params are dropped by axios, so the portfolio scope sends none. */
+const scope = (accountId?: string) => ({ params: { account: accountId } });
 
-export const allocationQuery = () =>
+export const getAllocation = (accountId?: string) =>
+  request(
+    api.get<PortfolioAllocationEnvelope>(
+      ENDPOINTS.portfolioAllocation,
+      scope(accountId),
+    ),
+  );
+
+export const allocationQuery = (accountId?: string) =>
   queryOptions({
-    queryKey: [...PORTFOLIO_KEY, "allocation"] as const,
-    queryFn: getAllocation,
+    queryKey: [...PORTFOLIO_KEY, "allocation", accountId] as const,
+    queryFn: () => getAllocation(accountId),
+  });
+
+/**
+ * The three analytics reads behind the overview's tabs.
+ *
+ * Each takes an optional account: absent is the whole portfolio, present is
+ * one account. Unlike the overview — which arrives unpaginated with every
+ * account's rows and can therefore be sliced client-side — these are computed
+ * over the scope and cannot be summed from parts of it. A monthly series, a
+ * ranking, and a forecast for one account are each a different calculation,
+ * not a subset of the portfolio's.
+ *
+ * `accountId` is part of the query key, so switching tabs keeps the previous
+ * tab's cache and coming back to General is instant.
+ *
+ * None of them sends `on`, `from`, `to`, `limit`, or `months`. Every one of
+ * those defaults server-side to the only value a v1 screen has a reason to
+ * ask for — the same reasoning this file records for omitting `on`.
+ */
+export type PortfolioSeries = components["schemas"]["PortfolioSeries"];
+export type SeriesPoint = components["schemas"]["SeriesPoint"];
+export type AssetRanking = components["schemas"]["AssetRanking"];
+export type AssetPerformanceRow = components["schemas"]["AssetPerformanceRow"];
+export type PortfolioForecast = components["schemas"]["PortfolioForecast"];
+export type ForecastPoint = components["schemas"]["ForecastPoint"];
+export type AssetAllocationSlice =
+  components["schemas"]["AssetAllocationSlice"];
+
+type PortfolioSeriesEnvelope = components["schemas"]["PortfolioSeriesEnvelope"];
+type AssetRankingEnvelope = components["schemas"]["AssetRankingEnvelope"];
+type PortfolioForecastEnvelope =
+  components["schemas"]["PortfolioForecastEnvelope"];
+
+export const getHistory = (accountId?: string) =>
+  request(
+    api.get<PortfolioSeriesEnvelope>(
+      ENDPOINTS.portfolioHistory,
+      scope(accountId),
+    ),
+  );
+
+export const historyQuery = (accountId?: string) =>
+  queryOptions({
+    queryKey: [...PORTFOLIO_KEY, "history", accountId] as const,
+    queryFn: () => getHistory(accountId),
+  });
+
+export const getPerformance = (accountId?: string) =>
+  request(
+    api.get<AssetRankingEnvelope>(
+      ENDPOINTS.portfolioPerformance,
+      scope(accountId),
+    ),
+  );
+
+export const performanceQuery = (accountId?: string) =>
+  queryOptions({
+    queryKey: [...PORTFOLIO_KEY, "performance", accountId] as const,
+    queryFn: () => getPerformance(accountId),
+  });
+
+export const getForecast = (accountId?: string) =>
+  request(
+    api.get<PortfolioForecastEnvelope>(
+      ENDPOINTS.portfolioForecast,
+      scope(accountId),
+    ),
+  );
+
+export const forecastQuery = (accountId?: string) =>
+  queryOptions({
+    queryKey: [...PORTFOLIO_KEY, "forecast", accountId] as const,
+    queryFn: () => getForecast(accountId),
   });
