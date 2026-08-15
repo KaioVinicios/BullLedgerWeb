@@ -22,6 +22,7 @@ import { toast } from "sonner";
 
 import { ArchiveConfirmDialog } from "@/components/ArchiveConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
+import { InstitutionLogo } from "@/components/InstitutionLogo";
 import { ListError } from "@/components/ListError";
 import { ListPagination } from "@/components/ListPagination";
 import { ListSkeleton } from "@/components/ListSkeleton";
@@ -57,6 +58,7 @@ import {
 } from "@/services/accounts";
 import { institutionKeys, listInstitutions } from "@/services/institutions";
 import { PORTFOLIO_KEY } from "@/services/queryKeys";
+import { accountLabel } from "@/utils/accountLabel";
 
 const route = getRouteApi(PATHS.ACCOUNTS);
 
@@ -84,20 +86,21 @@ export function AccountsPage() {
       void navigate({ search: (prev) => ({ ...prev, page: nextPage }) }),
   });
 
-  // One extra read to label rows with their institution's name — archived
-  // ones included, because an account keeps pointing at an institution the
-  // user has tidied away.
+  // One extra read to label rows with their institution's name and mark —
+  // archived ones included, because an account keeps pointing at an
+  // institution the user has tidied away.
   const institutionsQuery = { include_archived: true as const };
   const { data: institutionsPage } = useQuery({
     queryKey: institutionKeys.list(institutionsQuery),
     queryFn: () => listInstitutions(institutionsQuery),
   });
 
-  const institutionNames = useMemo(
+  // The whole record rather than its name: the cell renders the logo beside
+  // the name, and a second map keyed the same way would be one join to keep
+  // in sync for nothing.
+  const institutionsById = useMemo(
     () =>
-      new Map(
-        (institutionsPage?.results ?? []).map((row) => [row.id, row.name]),
-      ),
+      new Map((institutionsPage?.results ?? []).map((row) => [row.id, row])),
     [institutionsPage],
   );
 
@@ -205,80 +208,104 @@ export function AccountsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {list.rows.map((account) => (
-                  <TableRow key={account.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={PATHS.ACCOUNTS_EDIT}
-                          params={{ id: account.id }}
-                          className="hover:underline"
-                        >
-                          {account.name}
-                        </Link>
-                        {account.archived_at !== null && (
-                          <Badge variant="outline">
-                            {t("structure.archivedBadge")}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {account.institution
-                        ? (institutionNames.get(account.institution) ?? "—")
-                        : t("accounts.noInstitution")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {t(`enums.registration.${account.registration}`)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {account.base_currency}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={t("structure.openMenu", {
-                              name: account.name,
-                            })}
+                {list.rows.map((account) => {
+                  // Resolved once per row: the cell needs the record, not just
+                  // its name, and `undefined` here means the join missed — a
+                  // different fact from an account that has no institution.
+                  const institution = account.institution
+                    ? institutionsById.get(account.institution)
+                    : undefined;
+
+                  return (
+                    <TableRow key={account.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            to={PATHS.ACCOUNTS_EDIT}
+                            params={{ id: account.id }}
+                            className="hover:underline"
                           >
-                            <IconDots aria-hidden />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link
-                              to={PATHS.ACCOUNTS_EDIT}
-                              params={{ id: account.id }}
-                            >
-                              <IconPencil aria-hidden />
-                              {t("structure.edit")}
-                            </Link>
-                          </DropdownMenuItem>
-                          {account.archived_at === null ? (
-                            <DropdownMenuItem
-                              onSelect={() => setToArchive(account)}
-                            >
-                              <IconArchive aria-hidden />
-                              {t("structure.archive")}
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onSelect={() => restore.mutate(account.id)}
-                            >
-                              <IconRestore aria-hidden />
-                              {t("structure.restore")}
-                            </DropdownMenuItem>
+                            {accountLabel(account, t, {
+                              withRegistration: false,
+                            })}
+                          </Link>
+                          {account.archived_at !== null && (
+                            <Badge variant="outline">
+                              {t("structure.archivedBadge")}
+                            </Badge>
                           )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {institution ? (
+                          <span className="flex items-center gap-2">
+                            <InstitutionLogo
+                              name={institution.name}
+                              logo={institution.logo}
+                              size="sm"
+                            />
+                            {institution.name}
+                          </span>
+                        ) : account.institution ? (
+                          "—"
+                        ) : (
+                          t("accounts.noInstitution")
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {t(`enums.registration.${account.registration}`)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {account.base_currency}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label={t("structure.openMenu", {
+                                name: accountLabel(account, t, {
+                                  withRegistration: false,
+                                }),
+                              })}
+                            >
+                              <IconDots aria-hidden />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link
+                                to={PATHS.ACCOUNTS_EDIT}
+                                params={{ id: account.id }}
+                              >
+                                <IconPencil aria-hidden />
+                                {t("structure.edit")}
+                              </Link>
+                            </DropdownMenuItem>
+                            {account.archived_at === null ? (
+                              <DropdownMenuItem
+                                onSelect={() => setToArchive(account)}
+                              >
+                                <IconArchive aria-hidden />
+                                {t("structure.archive")}
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onSelect={() => restore.mutate(account.id)}
+                              >
+                                <IconRestore aria-hidden />
+                                {t("structure.restore")}
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

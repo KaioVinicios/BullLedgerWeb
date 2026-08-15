@@ -6,5 +6,7 @@
   "passwordMismatch": "As duas senhas precisam ser iguais.",
   "passwordTooShort": "A senha precisa ter pelo menos 8 caracteres.",
   "passwordTooCommon": "Esta senha é muito comum. Escolha uma mais forte.",
-  "resetLinkInvalid": "Este link expirou ou já foi usado."
+  "resetLinkInvalid": "Este link expirou ou já foi usado.",
+  "accountLabelNotUnique": "Outra conta nesta instituição já usa este rótulo. Dê um apelido a esta para diferenciá-las.",
+  "accountNameRequired": "Uma conta sem instituição precisa de um nome."
 }

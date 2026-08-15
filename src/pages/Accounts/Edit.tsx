@@ -8,6 +8,7 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 import { AccountForm } from "@/pages/Accounts/AccountForm";
 import { PATHS } from "@/routes/path";
 import { accountQuery } from "@/services/accounts";
+import { accountLabel } from "@/utils/accountLabel";
 
 const route = getRouteApi(PATHS.ACCOUNTS_EDIT);
 
@@ -22,7 +23,7 @@ export function AccountEditPage() {
   return (
     <PageContainer width="form">
       <PageHeader
-        title={account.name}
+        title={accountLabel(account, t)}
         description={t("accounts.form.editDescription")}
       />
       <AccountForm key={account.id} account={account} />

@@ -272,7 +272,10 @@
       "all": "Todos",
       "clear": "Limpar filtros"
     },
-    "result": { "PROFIT": "Só lucros", "LOSS": "Só prejuízos" },
+    "result": {
+      "PROFIT": "Só lucros",
+      "LOSS": "Só prejuízos"
+    },
     "ordering": {
       "-sold_on": "Venda mais recente",
       "sold_on": "Venda mais antiga",
@@ -382,7 +385,8 @@
       "createDescription": "Uma conta pertence a um país, carrega um registro válido nele e mantém a escrituração em uma moeda base.",
       "editTitle": "Editar conta",
       "editDescription": "Mude como esta conta é registrada. Os movimentos dela permanecem intactos.",
-      "name": "Nome",
+      "nickname": "Apelido",
+      "nicknameHint": "Opcional. Só é preciso para diferenciar duas contas na mesma instituição.",
       "institution": "Instituição",
       "noInstitution": "Nenhuma — autocustódia",
       "institutionHint": "A conta de uma carteira de autocustódia não precisa de instituição por trás.",
@@ -404,8 +408,8 @@
       "create": "Criar conta",
       "save": "Salvar alterações",
       "errors": {
-        "name": "Dê um nome a ela.",
-        "money": "Informe um valor, como 1234,56."
+        "money": "Informe um valor, como 1234,56.",
+        "nameWithoutInstitution": "Uma conta sem instituição precisa de um nome."
       }
     },
     "seeLimits": "Limites de contribuição"

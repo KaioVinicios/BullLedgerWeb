@@ -26,6 +26,10 @@ export const KNOWN_SERVER_CODES: Readonly<Record<string, ErrorsKey>> = {
   password_too_short: "passwordTooShort",
   password_too_common: "passwordTooCommon",
   reset_link_invalid: "resetLinkInvalid",
+  // The account label rules (business-rules.md, accounts): both land on the
+  // `name` field, which the form claims, so they render on the input itself.
+  account_label_not_unique: "accountLabelNotUnique",
+  name_required_without_institution: "accountNameRequired",
 };
 
 /**

@@ -272,7 +272,10 @@
       "all": "All",
       "clear": "Clear filters"
     },
-    "result": { "PROFIT": "Gains only", "LOSS": "Losses only" },
+    "result": {
+      "PROFIT": "Gains only",
+      "LOSS": "Losses only"
+    },
     "ordering": {
       "-sold_on": "Newest sale",
       "sold_on": "Oldest sale",
@@ -382,7 +385,8 @@
       "createDescription": "An account lives in a country, carries a registration valid there, and keeps its books in one base currency.",
       "editTitle": "Edit account",
       "editDescription": "Change how this account is recorded. Its movements stay untouched.",
-      "name": "Name",
+      "nickname": "Nickname",
+      "nicknameHint": "Optional. Only needed to tell apart two accounts at the same institution.",
       "institution": "Institution",
       "noInstitution": "None — self-custody",
       "institutionHint": "A self-custody wallet's account needs no institution behind it.",
@@ -404,8 +408,8 @@
       "create": "Create account",
       "save": "Save changes",
       "errors": {
-        "name": "Give it a name.",
-        "money": "Enter an amount, like 1234.56."
+        "money": "Enter an amount, like 1234.56.",
+        "nameWithoutInstitution": "A name is required for an account with no institution."
       }
     },
     "seeLimits": "Contribution limits"

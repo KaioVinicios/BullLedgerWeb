@@ -6,5 +6,7 @@
   "passwordMismatch": "Both passwords must match.",
   "passwordTooShort": "Password must be at least 8 characters.",
   "passwordTooCommon": "This password is too common. Please choose a stronger one.",
-  "resetLinkInvalid": "This link has expired or already been used."
+  "resetLinkInvalid": "This link has expired or already been used.",
+  "accountLabelNotUnique": "Another account at this institution already uses this label. Give this one a nickname to tell them apart.",
+  "accountNameRequired": "A name is required for an account with no institution."
 }

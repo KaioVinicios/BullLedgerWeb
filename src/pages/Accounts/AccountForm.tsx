@@ -56,6 +56,7 @@ import {
   type AccountRequest,
 } from "@/services/accounts";
 import { institutionKeys, listInstitutions } from "@/services/institutions";
+import { accountLabel } from "@/utils/accountLabel";
 import { minorUnitsToDecimalString, parseMoneyInput } from "@/utils/money";
 import { formatNumericString } from "@/utils/intl";
 
@@ -121,24 +122,39 @@ export function AccountForm({ account }: { account?: Account }) {
 
   const schema = useMemo(
     () =>
-      z.object({
-        name: z.string().trim().min(1, t("accounts.form.errors.name")),
-        institution: z.string(),
-        country: z.enum(COUNTRIES),
-        registration: z.enum(REGISTRATIONS),
-        base_currency: z.enum(CURRENCIES),
-        account_number: z.string(),
-        contribution_room: z.string().refine(
-          // Currency does not affect parseability; USD stands in for "any".
-          (value) =>
-            value.trim() === "" ||
-            parseMoneyInput(value, "USD", locale) !== null,
-          { message: t("accounts.form.errors.money") },
+      z
+        .object({
+          // Optional by design: the label derives from the institution and the
+          // registration, and this only qualifies it (business-rules.md). The
+          // refinement below is where it becomes mandatory.
+          name: z.string().trim(),
+          institution: z.string(),
+          country: z.enum(COUNTRIES),
+          registration: z.enum(REGISTRATIONS),
+          base_currency: z.enum(CURRENCIES),
+          account_number: z.string(),
+          contribution_room: z.string().refine(
+            // Currency does not affect parseability; USD stands in for "any".
+            (value) =>
+              value.trim() === "" ||
+              parseMoneyInput(value, "USD", locale) !== null,
+            { message: t("accounts.form.errors.money") },
+          ),
+          deductible: z.boolean(),
+          tax_regime: z.enum(TAX_REGIMES),
+          taxed_on: z.enum(TAXED_ON),
+        })
+        // With no institution there is nothing to derive a label from, so the
+        // nickname is the account's only identity. The server enforces the same
+        // rule; this just says so before the round trip.
+        .refine(
+          (values) =>
+            values.institution !== NO_INSTITUTION || values.name.length > 0,
+          {
+            path: ["name"],
+            message: t("accounts.form.errors.nameWithoutInstitution"),
+          },
         ),
-        deductible: z.boolean(),
-        tax_regime: z.enum(TAX_REGIMES),
-        taxed_on: z.enum(TAXED_ON),
-      }),
     [t, locale],
   );
 
@@ -149,8 +165,10 @@ export function AccountForm({ account }: { account?: Account }) {
       queryClient.setQueryData(accountKeys.detail(saved.id), saved);
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
       toast.success(
+        // The label, not the raw name: an account that derives its name would
+        // otherwise be announced as an empty string.
         t(account ? "structure.saved" : "structure.created", {
-          name: saved.name,
+          name: accountLabel(saved, t),
         }),
       );
       void navigate({ to: PATHS.ACCOUNTS });
@@ -253,7 +271,8 @@ export function AccountForm({ account }: { account?: Account }) {
             {(field) => (
               <TextField
                 name={field.name}
-                label={t("accounts.form.name")}
+                label={t("accounts.form.nickname")}
+                hint={t("accounts.form.nicknameHint")}
                 autoComplete="off"
                 errors={[
                   ...field.state.meta.errors,

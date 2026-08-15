@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import { http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
+import errors from "@/i18n/locales/en/errors.json";
 import { createQueryClient } from "@/lib/queryClient";
 import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
@@ -29,6 +30,7 @@ const nubank: Institution = {
 const tfsa: Account = {
   id: "2b3c4d5e-6f70-4182-9394-a5b6c7d8e9f0",
   institution: nubank.id,
+  institution_name: nubank.name,
   name: "Wealthsimple TFSA",
   country: "CA",
   registration: "CA_TFSA",
@@ -46,14 +48,18 @@ function page<T>(results: T[], count = results.length) {
   return { status: 200, data: { count, next: null, previous: null, results } };
 }
 
-function handlers() {
+/**
+ * `server.use` resolves on the first matching handler, so an override passed
+ * after these would never win — the accounts a test wants are a parameter.
+ */
+function handlers(accounts: Account[] = [tfsa]) {
   return [
     http.get(`${TEST_API_URL}/api/auth/user/`, () => HttpResponse.json(user)),
     http.get(`${TEST_API_URL}/api/institutions/`, () =>
       HttpResponse.json(page([nubank])),
     ),
     http.get(`${TEST_API_URL}/api/accounts/`, () =>
-      HttpResponse.json(page([tfsa])),
+      HttpResponse.json(page(accounts)),
     ),
   ];
 }
@@ -79,10 +85,42 @@ describe("the accounts list", () => {
     server.use(...handlers());
     mount(PATHS.ACCOUNTS);
 
-    expect(await screen.findByText("Wealthsimple TFSA")).toBeVisible();
+    // The nickname qualifies the institution rather than replacing it.
+    expect(
+      await screen.findByRole("link", { name: "Nubank · Wealthsimple TFSA" }),
+    ).toBeVisible();
     expect(screen.getByText(app.enums.registration.CA_TFSA)).toBeVisible();
     expect(await screen.findByText("Nubank")).toBeVisible();
     expect(screen.getByText("CAD")).toBeVisible();
+  });
+
+  it("names an unnamed account after its institution", async () => {
+    server.use(...handlers([{ ...tfsa, name: "" }]));
+    mount(PATHS.ACCOUNTS);
+
+    expect(
+      await screen.findByRole("link", { name: "Nubank" }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the wrapper out of the name cell, where the column already says it", async () => {
+    server.use(
+      ...handlers([
+        {
+          ...tfsa,
+          name: "",
+          country: "BR" as const,
+          registration: "BR_PREV_VGBL" as const,
+        },
+      ]),
+    );
+    mount(PATHS.ACCOUNTS);
+
+    // The registration column carries "VGBL"; the name cell must not repeat it.
+    expect(
+      await screen.findByRole("link", { name: "Nubank" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(app.enums.registration.BR_PREV_VGBL)).toBeVisible();
   });
 });
 
@@ -220,7 +258,7 @@ describe("the account form", () => {
     const { router } = mount(PATHS.ACCOUNTS_NEW);
 
     await userEvent.type(
-      await screen.findByLabelText(app.accounts.form.name),
+      await screen.findByLabelText(app.accounts.form.nickname),
       "Prev XP",
     );
     await userEvent.click(
@@ -268,7 +306,7 @@ describe("the account form", () => {
     const { router } = mount(PATHS.ACCOUNTS_NEW);
 
     await userEvent.type(
-      await screen.findByLabelText(app.accounts.form.name),
+      await screen.findByLabelText(app.accounts.form.nickname),
       "My TFSA",
     );
     await userEvent.click(screen.getByRole("radio", { name: "Canada" }));
@@ -325,13 +363,17 @@ describe("the account form", () => {
     const { router } = mount(PATHS.ACCOUNTS_EDIT.replace("$id", tfsa.id));
 
     expect(
-      await screen.findByRole("heading", { level: 1, name: tfsa.name }),
+      // The detail header wears the full label; it has no registration column.
+      await screen.findByRole("heading", {
+        level: 1,
+        name: `Nubank · ${tfsa.name}`,
+      }),
     ).toBeVisible();
     expect(
       screen.getByRole("radio", { name: app.enums.registration.CA_TFSA }),
     ).toBeChecked();
 
-    const name = screen.getByLabelText(app.accounts.form.name);
+    const name = screen.getByLabelText(app.accounts.form.nickname);
     await userEvent.clear(name);
     await userEvent.type(name, "TFSA main");
     await userEvent.click(
@@ -342,5 +384,90 @@ describe("the account form", () => {
       expect(router.state.location.pathname).toBe(PATHS.ACCOUNTS),
     );
     expect(patched).toMatchObject({ name: "TFSA main", country: "CA" });
+  });
+});
+
+describe("the account nickname", () => {
+  it("creates an account with no nickname at all", async () => {
+    let posted: Record<string, unknown> | undefined;
+
+    server.use(
+      ...handlers(),
+      http.post(`${TEST_API_URL}/api/accounts/`, async ({ request }) => {
+        posted = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(
+          { status: 201, data: { ...tfsa, id: crypto.randomUUID() } },
+          { status: 201 },
+        );
+      }),
+    );
+
+    const { router } = mount(PATHS.ACCOUNTS_NEW);
+
+    await userEvent.click(
+      await screen.findByRole("combobox", {
+        name: app.accounts.form.institution,
+      }),
+    );
+    await userEvent.click(
+      await screen.findByRole("option", { name: "Nubank" }),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: app.accounts.form.create }),
+    );
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(PATHS.ACCOUNTS),
+    );
+    expect(posted).toMatchObject({ name: "", institution: nubank.id });
+  });
+
+  it("requires a nickname when the account has no institution", async () => {
+    server.use(...handlers());
+    mount(PATHS.ACCOUNTS_NEW);
+
+    // No institution is the form's default — the hybrid test above proves it
+    // by posting `institution: null`.
+    await userEvent.click(
+      await screen.findByRole("button", { name: app.accounts.form.create }),
+    );
+
+    expect(
+      await screen.findByText(app.accounts.form.errors.nameWithoutInstitution),
+    ).toBeVisible();
+  });
+
+  it("shows a duplicate-label rejection on the nickname field", async () => {
+    server.use(
+      ...handlers(),
+      http.post(`${TEST_API_URL}/api/accounts/`, () =>
+        HttpResponse.json(
+          {
+            status: 400,
+            message: "Invalid input.",
+            errors: {
+              name: [
+                "Another account at this institution already uses this label.",
+              ],
+            },
+            codes: { name: ["account_label_not_unique"] },
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+
+    mount(PATHS.ACCOUNTS_NEW);
+
+    await userEvent.type(
+      await screen.findByLabelText(app.accounts.form.nickname),
+      "Trading",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: app.accounts.form.create }),
+    );
+
+    // Translated by code, never by the server's English text.
+    expect(await screen.findByText(errors.accountLabelNotUnique)).toBeVisible();
   });
 });
