@@ -23,8 +23,18 @@ export function AppShell() {
       <AppSidebar />
 
       {/* Not shadcn's <SidebarInset>: it renders a <main>, which would put the
-          site header inside the main landmark. Same layout, correct semantics. */}
-      <div className="relative flex w-full flex-1 flex-col bg-background">
+          site header inside the main landmark. Same layout, correct semantics.
+
+          `min-w-0` is the one addition, and it is load-bearing. This is a flex
+          item in the provider's row, so it defaults to `min-width: auto` and
+          refuses to shrink below its content's intrinsic width — `w-full` and
+          `flex-1` do not override that. Anything wide inside (a scope strip, a
+          table) therefore pushed this wrapper past the viewport and scrolled
+          the whole document sideways, instead of scrolling inside its own box.
+          Every `overflow-x-auto` on every screen was quietly inert for the
+          same reason. shadcn's own `SidebarInset` omits it too, so this is an
+          upstream gap rather than a divergence from it. */}
+      <div className="relative flex w-full min-w-0 flex-1 flex-col bg-background">
         <AppHeader />
         <main
           id="content"
