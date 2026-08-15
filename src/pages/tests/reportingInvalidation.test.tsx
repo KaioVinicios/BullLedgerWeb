@@ -57,6 +57,8 @@ function overviewIn(currency: "BRL" | "USD", total: number): PortfolioOverview {
         cash: money(0, currency),
         subtotal: money(total, currency),
         complete: true,
+        nominal_return: null,
+        real_return: null,
         holdings: [
           {
             account: ACCOUNT_ID,

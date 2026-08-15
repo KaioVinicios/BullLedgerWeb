@@ -42,6 +42,10 @@ const allocation: PortfolioAllocation = {
   by_country: [
     { key: "BR", value: BRL(48_235_000), weight: "1", complete: true },
   ],
+  // The fourth dimension this screen does not show — it belongs to the
+  // overview's own by-asset block, and is present here only because the
+  // response carries it.
+  by_asset: [],
   missing: [],
 };
 

@@ -852,9 +852,63 @@ export interface paths {
         };
         /**
          * Allocation breakdowns
-         * @description Portfolio value sliced by archetype (free cash as its own FREE_CASH slice), native currency, and country, as of `on` — derived, never stored (FR-VIEW-004). Weights are fractions of the computable total.
+         * @description Portfolio value sliced by archetype (free cash as its own FREE_CASH slice), native currency, and country, as of `on` — derived, never stored (FR-VIEW-004). Weights are fractions of the computable total. `by_asset` slices the same total per asset, with the free-cash row carrying a null asset. Each slice reports both `value` (market) and `invested` (cost); `weight` is always the share of market value.
          */
         get: operations["api_portfolio_allocation_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portfolio/forecast/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Performance forecast
+         * @description Projects the value already held, compounding the monthly rate observed in this portfolio's own history, with a ±1 standard deviation band.
+         *
+         *     **Future contributions are not included.** This answers 'what would what I hold earn at the observed pace', never 'how much will I have'. The rate is estimated from flow-adjusted monthly returns, so deposits raise value without raising the estimate.
+         *
+         *     The estimator is the geometric mean, which is the only average that reproduces the balance actually reached; the arithmetic mean overstates a volatile series.
+         *
+         *     With fewer than six complete monthly points, `points` is empty and `unavailable_reason` is `INSUFFICIENT_HISTORY` — no figure is published on a sample too small to defend. `sample_months` always reports what the estimate rests on.
+         *
+         *     This is an extrapolation of recorded facts, not investment advice, and no part of it is a recommendation to buy or sell.
+         */
+        get: operations["api_portfolio_forecast_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portfolio/history/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Monthly history
+         * @description One point per month: total value, invested cost, gain, external net flow, and the flow-adjusted (Modified Dietz) return for the period. Derived from the movement log on every request and never stored (BR-DERIVE).
+         *
+         *     Every point but the last is a month end; when the window reaches the current month the last point is today, flagged `partial`.
+         *
+         *     A month the reference data cannot value reports null figures and `complete: false` — never a zero, which would draw a crash that never happened.
+         *
+         *     `net_flow` counts money entering or leaving the scope: deposits and withdrawals for the whole portfolio, plus transfer legs when `account` narrows to one account. Buys, sells, income and fees are not flows — they are what the return measures.
+         */
+        get: operations["api_portfolio_history_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -892,9 +946,35 @@ export interface paths {
         };
         /**
          * Portfolio overview
-         * @description Total value, per-account groups (free cash + holding rows), and per-archetype totals in the profile's reporting currency, as of `on`. Figures the reference data cannot support are excluded from the sums and listed under `missing` (FR-VIEW-001). Holding rows carry a derived target_status when a target resolves (FR-TARGET-005, information only).
+         * @description Total value, per-account groups (free cash + holding rows), and per-archetype totals in the profile's reporting currency, as of `on`. Figures the reference data cannot support are excluded from the sums and listed under `missing` (FR-VIEW-001). Holding rows carry a derived target_status when a target resolves (FR-TARGET-005, information only). Each account group carries its own nominal_return and real_return over that account's invested capital — idle cash is not in the denominator, so the figure is the return the investments earned, not the growth of the balance. null when the account has no invested capital.
          */
         get: operations["api_portfolio_overview_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/portfolio/performance/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Asset performance ranking
+         * @description The most and least profitable assets by realized monthly gain, derived from recorded sales over the whole history.
+         *
+         *     A sale's rate is its profit rate divided by the months the lot was held — a simple average, so +100% over three months reads as 33.33% per month. An asset's figure is the capital-weighted mean of its sales.
+         *
+         *     **No minimum holding period is applied**, so a position sold days after purchase can report a very large monthly rate. `sales_count` and `avg_holding_period_days` accompany every row so the figure can be shown with the context that qualifies it. A lot bought and sold on the same day has no monthly rate and is excluded.
+         *
+         *     The metric is realized: **an asset that has never been sold appears in neither list**. This is not tax assessment — no exemption or offsetting rule is applied.
+         */
+        get: operations["api_portfolio_performance_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1173,6 +1253,16 @@ export interface components {
             subtotal: components["schemas"]["Money"];
             complete: boolean;
             holdings: components["schemas"]["HoldingSummary"][];
+            /**
+             * Format: decimal
+             * @description Decimal string fraction — 0.1375 means 13.75%. Never parse as a float.
+             */
+            nominal_return: string | null;
+            /**
+             * Format: decimal
+             * @description Decimal string fraction — 0.1375 means 13.75%. Never parse as a float.
+             */
+            real_return: string | null;
         };
         AccountPatchEnvelope: {
             data: components["schemas"]["Account"];
@@ -1247,6 +1337,18 @@ export interface components {
             complete: boolean;
         };
         Asset: components["schemas"]["CashDepositAsset"] | components["schemas"]["FixedIncomeAsset"] | components["schemas"]["ExchangeSecurityAsset"] | components["schemas"]["NavFundAsset"] | components["schemas"]["CryptoAsset"];
+        /** @description One asset's share; asset is null on the free-cash row (spec 2026-08-15). */
+        AssetAllocationSlice: {
+            asset: components["schemas"]["AssetRef"] | null;
+            value: components["schemas"]["Money"];
+            invested: components["schemas"]["Money"] | null;
+            /**
+             * Format: decimal
+             * @description Decimal string fraction — 0.1375 means 13.75%. Never parse as a float.
+             */
+            weight: string | null;
+            complete: boolean;
+        };
         AssetArchiveEnvelope: {
             data: components["schemas"]["Asset"];
             /** @default 200 */
@@ -1270,6 +1372,41 @@ export interface components {
             /** @default 200 */
             status: number;
             message?: string;
+        };
+        /** @description One asset's realized monthly gain (spec 2026-08-15). */
+        AssetPerformanceRow: {
+            asset: components["schemas"]["AssetRef"];
+            /**
+             * Format: decimal
+             * @description Capital-weighted mean of this asset's sales, each measured as the sale's profit rate divided by the months the lot was held. No minimum holding period is applied.
+             */
+            monthly_profit_rate: string;
+            sales_count: number;
+            profit: components["schemas"]["Money"];
+            avg_holding_period_days: number;
+            /** Format: date */
+            last_sold_on: string;
+        };
+        /** @description The two ends of one realized-gain ranking (spec 2026-08-15). */
+        AssetRanking: {
+            reporting_currency: components["schemas"]["CurrencyEnum"];
+            /** @description Assets with at least one rankable sale. When this is below 2×limit, `best` and `worst` overlap. */
+            ranked_assets_count: number;
+            best: components["schemas"]["AssetPerformanceRow"][];
+            worst: components["schemas"]["AssetPerformanceRow"][];
+        };
+        AssetRankingEnvelope: {
+            data: components["schemas"]["AssetRanking"];
+            /** @default 200 */
+            status: number;
+            message?: string;
+        };
+        /** @description Enough of an asset to label a chart slice; the full row lives in /api/assets/. */
+        AssetRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            archetype: components["schemas"]["ArchetypeEnum"];
         };
         AssetRequest: components["schemas"]["CashDepositAssetRequest"] | components["schemas"]["FixedIncomeAssetRequest"] | components["schemas"]["ExchangeSecurityAssetRequest"] | components["schemas"]["NavFundAssetRequest"] | components["schemas"]["CryptoAssetRequest"];
         AssetUnarchiveEnvelope: {
@@ -1580,6 +1717,13 @@ export interface components {
              * @description Decimal string fraction — 0.1375 means 13.75%. Never parse as a float.
              */
             rate_value?: string | null;
+        };
+        /** @description One projected month; low/high are the ±1σ band, compounded. */
+        ForecastPoint: {
+            month: string;
+            expected: components["schemas"]["Money"];
+            low: components["schemas"]["Money"];
+            high: components["schemas"]["Money"];
         };
         FxRate: {
             /** Format: uuid */
@@ -2575,6 +2719,7 @@ export interface components {
             by_archetype: components["schemas"]["AllocationSlice"][];
             by_currency: components["schemas"]["AllocationSlice"][];
             by_country: components["schemas"]["AllocationSlice"][];
+            by_asset: components["schemas"]["AssetAllocationSlice"][];
             missing: components["schemas"]["MissingFigure"][];
         };
         PortfolioAllocationEnvelope: {
@@ -2617,6 +2762,36 @@ export interface components {
             loss_limit_period?: components["schemas"]["PeriodEnum"] | null;
             steps: components["schemas"]["TargetStepRequest"][];
         };
+        /** @description A projection of recorded performance — never a recommendation. */
+        PortfolioForecast: {
+            reporting_currency: components["schemas"]["CurrencyEnum"];
+            /**
+             * Format: decimal
+             * @description Geometric mean of the sampled monthly returns.
+             */
+            monthly_rate: string | null;
+            /**
+             * Format: decimal
+             * @description Standard deviation of the same sample; the band's width.
+             */
+            volatility: string | null;
+            /** @description Complete months the estimate is based on. */
+            sample_months: number;
+            points: components["schemas"]["ForecastPoint"][];
+            /**
+             * @description Set, with empty points, when no estimate is defensible.
+             *
+             *     * `INSUFFICIENT_HISTORY` - INSUFFICIENT_HISTORY
+             *     * `NOT_VALUED` - NOT_VALUED
+             */
+            unavailable_reason: components["schemas"]["UnavailableReasonEnum"] | null;
+        };
+        PortfolioForecastEnvelope: {
+            data: components["schemas"]["PortfolioForecast"];
+            /** @default 200 */
+            status: number;
+            message?: string;
+        };
         /** @description FR-VIEW-001 — the whole dashboard in one reconciling response. */
         PortfolioOverview: {
             /** Format: date */
@@ -2641,6 +2816,17 @@ export interface components {
         };
         PortfolioOverviewEnvelope: {
             data: components["schemas"]["PortfolioOverview"];
+            /** @default 200 */
+            status: number;
+            message?: string;
+        };
+        /** @description The monthly history behind the Overview charts (spec 2026-08-15). */
+        PortfolioSeries: {
+            reporting_currency: components["schemas"]["CurrencyEnum"];
+            points: components["schemas"]["SeriesPoint"][];
+        };
+        PortfolioSeriesEnvelope: {
+            data: components["schemas"]["PortfolioSeries"];
             /** @default 200 */
             status: number;
             message?: string;
@@ -2867,6 +3053,29 @@ export interface components {
          * @enum {string}
          */
         SecurityTypeEnum: "STOCK" | "ETF" | "REIT" | "FII";
+        /** @description One month of history; a null figure means it could not be valued. */
+        SeriesPoint: {
+            /** @description Calendar month, "YYYY-MM". */
+            month: string;
+            /**
+             * Format: date
+             * @description The date the point was valued at.
+             */
+            as_of: string;
+            /** @description True when the point is today inside an unfinished month. */
+            partial: boolean;
+            total_value: components["schemas"]["Money"] | null;
+            invested: components["schemas"]["Money"] | null;
+            gain: components["schemas"]["Money"] | null;
+            /** @description External money in (+) or out (−) during the period. */
+            net_flow: components["schemas"]["Money"];
+            /**
+             * Format: decimal
+             * @description Flow-adjusted (Modified Dietz) return; deposits are not gains.
+             */
+            monthly_return: string | null;
+            complete: boolean;
+        };
         SocialLogin: {
             access_token?: string;
             code?: string;
@@ -3053,6 +3262,12 @@ export interface components {
          * @enum {string}
          */
         TypeEnum: "DEPOSIT" | "WITHDRAWAL" | "TRANSFER_IN" | "TRANSFER_OUT" | "BUY" | "SELL" | "DIVIDEND" | "DISTRIBUTION" | "INTEREST" | "COUPON" | "MATURITY" | "REDEMPTION" | "FEE" | "TAX" | "SPLIT" | "BONUS";
+        /**
+         * @description * `INSUFFICIENT_HISTORY` - INSUFFICIENT_HISTORY
+         *     * `NOT_VALUED` - NOT_VALUED
+         * @enum {string}
+         */
+        UnavailableReasonEnum: "INSUFFICIENT_HISTORY" | "NOT_VALUED";
         /**
          * @description * `WITH_QUANTITY` - WITH_QUANTITY
          *     * `FORBIDDEN` - FORBIDDEN
@@ -4871,6 +5086,8 @@ export interface operations {
     api_portfolio_allocation_retrieve: {
         parameters: {
             query?: {
+                /** @description Narrow to one account. Omitted means the whole portfolio. An id outside your portfolio narrows to nothing rather than 404ing. */
+                account?: string;
                 /** @description Valuation date (YYYY-MM-DD). Defaults to today. */
                 on?: string;
             };
@@ -4887,6 +5104,96 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PortfolioAllocationEnvelope"];
+                };
+            };
+            /** @description Validation failed — `errors` names the offending fields. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No valid session cookie. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    api_portfolio_forecast_retrieve: {
+        parameters: {
+            query?: {
+                /** @description Narrow to one account. Omitted means the whole portfolio. An id outside your portfolio narrows to nothing rather than 404ing. */
+                account?: string;
+                /** @description Months to project, 1–60. Defaults to 12. */
+                months?: number;
+                /** @description Valuation date (YYYY-MM-DD). Defaults to today. */
+                on?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The forecast, or the reason there is none. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioForecastEnvelope"];
+                };
+            };
+            /** @description Validation failed — `errors` names the offending fields. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No valid session cookie. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    api_portfolio_history_retrieve: {
+        parameters: {
+            query?: {
+                /** @description Narrow to one account. Omitted means the whole portfolio. An id outside your portfolio narrows to nothing rather than 404ing. */
+                account?: string;
+                /** @description First date in the window (YYYY-MM-DD), snapped to its month. Defaults to the portfolio's first movement. */
+                from?: string;
+                /** @description Last date in the window (YYYY-MM-DD). Defaults to today. */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The monthly series. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioSeriesEnvelope"];
                 };
             };
             /** @description Validation failed — `errors` names the offending fields. */
@@ -4965,6 +5272,8 @@ export interface operations {
     api_portfolio_overview_retrieve: {
         parameters: {
             query?: {
+                /** @description Narrow to one account. Omitted means the whole portfolio. An id outside your portfolio narrows to nothing rather than 404ing. */
+                account?: string;
                 /** @description Valuation date (YYYY-MM-DD). Defaults to today. */
                 on?: string;
             };
@@ -4981,6 +5290,51 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PortfolioOverviewEnvelope"];
+                };
+            };
+            /** @description Validation failed — `errors` names the offending fields. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description No valid session cookie. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    api_portfolio_performance_retrieve: {
+        parameters: {
+            query?: {
+                /** @description Narrow to one account. Omitted means the whole portfolio. An id outside your portfolio narrows to nothing rather than 404ing. */
+                account?: string;
+                /** @description Rows per list, 1–20. Defaults to 3. */
+                limit?: number;
+                /** @description Valuation date (YYYY-MM-DD). Defaults to today. */
+                on?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The ranking. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetRankingEnvelope"];
                 };
             };
             /** @description Validation failed — `errors` names the offending fields. */

@@ -1766,9 +1766,19 @@ paths:
       operationId: api_portfolio_allocation_retrieve
       description: Portfolio value sliced by archetype (free cash as its own FREE_CASH
         slice), native currency, and country, as of `on` — derived, never stored (FR-VIEW-004).
-        Weights are fractions of the computable total.
+        Weights are fractions of the computable total. `by_asset` slices the same
+        total per asset, with the free-cash row carrying a null asset. Each slice
+        reports both `value` (market) and `invested` (cost); `weight` is always the
+        share of market value.
       summary: Allocation breakdowns
       parameters:
+      - in: query
+        name: account
+        schema:
+          type: string
+          format: uuid
+        description: Narrow to one account. Omitted means the whole portfolio. An
+          id outside your portfolio narrows to nothing rather than 404ing.
       - in: query
         name: 'on'
         schema:
@@ -1786,6 +1796,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/PortfolioAllocationEnvelope'
           description: The allocation breakdowns.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/portfolio/forecast/:
+    get:
+      operationId: api_portfolio_forecast_retrieve
+      description: |-
+        Projects the value already held, compounding the monthly rate observed in this portfolio's own history, with a ±1 standard deviation band.
+
+        **Future contributions are not included.** This answers 'what would what I hold earn at the observed pace', never 'how much will I have'. The rate is estimated from flow-adjusted monthly returns, so deposits raise value without raising the estimate.
+
+        The estimator is the geometric mean, which is the only average that reproduces the balance actually reached; the arithmetic mean overstates a volatile series.
+
+        With fewer than six complete monthly points, `points` is empty and `unavailable_reason` is `INSUFFICIENT_HISTORY` — no figure is published on a sample too small to defend. `sample_months` always reports what the estimate rests on.
+
+        This is an extrapolation of recorded facts, not investment advice, and no part of it is a recommendation to buy or sell.
+      summary: Performance forecast
+      parameters:
+      - in: query
+        name: account
+        schema:
+          type: string
+          format: uuid
+        description: Narrow to one account. Omitted means the whole portfolio. An
+          id outside your portfolio narrows to nothing rather than 404ing.
+      - in: query
+        name: months
+        schema:
+          type: integer
+        description: Months to project, 1–60. Defaults to 12.
+      - in: query
+        name: 'on'
+        schema:
+          type: string
+          format: date
+        description: Valuation date (YYYY-MM-DD). Defaults to today.
+      tags:
+      - Portfolio
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioForecastEnvelope'
+          description: The forecast, or the reason there is none.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/portfolio/history/:
+    get:
+      operationId: api_portfolio_history_retrieve
+      description: |-
+        One point per month: total value, invested cost, gain, external net flow, and the flow-adjusted (Modified Dietz) return for the period. Derived from the movement log on every request and never stored (BR-DERIVE).
+
+        Every point but the last is a month end; when the window reaches the current month the last point is today, flagged `partial`.
+
+        A month the reference data cannot value reports null figures and `complete: false` — never a zero, which would draw a crash that never happened.
+
+        `net_flow` counts money entering or leaving the scope: deposits and withdrawals for the whole portfolio, plus transfer legs when `account` narrows to one account. Buys, sells, income and fees are not flows — they are what the return measures.
+      summary: Monthly history
+      parameters:
+      - in: query
+        name: account
+        schema:
+          type: string
+          format: uuid
+        description: Narrow to one account. Omitted means the whole portfolio. An
+          id outside your portfolio narrows to nothing rather than 404ing.
+      - in: query
+        name: from
+        schema:
+          type: string
+          format: date
+        description: First date in the window (YYYY-MM-DD), snapped to its month.
+          Defaults to the portfolio's first movement.
+      - in: query
+        name: to
+        schema:
+          type: string
+          format: date
+        description: Last date in the window (YYYY-MM-DD). Defaults to today.
+      tags:
+      - Portfolio
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioSeriesEnvelope'
+          description: The monthly series.
         '400':
           content:
             application/json:
@@ -1862,9 +1984,20 @@ paths:
         per-archetype totals in the profile's reporting currency, as of `on`. Figures
         the reference data cannot support are excluded from the sums and listed under
         `missing` (FR-VIEW-001). Holding rows carry a derived target_status when a
-        target resolves (FR-TARGET-005, information only).
+        target resolves (FR-TARGET-005, information only). Each account group carries
+        its own nominal_return and real_return over that account's invested capital
+        — idle cash is not in the denominator, so the figure is the return the investments
+        earned, not the growth of the balance. null when the account has no invested
+        capital.
       summary: Portfolio overview
       parameters:
+      - in: query
+        name: account
+        schema:
+          type: string
+          format: uuid
+        description: Narrow to one account. Omitted means the whole portfolio. An
+          id outside your portfolio narrows to nothing rather than 404ing.
       - in: query
         name: 'on'
         schema:
@@ -1882,6 +2015,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/PortfolioOverviewEnvelope'
           description: The portfolio overview.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+          description: Validation failed — `errors` names the offending fields.
+        '401':
+          description: No valid session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/portfolio/performance/:
+    get:
+      operationId: api_portfolio_performance_retrieve
+      description: |-
+        The most and least profitable assets by realized monthly gain, derived from recorded sales over the whole history.
+
+        A sale's rate is its profit rate divided by the months the lot was held — a simple average, so +100% over three months reads as 33.33% per month. An asset's figure is the capital-weighted mean of its sales.
+
+        **No minimum holding period is applied**, so a position sold days after purchase can report a very large monthly rate. `sales_count` and `avg_holding_period_days` accompany every row so the figure can be shown with the context that qualifies it. A lot bought and sold on the same day has no monthly rate and is excluded.
+
+        The metric is realized: **an asset that has never been sold appears in neither list**. This is not tax assessment — no exemption or offsetting rule is applied.
+      summary: Asset performance ranking
+      parameters:
+      - in: query
+        name: account
+        schema:
+          type: string
+          format: uuid
+        description: Narrow to one account. Omitted means the whole portfolio. An
+          id outside your portfolio narrows to nothing rather than 404ing.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Rows per list, 1–20. Defaults to 3.
+      - in: query
+        name: 'on'
+        schema:
+          type: string
+          format: date
+        description: Valuation date (YYYY-MM-DD). Defaults to today.
+      tags:
+      - Portfolio
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetRankingEnvelope'
+          description: The ranking.
         '400':
           content:
             application/json:
@@ -2594,11 +2781,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HoldingSummary'
+        nominal_return:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        real_return:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
       required:
       - account
       - cash
       - complete
       - holdings
+      - nominal_return
+      - real_return
       - subtotal
     AccountPatchEnvelope:
       type: object
@@ -2772,6 +2975,35 @@ components:
           EXCHANGE_SECURITY: '#/components/schemas/ExchangeSecurityAsset'
           NAV_FUND: '#/components/schemas/NavFundAsset'
           CRYPTO: '#/components/schemas/CryptoAsset'
+    AssetAllocationSlice:
+      type: object
+      description: One asset's share; asset is null on the free-cash row (spec 2026-08-15).
+      properties:
+        asset:
+          allOf:
+          - $ref: '#/components/schemas/AssetRef'
+          nullable: true
+        value:
+          $ref: '#/components/schemas/Money'
+        invested:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Decimal string fraction — 0.1375 means 13.75%. Never parse
+            as a float.
+        complete:
+          type: boolean
+      required:
+      - asset
+      - complete
+      - invested
+      - value
+      - weight
     AssetArchiveEnvelope:
       type: object
       properties:
@@ -2820,6 +3052,86 @@ components:
           type: string
       required:
       - data
+    AssetPerformanceRow:
+      type: object
+      description: One asset's realized monthly gain (spec 2026-08-15).
+      properties:
+        asset:
+          $ref: '#/components/schemas/AssetRef'
+        monthly_profit_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          description: Capital-weighted mean of this asset's sales, each measured
+            as the sale's profit rate divided by the months the lot was held. No minimum
+            holding period is applied.
+        sales_count:
+          type: integer
+        profit:
+          $ref: '#/components/schemas/Money'
+        avg_holding_period_days:
+          type: integer
+        last_sold_on:
+          type: string
+          format: date
+      required:
+      - asset
+      - avg_holding_period_days
+      - last_sold_on
+      - monthly_profit_rate
+      - profit
+      - sales_count
+    AssetRanking:
+      type: object
+      description: The two ends of one realized-gain ranking (spec 2026-08-15).
+      properties:
+        reporting_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        ranked_assets_count:
+          type: integer
+          description: Assets with at least one rankable sale. When this is below
+            2×limit, `best` and `worst` overlap.
+        best:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetPerformanceRow'
+        worst:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetPerformanceRow'
+      required:
+      - best
+      - ranked_assets_count
+      - reporting_currency
+      - worst
+    AssetRankingEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AssetRanking'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    AssetRef:
+      type: object
+      description: Enough of an asset to label a chart slice; the full row lives in
+        /api/assets/.
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        archetype:
+          $ref: '#/components/schemas/ArchetypeEnum'
+      required:
+      - archetype
+      - id
+      - name
     AssetRequest:
       oneOf:
       - $ref: '#/components/schemas/CashDepositAssetRequest'
@@ -3484,6 +3796,23 @@ components:
       - rate_index
       - rate_type
       - tax_advantaged
+    ForecastPoint:
+      type: object
+      description: One projected month; low/high are the ±1σ band, compounded.
+      properties:
+        month:
+          type: string
+        expected:
+          $ref: '#/components/schemas/Money'
+        low:
+          $ref: '#/components/schemas/Money'
+        high:
+          $ref: '#/components/schemas/Money'
+      required:
+      - expected
+      - high
+      - low
+      - month
     FxRate:
       type: object
       properties:
@@ -5399,12 +5728,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AllocationSlice'
+        by_asset:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetAllocationSlice'
         missing:
           type: array
           items:
             $ref: '#/components/schemas/MissingFigure'
       required:
       - by_archetype
+      - by_asset
       - by_country
       - by_currency
       - complete
@@ -5487,6 +5821,59 @@ components:
       - archetype
       - scope
       - steps
+    PortfolioForecast:
+      type: object
+      description: A projection of recorded performance — never a recommendation.
+      properties:
+        reporting_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        monthly_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Geometric mean of the sampled monthly returns.
+        volatility:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Standard deviation of the same sample; the band's width.
+        sample_months:
+          type: integer
+          description: Complete months the estimate is based on.
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForecastPoint'
+        unavailable_reason:
+          allOf:
+          - $ref: '#/components/schemas/UnavailableReasonEnum'
+          nullable: true
+          description: |-
+            Set, with empty points, when no estimate is defensible.
+
+            * `INSUFFICIENT_HISTORY` - INSUFFICIENT_HISTORY
+            * `NOT_VALUED` - NOT_VALUED
+      required:
+      - monthly_rate
+      - points
+      - reporting_currency
+      - sample_months
+      - unavailable_reason
+      - volatility
+    PortfolioForecastEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PortfolioForecast'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
     PortfolioOverview:
       type: object
       description: FR-VIEW-001 — the whole dashboard in one reconciling response.
@@ -5544,6 +5931,31 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/PortfolioOverview'
+        status:
+          type: integer
+          default: 200
+        message:
+          type: string
+      required:
+      - data
+    PortfolioSeries:
+      type: object
+      description: The monthly history behind the Overview charts (spec 2026-08-15).
+      properties:
+        reporting_currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeriesPoint'
+      required:
+      - points
+      - reporting_currency
+    PortfolioSeriesEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PortfolioSeries'
         status:
           type: integer
           default: 200
@@ -5974,6 +6386,54 @@ components:
         * `ETF` - ETF
         * `REIT` - REIT
         * `FII` - FII
+    SeriesPoint:
+      type: object
+      description: One month of history; a null figure means it could not be valued.
+      properties:
+        month:
+          type: string
+          description: Calendar month, "YYYY-MM".
+        as_of:
+          type: string
+          format: date
+          description: The date the point was valued at.
+        partial:
+          type: boolean
+          description: True when the point is today inside an unfinished month.
+        total_value:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        invested:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        gain:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          nullable: true
+        net_flow:
+          allOf:
+          - $ref: '#/components/schemas/Money'
+          description: External money in (+) or out (−) during the period.
+        monthly_return:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,4}(?:\.\d{0,8})?$
+          nullable: true
+          description: Flow-adjusted (Modified Dietz) return; deposits are not gains.
+        complete:
+          type: boolean
+      required:
+      - as_of
+      - complete
+      - gain
+      - invested
+      - month
+      - monthly_return
+      - net_flow
+      - partial
+      - total_value
     SocialLogin:
       type: object
       properties:
@@ -6331,6 +6791,14 @@ components:
         * `TAX` - Tax
         * `SPLIT` - Split
         * `BONUS` - Bonus
+    UnavailableReasonEnum:
+      enum:
+      - INSUFFICIENT_HISTORY
+      - NOT_VALUED
+      type: string
+      description: |-
+        * `INSUFFICIENT_HISTORY` - INSUFFICIENT_HISTORY
+        * `NOT_VALUED` - NOT_VALUED
     UnitPriceRuleEnum:
       enum:
       - WITH_QUANTITY
