@@ -1088,7 +1088,15 @@ export interface components {
             readonly id: string;
             /** Format: uuid */
             institution?: string | null;
-            name: string;
+            /**
+             * @description The institution's name, denormalized so a list needs no second read.
+             *
+             *     The label a client renders starts here (design §3.4); without this
+             *     field every screen showing an account would have to join the
+             *     paginated institutions list to name it.
+             */
+            readonly institution_name: string;
+            name?: string;
             country: components["schemas"]["CountryEnum"];
             registration: components["schemas"]["RegistrationEnum"];
             base_currency: components["schemas"]["CurrencyEnum"];
@@ -1175,7 +1183,7 @@ export interface components {
         AccountRequest: {
             /** Format: uuid */
             institution?: string | null;
-            name: string;
+            name?: string;
             country: components["schemas"]["CountryEnum"];
             registration: components["schemas"]["RegistrationEnum"];
             base_currency: components["schemas"]["CurrencyEnum"];
@@ -2777,6 +2785,8 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
+            registration: components["schemas"]["RegistrationEnum"];
+            readonly institution_name: string;
         };
         /** @description Enough of the asset to render a row without a second request. */
         SaleAsset: {

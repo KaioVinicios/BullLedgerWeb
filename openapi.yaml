@@ -2416,6 +2416,15 @@ components:
           type: string
           format: uuid
           nullable: true
+        institution_name:
+          type: string
+          description: |-
+            The institution's name, denormalized so a list needs no second read.
+
+            The label a client renders starts here (design §3.4); without this
+            field every screen showing an account would have to join the
+            paginated institutions list to name it.
+          readOnly: true
         name:
           type: string
           maxLength: 100
@@ -2457,7 +2466,7 @@ components:
       - base_currency
       - country
       - id
-      - name
+      - institution_name
       - registration
     AccountArchetypeTarget:
       type: object
@@ -2612,7 +2621,6 @@ components:
           nullable: true
         name:
           type: string
-          minLength: 1
           maxLength: 100
         country:
           $ref: '#/components/schemas/CountryEnum'
@@ -2645,7 +2653,6 @@ components:
       required:
       - base_currency
       - country
-      - name
       - registration
     AccountUnarchiveEnvelope:
       type: object
@@ -5044,7 +5051,6 @@ components:
           nullable: true
         name:
           type: string
-          minLength: 1
           maxLength: 100
         country:
           $ref: '#/components/schemas/CountryEnum'
@@ -5803,9 +5809,16 @@ components:
           format: uuid
         name:
           type: string
+        registration:
+          $ref: '#/components/schemas/RegistrationEnum'
+        institution_name:
+          type: string
+          readOnly: true
       required:
       - id
+      - institution_name
       - name
+      - registration
     SaleAsset:
       type: object
       description: Enough of the asset to render a row without a second request.
