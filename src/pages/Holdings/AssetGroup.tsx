@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 
+import { InstitutionLogo } from "@/components/InstitutionLogo";
 import { MoneyValue } from "@/components/MoneyValue";
 import { SignedFigure } from "@/components/SignedFigure";
 import { SignedPercent } from "@/components/SignedPercent";
@@ -195,8 +196,15 @@ export function AssetGroupBlock({
                       {row.account?.name ?? t("holdings.unknownAccount")}
                     </Link>
                     {row.institution !== null && (
-                      <span className="text-muted-foreground">
-                        {" · "}
+                      // The mark replaces the middot: it already reads as the
+                      // break between the account and who holds it, and two
+                      // separators for one join is one too many.
+                      <span className="ml-2 inline-flex items-center gap-1.5 align-middle text-muted-foreground">
+                        <InstitutionLogo
+                          name={row.institution.name}
+                          logo={row.institution.logo}
+                          size="sm"
+                        />
                         {row.institution.name}
                       </span>
                     )}

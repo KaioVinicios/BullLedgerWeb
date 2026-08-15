@@ -23,6 +23,7 @@ import { toast } from "sonner";
 
 import { ArchiveConfirmDialog } from "@/components/ArchiveConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
+import { InstitutionLogo } from "@/components/InstitutionLogo";
 import { ListError } from "@/components/ListError";
 import { ListPagination } from "@/components/ListPagination";
 import { ListSkeleton } from "@/components/ListSkeleton";
@@ -187,6 +188,10 @@ export function InstitutionsPage() {
                   <TableRow key={institution.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
+                        <InstitutionLogo
+                          name={institution.name}
+                          logo={institution.logo}
+                        />
                         <Link
                           to={PATHS.INSTITUTIONS_EDIT}
                           params={{ id: institution.id }}

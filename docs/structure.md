@@ -40,7 +40,7 @@ Generic, reusable UI components that are not tied to a specific page or business
 
 `shell/` holds the authenticated application frame — sidebar, header, account menu, and the in-shell not-found and error surfaces. It is reusable chrome rather than any one route's page, which is why it lives here and not in `pages/`. Page-composition primitives shared by every screen (`PageHeader`, `EmptyState`, `PageSkeleton`, `PageContainer`) sit directly in `components/`: screens compose them, and the shell does not own them.
 
-`PageContainer` is where a screen's width is decided, and the only place a width belongs. Three values: `full` (the default — the content region *is* the measure, for tables, projections, and dashboards), `form` (the content has an optimal measure of its own, for forms, settings, and prose), and `form-wide` (a form that reads *beside* something — the target form sets a live summary panel next to its fields, and the pair needs more than the form measure without becoming a full-width table screen). Wrap the whole screen including its `PageHeader`, so the heading and its action share the content's edge. The column is left-aligned rather than centred on purpose: centring would move the content's left edge horizontally on every navigation between a narrow screen and a wide one, and a fixed left edge is worth more than symmetric whitespace.
+`PageContainer` is where a screen's width is decided, and the only place a width belongs. Three values: `full` (the default — the content region *is* the measure, for tables, projections, and dashboards), `form` (the content has an optimal measure of its own, for forms, settings, and prose), and `form-wide` (a form that reads *beside* something — the target form sets a live summary panel next to its fields, and the pair needs more than the form measure without becoming a full-width table screen). Wrap the whole screen including its `PageHeader`, so the heading and its action share the content's edge. A capped column is centred: the screen stays one block — title over the input it introduces — and the leftover room reads as framing on both sides instead of a long void down the right. `full` gets no centring class, because its content already is the region and the class would only be a no-op.
 
 The resource-list pattern lives here too, as four small pieces every structure screen
 composes rather than a `ResourceTable` component that would have to grow a prop for every
@@ -88,6 +88,17 @@ file: adjacent steps of the gold ramp sit at 1.40–1.68:1, far under the 3:1
 non-text bar, so the segment boundary is a 2px gap rather than a colour
 difference; and `--chart-1` at 1.20:1 over the light trough is excluded, because
 a segment nobody can see is not a segment.
+
+`InstitutionLogo.tsx` renders the mark the user recorded on an institution, wherever the
+institution is named: the institutions and accounts tables, both holdings groupings, and
+the institution's own edit header. It composes the Radix avatar primitive directly rather
+than reusing `ui/avatar`, which crops to a circle with `object-cover` — right for a face
+and wrong for a brand, since a wordmark loses its ends that way. Two decisions are worth
+keeping: the tile is `aria-hidden` because the name is always beside it and an `alt` would
+make every row say the institution twice; and the image sits on a constant white ground
+while the initials fallback stays in the neutral ramp, because a third-party logo is
+usually dark ink on transparency and would vanish in the dark theme, whereas initials have
+no such problem and should not brighten a row that has no logo at all.
 
 `BrandLink.tsx` is the brand in the one place it is defined, and it has two call sites for a
 reason. The sidebar header carries it from `md` up; below `md` the sidebar is an off-canvas

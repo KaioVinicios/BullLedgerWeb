@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { InstitutionLogo } from "@/components/InstitutionLogo";
 import { PageContainer } from "@/components/PageContainer";
 import { PageHeader } from "@/components/PageHeader";
 import { PageSkeleton } from "@/components/PageSkeleton";
@@ -32,6 +33,13 @@ export function InstitutionEditPage() {
       <PageHeader
         title={institution.name}
         description={t("institutions.form.editDescription")}
+        mark={
+          <InstitutionLogo
+            name={institution.name}
+            logo={institution.logo}
+            size="lg"
+          />
+        }
       />
       {/* Keyed so switching records remounts the form with fresh defaults —
           TanStack Form reads defaultValues once. */}

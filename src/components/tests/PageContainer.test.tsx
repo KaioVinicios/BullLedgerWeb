@@ -42,16 +42,28 @@ describe("PageContainer", () => {
     );
   });
 
-  it("does not centre the column", () => {
+  it("centres a capped column", () => {
     render(
       <PageContainer width="form">
         <p>fields</p>
       </PageContainer>,
     );
 
-    // The left edge stays put across navigations. Centring would move it
-    // whenever a narrow screen follows a wide one.
-    expect(screen.getByText("fields").parentElement?.className).not.toMatch(
+    // Heading and fields travel together, and the leftover room reads as
+    // framing on both sides rather than a void down the right.
+    expect(screen.getByText("fields").parentElement).toHaveClass("mx-auto");
+  });
+
+  it("gives a full-width screen no column to centre", () => {
+    render(
+      <PageContainer>
+        <p>figures</p>
+      </PageContainer>,
+    );
+
+    // Nothing is narrower than the region, so centring would be a no-op class
+    // claiming a decision the screen never made.
+    expect(screen.getByText("figures").parentElement?.className).not.toMatch(
       /\bmx-auto\b/,
     );
   });

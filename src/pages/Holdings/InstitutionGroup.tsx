@@ -2,6 +2,7 @@ import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 
+import { InstitutionLogo } from "@/components/InstitutionLogo";
 import { MoneyValue } from "@/components/MoneyValue";
 import { AccountBlock } from "@/pages/Holdings/AccountBlock";
 import type { Asset } from "@/services/assets";
@@ -70,6 +71,15 @@ export function InstitutionGroup({
             <IconChevronDown aria-hidden className="size-4 shrink-0" />
           ) : (
             <IconChevronRight aria-hidden className="size-4 shrink-0" />
+          )}
+          {/* Only for a real institution: the unaffiliated group is an absence,
+              and initials for "No institution" would give the placeholder a
+              badge the named brokers have earned. */}
+          {group.institution !== null && (
+            <InstitutionLogo
+              name={group.institution.name}
+              logo={group.institution.logo}
+            />
           )}
           <span id={titleId} className="font-medium">
             {label}

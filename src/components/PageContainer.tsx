@@ -43,10 +43,13 @@ interface PageContainerProps {
  * `ENDPOINTS` already prevent for routes and endpoints — a value that must
  * agree across the app belongs in one module, not in ten JSX attributes.
  *
- * Left-aligned rather than centred, deliberately. A centred column would make
- * the content's left edge jump horizontally on every navigation between a
- * narrow screen and a wide one; a fixed left edge is worth more than symmetric
- * whitespace, because the jump happens in motion and the whitespace does not.
+ * A capped column is centred. The screen is one block — heading, description,
+ * and fields share a left edge, so the title always sits over the input it
+ * introduces rather than adrift from it — and the room left over reads as
+ * framing on both sides instead of a long void down the right.
+ *
+ * `full` has nothing to centre: its content already is the region, so it gets
+ * no centring class that would only be a no-op.
  *
  * The page heading belongs *inside* this, not above it: a screen has one
  * measure, and an action in `PageHeader` should sit over the content it acts
@@ -57,5 +60,9 @@ export function PageContainer({
   width = "full",
   className,
 }: PageContainerProps) {
-  return <div className={cn(WIDTH[width], className)}>{children}</div>;
+  return (
+    <div className={cn(WIDTH[width], width !== "full" && "mx-auto", className)}>
+      {children}
+    </div>
+  );
 }
