@@ -181,9 +181,8 @@ const LIVE_ASSETS = {} as const;
 const appIndexRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/",
-  // No `stripSearchParams`: absence *is* the default here — an overview with
-  // nothing collapsed writes nothing to the address bar, so there is nothing
-  // to strip back out.
+  // No `stripSearchParams`: absence *is* the default here — the General tab
+  // writes nothing to the address bar, so there is nothing to strip back out.
   validateSearch: overviewSearchSchema,
   component: lazyRouteComponent(
     () => import("@/pages/Overview"),

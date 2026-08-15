@@ -93,7 +93,10 @@ test("shows a labelled verdict and the level it resolved from", async ({
 
   // One vocabulary, two screens: the overview row carries the same word.
   await page.goto(PATHS.APP);
-  const row = page.getByRole("row", { name: new RegExp(asset.name) });
+  await page.getByRole("tab", { name: accountName(account) }).click();
+  const row = page
+    .getByRole("region", { name: accountName(account) })
+    .getByRole("row", { name: new RegExp(asset.name) });
   await expect(row.getByText(verdict)).toBeVisible();
 });
 

@@ -7,34 +7,35 @@
  * the whole portfolio arrives at once, which is what makes the grouped
  * presentation honest rather than a view over one page of many.
  *
+ * The screen is scoped by a tab strip: General, then one tab per account. The
+ * open tab is the URL's `account`, and absence is General — the resting state
+ * writes nothing to the address bar, the same idiom the `closed` field this
+ * replaced used. The groups moved into those tabs because `/app/holdings`
+ * already owns "what do I own and where", and because a tab shows one account
+ * where the old list showed every one at once.
+ *
  * Strictly a read. No mutation hook is imported here or in anything this
  * composes.
  *
  * The projections carry bare UUIDs, so accounts and assets are joined from
  * their own caches to give every row a name.
  */
-import { getRouteApi, Link } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { IconArrowRight } from "@tabler/icons-react";
 
-import {
-  AllocationBar,
-  type AllocationSegment,
-} from "@/components/AllocationBar";
 import { ListError } from "@/components/ListError";
 import { ListSkeleton } from "@/components/ListSkeleton";
-import { MoneyValue } from "@/components/MoneyValue";
 import { PageContainer } from "@/components/PageContainer";
 import { PageHeader } from "@/components/PageHeader";
-import { PercentValue } from "@/components/PercentValue";
-import { AccountGroupBlock } from "@/pages/Overview/AccountGroup";
 import { FirstRun } from "@/pages/Overview/FirstRun";
-import { Totals } from "@/pages/Overview/Totals";
-import { APP_INDEX_ROUTE_ID, PATHS } from "@/routes/path";
+import { ScopeContent } from "@/pages/Overview/ScopeContent";
+import { ScopeTabs } from "@/pages/Overview/ScopeTabs";
+import { APP_INDEX_ROUTE_ID } from "@/routes/path";
 import { accountKeys, listAccounts } from "@/services/accounts";
 import { assetKeys, listAssets } from "@/services/assets";
 import { overviewQuery } from "@/services/portfolio";
+import { accountLabel } from "@/utils/accountLabel";
 import { isOpenPosition } from "@/utils/holdings";
 
 // The index route's own id, not the layout's — see `APP_INDEX_ROUTE_ID`.
@@ -59,24 +60,16 @@ export function OverviewPage() {
     queryFn: () => listAssets(LIVE),
   });
 
-  const closed = search.closed ?? [];
+  const rows = accounts?.results ?? [];
 
-  const toggle = (accountId: string) => {
-    const next = closed.includes(accountId)
-      ? closed.filter((id) => id !== accountId)
-      : [...closed, accountId];
+  // A stale bookmark names an account that no longer exists; the schema's
+  // `.catch` handles a malformed id, and this handles a well-formed absent one.
+  const selected = rows.find((row) => row.id === search.account);
+  const accountId = selected?.id;
 
-    void navigate({
-      search: (prev) => ({
-        ...prev,
-        // Absence *is* the resting state, so an empty set leaves the URL.
-        closed: next.length > 0 ? next : undefined,
-      }),
-    });
+  const selectScope = (next: string | undefined) => {
+    void navigate({ search: () => (next ? { account: next } : {}) });
   };
-
-  const nameOf = (id: string) =>
-    accounts?.results.find((row) => row.id === id)?.name ?? "—";
 
   const data = overview.data;
 
@@ -96,16 +89,6 @@ export function OverviewPage() {
         (group.cash?.amount ?? 0) === 0,
     );
 
-  const archetypeSegments: AllocationSegment[] = (data?.archetypes ?? []).map(
-    (slice) => ({
-      id: slice.archetype,
-      label: t(`enums.archetype.${slice.archetype}`),
-      value: slice.value,
-      weight: slice.weight,
-      complete: slice.complete,
-    }),
-  );
-
   return (
     <PageContainer>
       <PageHeader
@@ -120,69 +103,18 @@ export function OverviewPage() {
       ) : !data ? null : isEmpty ? (
         <FirstRun />
       ) : (
-        <div className="space-y-10">
-          <Totals overview={data} />
-
-          <div className="space-y-4">
-            {data.accounts.map((group) => (
-              <AccountGroupBlock
-                key={group.account}
-                group={group}
-                name={nameOf(group.account)}
-                isOpen={!closed.includes(group.account)}
-                onToggle={() => toggle(group.account)}
-                assets={assets?.results ?? []}
-                missing={data.missing}
-              />
-            ))}
-          </div>
-
-          {archetypeSegments.length > 0 && (
-            <section
-              aria-labelledby="overview-archetypes"
-              className="space-y-4"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 id="overview-archetypes" className="text-sm font-medium">
-                  {t("overview.byArchetype")}
-                </h2>
-                {/* Currency and country live on their own screen rather than
-                    being repeated here — `by_archetype` is the only dimension
-                    this response already carries. */}
-                <Link
-                  to={PATHS.ALLOCATION}
-                  className="inline-flex items-center gap-1 text-sm font-medium underline underline-offset-4"
-                >
-                  {t("overview.seeAllocation")}
-                  <IconArrowRight aria-hidden className="size-3.5" />
-                </Link>
-              </div>
-
-              <AllocationBar segments={archetypeSegments} />
-
-              <ul className="space-y-1 text-sm">
-                {archetypeSegments.map((segment) => (
-                  <li
-                    key={segment.id}
-                    className="flex flex-wrap items-baseline justify-between gap-3"
-                  >
-                    <span>{segment.label}</span>
-                    <span className="flex items-baseline gap-3">
-                      <MoneyValue value={segment.value} />
-                      {segment.weight === null ? (
-                        <span className="text-muted-foreground">—</span>
-                      ) : (
-                        <PercentValue
-                          value={segment.weight}
-                          className="text-muted-foreground"
-                        />
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
+        <div className="space-y-8">
+          <ScopeTabs
+            accountId={accountId}
+            accounts={rows}
+            onChange={selectScope}
+          />
+          <ScopeContent
+            accountId={accountId}
+            overview={data}
+            assets={assets?.results ?? []}
+            accountName={selected ? accountLabel(selected, t) : "—"}
+          />
         </div>
       )}
     </PageContainer>

@@ -20,15 +20,19 @@ import type { operations } from "@/types/api";
  */
 
 /**
- * Which account groups are *collapsed*, not which are open.
+ * Which account's tab is open — and absence is General.
  *
- * Expanded is the resting state — the payload arrives grouped and the figures
- * are the point — so the empty case is the default and there is nothing for
- * `stripSearchParams` to strip. Storing the open set instead would put every
- * account id in the address bar on a screen where nothing had been touched.
+ * The same idiom the screen's previous `closed` field used: the resting state
+ * writes nothing to the address bar, so `<Link to="/app">` needs no `search`
+ * prop and there is nothing for `stripSearchParams` to strip. `.catch`
+ * degrades a stale bookmark — an account since archived, or a malformed id —
+ * to General rather than throwing a route error.
+ *
+ * `closed` is gone with the collapsible account list it controlled: the groups
+ * now live one per tab, where there is only ever one and nothing to collapse.
  */
 export const overviewSearchSchema = z.object({
-  closed: z.array(z.uuid()).optional().catch(undefined),
+  account: z.uuid().optional().catch(undefined),
 });
 
 export type OverviewSearch = z.infer<typeof overviewSearchSchema>;

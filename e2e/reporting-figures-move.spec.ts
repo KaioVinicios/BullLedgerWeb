@@ -3,6 +3,7 @@ import { PATHS } from "@/routes/path";
 
 import { expect, test } from "./support/fixtures";
 import {
+  accountName,
   recordMovement,
   seedAccount,
   seedPriceQuote,
@@ -65,7 +66,11 @@ test("moves the overview when a movement is recorded, and back when it is voided
     page.getByRole("heading", { name: app.overview.firstRun.title }),
   ).toHaveCount(0);
 
-  const group = page.getByRole("region", { name: account.name });
+  // The groups live one per tab now, so the account's own tab is where its
+  // holdings are.
+  await page.getByRole("tab", { name: accountName(account) }).click();
+
+  const group = page.getByRole("region", { name: accountName(account) });
   await expect(group).toBeVisible();
 
   // The holding is there, and it is the way into its own detail.
@@ -87,6 +92,8 @@ test("moves the overview when a movement is recorded, and back when it is voided
 
   await page.goto(PATHS.APP);
 
+  // No tab to open: the last position is gone, so the screen is back to the
+  // first-run surface and there is no scope strip at all.
   // The position is gone from the projection...
   await expect(page.getByText("R$250.00")).toHaveCount(0);
 

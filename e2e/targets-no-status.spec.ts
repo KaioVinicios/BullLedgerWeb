@@ -4,6 +4,7 @@ import { PATHS } from "@/routes/path";
 import { expect, test } from "./support/fixtures";
 import { routeTo } from "./support/config";
 import {
+  accountName,
   recordMovement,
   seedAccount,
   seedPriceQuote,
@@ -98,10 +99,13 @@ test("leaves a holding no target covers without a status", async ({ page }) => {
   // On the overview the uncovered row's status cell is empty — an em dash
   // would read as "measured, and nothing".
   await page.goto(PATHS.APP);
+  await page.getByRole("tab", { name: accountName(account) }).click();
 
-  const uncoveredRow = page.getByRole("row", {
-    name: new RegExp(uncovered.name),
-  });
+  // Scoped to the account's own block: the by-asset table on the same screen
+  // carries a row per asset too, and an unscoped row locator matches both.
+  const uncoveredRow = page
+    .getByRole("region", { name: accountName(account) })
+    .getByRole("row", { name: new RegExp(uncovered.name) });
   await expect(uncoveredRow).toBeVisible();
 
   // The status column is the last one. Asserted on that cell rather than on

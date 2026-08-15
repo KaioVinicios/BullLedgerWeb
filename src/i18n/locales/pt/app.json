@@ -159,9 +159,45 @@
     "cash": "Caixa",
     "subtotal": "Subtotal",
     "groupIncomplete": "Parcialmente avaliado",
-    "toggleGroup": "Mostrar ou ocultar {{name}}",
-    "byArchetype": "Por arquétipo",
-    "seeAllocation": "Ver também moeda e país",
+    "tabs": {
+      "label": "Escopo da carteira",
+      "general": "Geral"
+    },
+    "evolution": {
+      "title": "Mês a mês",
+      "tableLabel": "Histórico mensal",
+      "month": "Mês",
+      "value": "Valor total",
+      "netFlow": "Aportes líquidos",
+      "monthlyReturn": "Retorno",
+      "partial": "(até agora)",
+      "estimate": "(estimativa)",
+      "estimateSeries": "Projetado",
+      "rangeSeries": "Faixa provável",
+      "unvalued": "Nenhum mês pôde ser valorizado ainda — registre um preço para o que você tem e o histórico aparece.",
+      "insufficient_one": "Baseado em {{count}} mês de histórico; são necessários 6 para uma projeção significar algo.",
+      "insufficient_other": "Baseado em {{count}} meses de histórico; são necessários 6 para uma projeção significar algo.",
+      "noRate": "Baseado em {{count}} meses de histórico, mas um mês em zero ou negativo não deixa taxa média para compor — a projeção não tem o que traçar com honestidade.",
+      "notValued": "Há histórico, mas nenhum mês pôde ser valorizado — a projeção precisa de preços, não de mais tempo."
+    },
+    "ranking": {
+      "title": "O que rendeu, e o que não",
+      "best": "Melhores",
+      "worst": "Piores",
+      "realizedOnly": "Medido sobre as vendas que você registrou. Um ativo que você nunca vendeu não entra neste ranking.",
+      "context": "{{sales}} venda(s) · {{days}} dias em média",
+      "empty": "Nenhuma venda registrada ainda — este ranking aparece quando você registrar uma."
+    },
+    "byAsset": {
+      "title": "Onde o dinheiro está",
+      "tableLabel": "Distribuição por ativo",
+      "asset": "Ativo",
+      "value": "Valor hoje",
+      "invested": "Investido",
+      "weight": "Participação",
+      "freeCash": "Caixa livre"
+    },
+    "seeAllocation": "Ver arquétipo, moeda e país",
     "columns": {
       "asset": "Ativo",
       "quantity": "Posição",

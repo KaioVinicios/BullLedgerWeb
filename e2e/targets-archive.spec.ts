@@ -4,6 +4,7 @@ import { PATHS } from "@/routes/path";
 import { expect, test } from "./support/fixtures";
 import { routeTo } from "./support/config";
 import {
+  accountName,
   recordMovement,
   seedAccount,
   seedPriceQuote,
@@ -142,8 +143,10 @@ test("archives a target softly, and the holding it covered loses its status", as
   // Same on the overview: the status cell is empty, not holding yesterday's
   // answer.
   await page.goto(PATHS.APP);
+  await page.getByRole("tab", { name: accountName(account) }).click();
   await expect(
     page
+      .getByRole("region", { name: accountName(account) })
       .getByRole("row", { name: new RegExp(asset.name) })
       .getByRole("cell")
       .last(),

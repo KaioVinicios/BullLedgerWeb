@@ -1,6 +1,5 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 
 import { MoneyValue } from "@/components/MoneyValue";
 import {
@@ -20,8 +19,10 @@ import { isOpenPosition } from "@/utils/holdings";
  *
  * Grouped because it mirrors how the payload arrives and how people think about
  * where money sits, and because it keeps an account's `cash` beside the rows it
- * totals. Expanded by default — the figures are the point, and hiding them
- * behind a click would put the holding detail two clicks from the front door.
+ * totals.
+ *
+ * Always expanded. The collapse existed because General listed every account
+ * at once; a tab shows one, and there is nothing to collapse away from.
  *
  * The rows are the positions still **held**, while `subtotal` is the server's.
  * The payload carries a row for every asset the account has ever touched, so a
@@ -30,30 +31,23 @@ import { isOpenPosition } from "@/utils/holdings";
  * reconcile: a closed row contributed nothing to the subtotal it is hidden
  * from.
  *
- * The disclosure is a real `<button aria-expanded>` controlling the row group,
- * never a clickable `<div>`, and the body is a real `<table>` so a screen reader
- * gets row and column context for free.
+ * The body is a real `<table>`, so a screen reader gets row and column context
+ * for free.
  */
 export function AccountGroupBlock({
   group,
   name,
-  isOpen,
-  onToggle,
   assets,
   missing,
 }: {
   group: AccountGroup;
   name: string;
-  isOpen: boolean;
-  onToggle: () => void;
   assets: readonly Asset[];
   missing: readonly MissingFigure[];
 }) {
   const { t } = useTranslation("app");
   const titleId = useId();
-  const bodyId = useId();
 
-  // Named `held` rather than `open`, which one line down means the disclosure.
   const held = group.holdings.filter(isOpenPosition);
 
   const assetById = (id: string) => assets.find((row) => row.id === id);
@@ -69,18 +63,7 @@ export function AccountGroupBlock({
       className="space-y-3 rounded-xl border p-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <button
-          type="button"
-          aria-expanded={isOpen}
-          aria-controls={bodyId}
-          onClick={onToggle}
-          className="flex items-center gap-2 rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-ring"
-        >
-          {isOpen ? (
-            <IconChevronDown aria-hidden className="size-4 shrink-0" />
-          ) : (
-            <IconChevronRight aria-hidden className="size-4 shrink-0" />
-          )}
+        <div className="flex items-baseline gap-2">
           <span id={titleId} className="font-medium">
             {name}
           </span>
@@ -89,7 +72,7 @@ export function AccountGroupBlock({
               {t("overview.groupIncomplete")}
             </span>
           )}
-        </button>
+        </div>
 
         <div className="flex items-center gap-6 text-sm">
           {group.cash && (
@@ -102,41 +85,39 @@ export function AccountGroupBlock({
         </div>
       </div>
 
-      <div id={bodyId} hidden={!isOpen}>
-        {held.length > 0 && (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("overview.columns.asset")}</TableHead>
-                  <TableHead className="text-right">
-                    {t("overview.columns.quantity")}
-                  </TableHead>
-                  <TableHead className="text-right">
-                    {t("overview.columns.value")}
-                  </TableHead>
-                  <TableHead className="text-right">
-                    {t("overview.columns.return")}
-                  </TableHead>
-                  <TableHead className="text-right">
-                    {t("overview.columns.status")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {held.map((holding) => (
-                  <HoldingRow
-                    key={holding.asset}
-                    holding={holding}
-                    asset={assetById(holding.asset)}
-                    reason={reasonFor(holding.asset)}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </div>
+      {held.length > 0 && (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("overview.columns.asset")}</TableHead>
+                <TableHead className="text-right">
+                  {t("overview.columns.quantity")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("overview.columns.value")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("overview.columns.return")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("overview.columns.status")}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {held.map((holding) => (
+                <HoldingRow
+                  key={holding.asset}
+                  holding={holding}
+                  asset={assetById(holding.asset)}
+                  reason={reasonFor(holding.asset)}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </section>
   );
 }

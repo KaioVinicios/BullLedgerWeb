@@ -159,9 +159,45 @@
     "cash": "Cash",
     "subtotal": "Subtotal",
     "groupIncomplete": "Partly valued",
-    "toggleGroup": "Show or hide {{name}}",
-    "byArchetype": "By archetype",
-    "seeAllocation": "See currency and country too",
+    "tabs": {
+      "label": "Portfolio scope",
+      "general": "General"
+    },
+    "evolution": {
+      "title": "Month by month",
+      "tableLabel": "Monthly history",
+      "month": "Month",
+      "value": "Total value",
+      "netFlow": "Net deposits",
+      "monthlyReturn": "Return",
+      "partial": "(so far)",
+      "estimate": "(estimate)",
+      "estimateSeries": "Projected",
+      "rangeSeries": "Likely range",
+      "unvalued": "No month could be valued yet — record a price for what you hold and the history appears.",
+      "insufficient_one": "Based on {{count}} month of history; 6 are needed before a projection means anything.",
+      "insufficient_other": "Based on {{count}} months of history; 6 are needed before a projection means anything.",
+      "noRate": "Based on {{count}} months of history, but a month at or below zero leaves no average rate to compound — the projection has nothing defensible to draw.",
+      "notValued": "There is history, but no month could be valued — the projection needs prices, not more time."
+    },
+    "ranking": {
+      "title": "What paid, and what didn't",
+      "best": "Best",
+      "worst": "Worst",
+      "realizedOnly": "Measured on sales you recorded. An asset you have never sold is not ranked here.",
+      "context": "{{sales}} sale(s) · {{days}} days held on average",
+      "empty": "No sales recorded yet — this ranking fills in once you record one."
+    },
+    "byAsset": {
+      "title": "Where the money sits",
+      "tableLabel": "Allocation by asset",
+      "asset": "Asset",
+      "value": "Value now",
+      "invested": "Invested",
+      "weight": "Share",
+      "freeCash": "Free cash"
+    },
+    "seeAllocation": "See archetype, currency and country",
     "columns": {
       "asset": "Asset",
       "quantity": "Position",

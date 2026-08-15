@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -11,139 +11,21 @@ import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
 import { PATHS } from "@/routes/path";
 import { createAppRouter } from "@/routes/router";
-import type { Account } from "@/services/accounts";
-import type { Asset } from "@/services/assets";
 import type { PortfolioOverview } from "@/services/portfolio";
-
-const user = { pk: 1, email: "ana@example.com", first_name: "", last_name: "" };
-
-const ACCOUNT_ID = "11111111-1111-4111-8111-111111111111";
-const PETR_ID = "22222222-2222-4222-8222-222222222222";
-const HASH_ID = "33333333-3333-4333-8333-333333333333";
-const VALE_ID = "44444444-4444-4444-8444-444444444444";
-
-const BRL = (amount: number) => ({ amount, currency: "BRL" as const });
-
-const account: Account = {
-  id: ACCOUNT_ID,
-  name: "Corretora XP",
-  institution: null,
-  institution_name: "",
-  country: "BR",
-  registration: "BR_TAXABLE",
-  base_currency: "BRL",
-  account_number: "",
-  contribution_room: null,
-  plan_type: null,
-  deductible: null,
-  tax_regime: null,
-  taxed_on: null,
-  archived_at: null,
-};
-
-const petr: Asset = {
-  id: PETR_ID,
-  name: "PETR4",
-  archetype: "EXCHANGE_SECURITY",
-  currency: "BRL",
-  country: "BR",
-  pricing_mode: "MARKET",
-  archived_at: null,
-  ticker: "PETR4",
-  exchange: "B3",
-  security_type: "STOCK",
-  pays_distributions: true,
-};
-
-const hash: Asset = { ...petr, id: HASH_ID, name: "HASH11", ticker: "HASH11" };
-const vale: Asset = { ...petr, id: VALE_ID, name: "VALE3", ticker: "VALE3" };
-
-/** Bought and sold in full: a row the rollup still reports, at zero. */
-const closedHolding = {
-  account: ACCOUNT_ID,
-  asset: VALE_ID,
-  archetype: "EXCHANGE_SECURITY" as const,
-  quantity: "0",
-  cost_basis_remaining_native: BRL(0),
-  current_value_native: BRL(0),
-  value: BRL(0),
-  invested: BRL(5_000_000),
-  realized_gain: BRL(1_200_000),
-  unrealized_gain: BRL(0),
-  income_received: BRL(0),
-  total_return: "0.24",
-  complete: true,
-  target_status: null,
-};
-
-const overview: PortfolioOverview = {
-  on_date: "2026-08-03",
-  reporting_currency: "BRL",
-  total_value: BRL(48_235_000),
-  free_cash: BRL(1_820_000),
-  complete: false,
-  accounts: [
-    {
-      account: ACCOUNT_ID,
-      cash: BRL(1_200_000),
-      subtotal: BRL(29_140_000),
-      complete: false,
-      holdings: [
-        {
-          account: ACCOUNT_ID,
-          asset: PETR_ID,
-          archetype: "EXCHANGE_SECURITY",
-          quantity: "100",
-          cost_basis_remaining_native: BRL(19_780_000),
-          current_value_native: BRL(21_410_000),
-          value: BRL(21_410_000),
-          invested: BRL(19_780_000),
-          realized_gain: BRL(0),
-          unrealized_gain: BRL(1_630_000),
-          income_received: BRL(48_800),
-          total_return: "0.082",
-          complete: true,
-          target_status: null,
-        },
-        {
-          account: ACCOUNT_ID,
-          asset: HASH_ID,
-          archetype: "EXCHANGE_SECURITY",
-          quantity: "50",
-          cost_basis_remaining_native: BRL(5_000_000),
-          current_value_native: null,
-          value: null,
-          invested: BRL(5_000_000),
-          realized_gain: BRL(0),
-          unrealized_gain: null,
-          income_received: BRL(0),
-          total_return: null,
-          complete: false,
-          target_status: null,
-        },
-        closedHolding,
-      ],
-    },
-  ],
-  archetypes: [
-    {
-      archetype: "EXCHANGE_SECURITY",
-      value: BRL(21_410_000),
-      weight: "1",
-      complete: false,
-    },
-  ],
-  nominal_return: "0.124",
-  real_return: "0.068",
-  missing: [{ account: ACCOUNT_ID, asset: HASH_ID, reason: "NO_QUOTE" }],
-};
-
-function page<T>(results: T[]) {
-  return {
-    status: 200,
-    data: { count: results.length, next: null, previous: null, results },
-  };
-}
+import {
+  ACCOUNT_ID,
+  BRL,
+  PETR_ID,
+  account,
+  closedHolding,
+  insightsHandlers,
+  overview,
+  page,
+  petr,
+  hash,
+  vale,
+  user,
+} from "@/pages/tests/support/overviewHandlers";
 
 function signedIn(data: PortfolioOverview = overview) {
   return [
@@ -157,6 +39,7 @@ function signedIn(data: PortfolioOverview = overview) {
     http.get(`${TEST_API_URL}/api/assets/`, () =>
       HttpResponse.json(page([petr, hash, vale])),
     ),
+    ...insightsHandlers(),
   ];
 }
 
@@ -184,6 +67,8 @@ function closedOnlyPortfolio() {
         cash: BRL(0),
         subtotal: BRL(0),
         complete: true,
+        nominal_return: null,
+        real_return: null,
         holdings: [closedHolding],
       },
     ],
@@ -208,6 +93,7 @@ function closedOnlyPortfolio() {
     http.get(`${TEST_API_URL}/api/movements/`, () =>
       HttpResponse.json(counted(2)),
     ),
+    ...insightsHandlers(),
   ];
 }
 
@@ -268,6 +154,7 @@ function emptyPortfolio(counts: {
     http.get(`${TEST_API_URL}/api/movements/`, () =>
       HttpResponse.json(counted(counts.movements)),
     ),
+    ...insightsHandlers(),
   ];
 }
 
@@ -348,6 +235,158 @@ describe("first run", () => {
   });
 });
 
+/** Clicks into the account's own tab, which is where its holdings now live. */
+async function openAccountTab() {
+  await userEvent.click(await screen.findByRole("tab", { name: account.name }));
+}
+
+describe("the overview's scope tabs", () => {
+  it("opens on the General tab with no account in the URL", async () => {
+    server.use(...signedIn());
+    const { router } = mount();
+
+    expect(
+      await screen.findByRole("tab", { name: app.overview.tabs.general }),
+    ).toHaveAttribute("data-state", "active");
+    expect(router.state.location.search).toEqual({});
+  });
+
+  it("does not list the account groups on General", async () => {
+    server.use(...signedIn());
+    mount();
+
+    await screen.findByRole("tab", { name: app.overview.tabs.general });
+
+    // The tab strip names the account; only its holdings block is absent.
+    expect(
+      screen.queryByRole("region", { name: /Corretora XP/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("moves the account's holdings into its own tab", async () => {
+    server.use(...signedIn());
+    const { router } = mount();
+
+    await openAccountTab();
+
+    expect(await screen.findByText("PETR4")).toBeVisible();
+    expect(router.state.location.search).toEqual({ account: ACCOUNT_ID });
+  });
+
+  it("returns to General by dropping the parameter, not by setting a value", async () => {
+    server.use(...signedIn());
+    const { router } = mount();
+
+    await openAccountTab();
+    await userEvent.click(
+      screen.getByRole("tab", { name: app.overview.tabs.general }),
+    );
+
+    expect(router.state.location.search).toEqual({});
+  });
+
+  it("falls back to General when the URL names an account that is gone", async () => {
+    server.use(...signedIn());
+    mount(`${PATHS.APP}?account=99999999-9999-4999-8999-999999999999`);
+
+    expect(
+      await screen.findByRole("tab", { name: app.overview.tabs.general }),
+    ).toHaveAttribute("data-state", "active");
+    expect(
+      screen.queryByRole("region", { name: /Corretora XP/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("restores the account's tab from the address bar", async () => {
+    server.use(...signedIn());
+    mount(`${PATHS.APP}?account=${ACCOUNT_ID}`);
+
+    expect(
+      await screen.findByRole("tab", { name: account.name }),
+    ).toHaveAttribute("data-state", "active");
+    expect(await screen.findByText("PETR4")).toBeVisible();
+  });
+
+  it("reports the account's own figures on its tab, not the portfolio's", async () => {
+    // A tab claiming one account while showing the whole portfolio's total
+    // would have the figures contradict the control above them.
+    server.use(...signedIn());
+    mount();
+
+    await openAccountTab();
+
+    // Twice over: once as the tab's headline figure, once as the group's own
+    // subtotal beneath it. The portfolio's total is what must be gone.
+    expect((await screen.findAllByText("R$291,400.00")).length).toBeGreaterThan(
+      0,
+    );
+    expect(screen.queryByText("R$482,350.00")).not.toBeInTheDocument();
+  });
+});
+
+describe("the scope control on a narrow viewport", () => {
+  /**
+   * Reports the viewport as narrow to `useIsMobile`, which reads the app's own
+   * breakpoint. `setupTests.ts` stubs `matchMedia` to answer `false` to
+   * everything; this narrows that answer to the one query under test rather
+   * than replacing the stub wholesale.
+   */
+  function reportNarrowViewport() {
+    const original = window.matchMedia;
+
+    window.matchMedia = ((query: string) => ({
+      ...original(query),
+      matches: query.includes("max-width"),
+    })) as typeof window.matchMedia;
+
+    return () => {
+      window.matchMedia = original;
+    };
+  }
+
+  let restore = () => {};
+  beforeEach(() => {
+    restore = reportNarrowViewport();
+  });
+  afterEach(() => restore());
+
+  it("offers one control instead of a strip that scrolls out of reach", async () => {
+    server.use(...signedIn());
+    mount();
+
+    // The whole point: no horizontally scrolling row of tabs on a phone.
+    expect(
+      await screen.findByRole("combobox", { name: app.overview.tabs.label }),
+    ).toBeVisible();
+    expect(screen.queryAllByRole("tab")).toHaveLength(0);
+  });
+
+  it("names the open scope in full rather than truncating it", async () => {
+    server.use(...signedIn());
+    mount();
+
+    const control = await screen.findByRole("combobox", {
+      name: app.overview.tabs.label,
+    });
+
+    expect(control).toHaveTextContent(app.overview.tabs.general);
+  });
+
+  it("switches scope, and writes it to the URL like the tabs do", async () => {
+    server.use(...signedIn());
+    const { router } = mount();
+
+    await userEvent.click(
+      await screen.findByRole("combobox", { name: app.overview.tabs.label }),
+    );
+    await userEvent.click(
+      await screen.findByRole("option", { name: account.name }),
+    );
+
+    expect(router.state.location.search).toEqual({ account: ACCOUNT_ID });
+  });
+});
+
 describe("the overview screen", () => {
   it("leads with the total, then the returns", async () => {
     server.use(...signedIn());
@@ -363,7 +402,8 @@ describe("the overview screen", () => {
     server.use(...signedIn());
     mount();
 
-    const group = await screen.findByRole("region", { name: /Corretora XP/ });
+    await openAccountTab();
+    const group = await screen.findByRole("region", { name: account.name });
 
     expect(within(group).getByText("R$291,400.00")).toBeVisible();
     expect(within(group).getByText("R$12,000.00")).toBeVisible();
@@ -372,6 +412,8 @@ describe("the overview screen", () => {
   it("does not list a position that has been sold down to nothing", async () => {
     server.use(...signedIn());
     mount();
+
+    await openAccountTab();
 
     expect(await screen.findByText("PETR4")).toBeVisible();
     expect(screen.queryByText("VALE3")).not.toBeInTheDocument();
@@ -382,7 +424,8 @@ describe("the overview screen", () => {
     mount();
 
     // Hiding a row that contributed nothing cannot change what it summed to.
-    const group = await screen.findByRole("region", { name: /Corretora XP/ });
+    await openAccountTab();
+    const group = await screen.findByRole("region", { name: account.name });
 
     expect(within(group).getByText("R$291,400.00")).toBeVisible();
   });
@@ -398,6 +441,7 @@ describe("the overview screen", () => {
     server.use(...signedIn());
     mount();
 
+    await openAccountTab();
     const link = await screen.findByRole("link", { name: /PETR4/ });
 
     expect(link).toHaveAttribute(
@@ -410,36 +454,13 @@ describe("the overview screen", () => {
     server.use(...signedIn());
     mount();
 
+    await openAccountTab();
     const row = await screen.findByRole("row", { name: /HASH11/ });
 
     expect(
       within(row).getByText(app.enums.missingReason.NO_QUOTE),
     ).toBeVisible();
     expect(within(row).queryByText("R$0.00")).not.toBeInTheDocument();
-  });
-
-  it("collapses a group through the URL, so the state is shareable", async () => {
-    server.use(...signedIn());
-    const { router } = mount();
-
-    await screen.findByRole("link", { name: /PETR4/ });
-
-    await userEvent.click(screen.getByRole("button", { name: /Corretora XP/ }));
-
-    expect(router.state.location.search).toEqual({ closed: [ACCOUNT_ID] });
-    expect(
-      screen.queryByRole("link", { name: /PETR4/ }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("restores a collapsed group from the address bar", async () => {
-    server.use(...signedIn());
-    mount(`${PATHS.APP}?closed=%5B%22${ACCOUNT_ID}%22%5D`);
-
-    await screen.findByRole("button", { name: /Corretora XP/ });
-    expect(
-      screen.queryByRole("link", { name: /PETR4/ }),
-    ).not.toBeInTheDocument();
   });
 
   it("points at the profile when real return has no inflation reference", async () => {
@@ -498,6 +519,8 @@ describe("target status on the overview", () => {
     server.use(...signedIn(withStatus("BEHIND")));
     mount();
 
+    await openAccountTab();
+
     expect(
       await screen.findByText(app.enums.targetStatus.BEHIND),
     ).toBeVisible();
@@ -507,6 +530,7 @@ describe("target status on the overview", () => {
     server.use(...signedIn(withStatus(null)));
     mount();
 
+    await openAccountTab();
     await screen.findByText(app.overview.columns.status);
 
     for (const status of Object.values(app.enums.targetStatus)) {

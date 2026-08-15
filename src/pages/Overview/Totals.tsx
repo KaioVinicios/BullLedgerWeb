@@ -6,7 +6,7 @@ import { MoneyValue } from "@/components/MoneyValue";
 import { SignedPercent } from "@/components/SignedPercent";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { PATHS } from "@/routes/path";
-import type { PortfolioOverview } from "@/services/portfolio";
+import type { AccountGroup, PortfolioOverview } from "@/services/portfolio";
 import { formatCalendarDate, type CalendarDate } from "@/utils/date";
 
 /**
@@ -16,24 +16,41 @@ import { formatCalendarDate, type CalendarDate } from "@/utils/date";
  * is the largest thing on the screen, and every label sits *beneath* its figure
  * rather than above it, so a glance lands on the value and not on the word for
  * it.
+ *
+ * `group` names the scope. Absent is the whole portfolio; present means these
+ * figures describe that one account, and without it an account's tab would
+ * report the portfolio's total while claiming to be one account's — the
+ * figures would contradict the tab above them.
  */
-export function Totals({ overview }: { overview: PortfolioOverview }) {
+export function Totals({
+  overview,
+  group,
+}: {
+  overview: PortfolioOverview;
+  group?: AccountGroup;
+}) {
   const { t } = useTranslation("app");
   const locale = useFormatLocale();
+
+  // One account's tab reports that account: its subtotal, its cash, and the
+  // return over its own invested capital. `AccountGroup` carries all four, so
+  // the scope changes which object is read and nothing else about this block.
+  const total = group ? group.subtotal : overview.total_value;
+  const cash = group ? group.cash : overview.free_cash;
+  const nominal = group ? group.nominal_return : overview.nominal_return;
+  const real = group ? group.real_return : overview.real_return;
+  const complete = group ? group.complete : overview.complete;
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-x-12 gap-y-6">
         <Figure label={t("overview.totalValue")}>
-          <MoneyValue value={overview.total_value} className="text-4xl" />
+          <MoneyValue value={total} className="text-4xl" />
         </Figure>
 
         <Figure label={t("overview.nominalReturn")}>
-          {overview.nominal_return ? (
-            <SignedPercent
-              value={overview.nominal_return}
-              className="text-xl"
-            />
+          {nominal ? (
+            <SignedPercent value={nominal} className="text-xl" />
           ) : (
             <span className="text-xl text-muted-foreground">—</span>
           )}
@@ -44,8 +61,8 @@ export function Totals({ overview }: { overview: PortfolioOverview }) {
             slot names the setting instead of showing an em dash that explains
             nothing. */}
         <Figure label={t("overview.realReturn")}>
-          {overview.real_return ? (
-            <SignedPercent value={overview.real_return} className="text-xl" />
+          {real ? (
+            <SignedPercent value={real} className="text-xl" />
           ) : (
             <Link
               to={PATHS.PROFILE}
@@ -56,8 +73,15 @@ export function Totals({ overview }: { overview: PortfolioOverview }) {
           )}
         </Figure>
 
+        {/* An account's cash is nullable where the portfolio's never is, so
+            this slot takes the em dash the other nullable figures already
+            get rather than printing a zero the server did not report. */}
         <Figure label={t("overview.freeCash")}>
-          <MoneyValue value={overview.free_cash} className="text-xl" />
+          {cash ? (
+            <MoneyValue value={cash} className="text-xl" />
+          ) : (
+            <span className="text-xl text-muted-foreground">—</span>
+          )}
         </Figure>
       </div>
 
@@ -70,7 +94,7 @@ export function Totals({ overview }: { overview: PortfolioOverview }) {
 
         {/* Never silently short. A total that omits a holding says so, and
             points at the one screen that can fix it. */}
-        {!overview.complete && (
+        {!complete && (
           <>
             <span>
               {t("overview.incomplete", { count: overview.missing.length })}

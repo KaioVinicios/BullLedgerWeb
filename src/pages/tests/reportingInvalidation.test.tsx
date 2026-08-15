@@ -44,6 +44,24 @@ const money = (amount: number, currency: "BRL" | "USD") => ({
   currency,
 });
 
+/** Just enough of an account for the overview's tab strip to name one. */
+const scopedAccount = {
+  id: ACCOUNT_ID,
+  name: "Corretora XP",
+  institution: null,
+  institution_name: "",
+  country: "BR" as const,
+  registration: "BR_TAXABLE" as const,
+  base_currency: "BRL" as const,
+  account_number: "",
+  contribution_room: null,
+  plan_type: null,
+  deductible: null,
+  tax_regime: null,
+  taxed_on: null,
+  archived_at: null,
+};
+
 function overviewIn(currency: "BRL" | "USD", total: number): PortfolioOverview {
   return {
     on_date: "2026-08-03",
@@ -234,8 +252,19 @@ describe("a reporting-currency change", () => {
 
     server.use(
       http.get(`${TEST_API_URL}/api/auth/user/`, () => HttpResponse.json(user)),
+      // The account is listed so its tab exists: the subtotal and the holding
+      // row live there, and "every figure together" needs more than the one
+      // headline figure General shows.
       http.get(`${TEST_API_URL}/api/accounts/`, () =>
-        HttpResponse.json(emptyPage),
+        HttpResponse.json({
+          status: 200,
+          data: {
+            count: 1,
+            next: null,
+            previous: null,
+            results: [scopedAccount],
+          },
+        }),
       ),
       http.get(`${TEST_API_URL}/api/assets/`, () =>
         HttpResponse.json(emptyPage),
@@ -256,7 +285,9 @@ describe("a reporting-currency change", () => {
     const queryClient = createQueryClient();
     const router = createAppRouter({
       queryClient,
-      history: createMemoryHistory({ initialEntries: [PATHS.APP] }),
+      history: createMemoryHistory({
+        initialEntries: [`${PATHS.APP}?account=${ACCOUNT_ID}`],
+      }),
     });
 
     render(

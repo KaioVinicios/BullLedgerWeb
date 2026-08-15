@@ -14,22 +14,22 @@ const ACCOUNT_ID = "11111111-1111-4111-8111-111111111111";
 const ASSET_ID = "22222222-2222-4222-8222-222222222222";
 
 describe("overviewSearchSchema", () => {
-  it("carries collapsed account ids", () => {
-    expect(overviewSearchSchema.parse({ closed: [ACCOUNT_ID] })).toEqual({
-      closed: [ACCOUNT_ID],
+  it("carries the open account's tab", () => {
+    expect(overviewSearchSchema.parse({ account: ACCOUNT_ID })).toEqual({
+      account: ACCOUNT_ID,
     });
   });
 
-  it("treats absence as everything expanded", () => {
-    expect(overviewSearchSchema.parse({})).toEqual({ closed: undefined });
+  it("treats absence as the General tab", () => {
+    expect(overviewSearchSchema.parse({})).toEqual({ account: undefined });
   });
 
   it("renders rather than throws on a hand-edited URL", () => {
-    expect(overviewSearchSchema.parse({ closed: "not-an-array" })).toEqual({
-      closed: undefined,
+    expect(overviewSearchSchema.parse({ account: "not-a-uuid" })).toEqual({
+      account: undefined,
     });
-    expect(overviewSearchSchema.parse({ closed: ["not-a-uuid"] })).toEqual({
-      closed: undefined,
+    expect(overviewSearchSchema.parse({ account: ["an-array"] })).toEqual({
+      account: undefined,
     });
   });
 });
