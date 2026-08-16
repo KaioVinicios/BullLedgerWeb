@@ -47,20 +47,6 @@ export function partitionServerErrors(
 }
 
 /**
- * Translates the fixed strings the API answers with — it speaks English by
- * design (NFR-L10N-001 is a frontend concern) — into the caller's active
- * language, via `@/lib/serverMessages`'s dictionary. Matches by the server's
- * stable `code`, never by the English text (authentication-design.md §9): a
- * message the dictionary's code does not know is passed through unchanged,
- * showing English rather than nothing.
- *
- * Takes the `ApiClientError` directly rather than an already-partitioned
- * result, because it needs `.fields` and `.codes` paired up field by field
- * and message by message — `codes` mirrors `fields`'s shape and order
- * exactly, so the same partitioning runs over both and zips them back
- * together.
- */
-/**
  * Moves any field error the form has no input for into the form-level list.
  *
  * Found live in Phase 5: the API rejected a certificate with an error keyed
@@ -91,6 +77,45 @@ export function claimFieldErrors(
   return { fieldErrors, formErrors };
 }
 
+/**
+ * The sentence to show when a rejection named nothing at all.
+ *
+ * A form that renders no message on failure is worse than one that renders the
+ * wrong message: it clears the previous errors, re-enables the button, and
+ * leaves the user believing nothing happened. That is what a dropped connection
+ * looked like on every form — `network` and `malformed` are generated here
+ * rather than by the server, so they carry no `fields` for the partition to
+ * find, and the banner stayed empty. A conforming body whose `errors` map is
+ * `{}` fell into the same hole while carrying a perfectly good top-level
+ * sentence.
+ *
+ * In preference order: the client's own translated key, then whatever the
+ * server said for itself, then a generic apology. Something always gets said.
+ */
+function fallbackMessage(
+  error: ApiClientError,
+  t: (key: ErrorsKey) => string,
+): string {
+  if (error.messageKey) return t(error.messageKey);
+  if (error.message.trim()) return error.message;
+  return t("unexpected");
+}
+
+/**
+ * Translates the fixed strings the API answers with — it speaks English by
+ * design (NFR-L10N-001 is a frontend concern) — into the caller's active
+ * language, via `@/lib/serverMessages`'s dictionary. Matches by the server's
+ * stable `code`, never by the English text (authentication-design.md §9): a
+ * message the dictionary's code does not know is passed through unchanged,
+ * showing English rather than nothing.
+ *
+ * Takes the `ApiClientError` directly rather than an already-partitioned
+ * result, because it needs `.fields` and `.codes` paired up field by field
+ * and message by message — `codes` mirrors `fields`'s shape and order
+ * exactly, so the same partitioning runs over both and zips them back
+ * together. It is also what lets this guarantee a non-empty result, which a
+ * partitioned map alone could not: see `fallbackMessage`.
+ */
 export function translateServerErrors(
   error: ApiClientError,
   t: (key: ErrorsKey) => string,
@@ -103,13 +128,17 @@ export function translateServerErrors(
       translateServerMessage(message, forField[index], t),
     );
 
-  return {
-    fieldErrors: Object.fromEntries(
-      Object.entries(messages.fieldErrors).map(([field, values]) => [
-        field,
-        translateAll(values, codes.fieldErrors[field] ?? []),
-      ]),
-    ),
-    formErrors: translateAll(messages.formErrors, codes.formErrors),
-  };
+  const fieldErrors = Object.fromEntries(
+    Object.entries(messages.fieldErrors).map(([field, values]) => [
+      field,
+      translateAll(values, codes.fieldErrors[field] ?? []),
+    ]),
+  );
+  const formErrors = translateAll(messages.formErrors, codes.formErrors);
+
+  if (formErrors.length === 0 && Object.keys(fieldErrors).length === 0) {
+    formErrors.push(fallbackMessage(error, t));
+  }
+
+  return { fieldErrors, formErrors };
 }

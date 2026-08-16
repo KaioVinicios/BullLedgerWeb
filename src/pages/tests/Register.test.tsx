@@ -118,4 +118,30 @@ describe("RegisterPage", () => {
       ),
     );
   });
+
+  // The ghost submit: with the API unreachable the form cleared its errors,
+  // re-enabled the button, and said nothing at all — worst here of all, since
+  // the user cannot tell a failed signup from a silent one and may try again
+  // with a different email.
+  it("says the server is unreachable instead of failing silently", async () => {
+    server.use(...signedOut);
+
+    mount();
+    await screen.findByLabelText("Email");
+
+    server.use(
+      http.post(`${TEST_API_URL}/api/auth/registration/`, () =>
+        HttpResponse.error(),
+      ),
+    );
+
+    await fill("hunter2222", "hunter2222");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Could not reach the server. Check your connection and try again.",
+    );
+    expect(
+      screen.getByRole("button", { name: "Create account" }),
+    ).toBeEnabled();
+  });
 });

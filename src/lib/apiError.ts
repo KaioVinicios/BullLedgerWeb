@@ -1,3 +1,4 @@
+import type { ErrorsKey } from "@/lib/serverMessages";
 import type { components } from "@/types/api";
 
 type ApiErrorBody = components["schemas"]["ApiError"];
@@ -26,8 +27,13 @@ interface ApiClientErrorInit {
   status: number;
   kind: ApiErrorKind;
   message: string;
-  /** i18n key for client-generated messages; absent when the server spoke. */
-  messageKey?: string;
+  /**
+   * Key in the `errors` namespace for a client-generated message; absent when
+   * the server spoke for itself. Unprefixed, because every consumer holds a `t`
+   * already scoped to that namespace, and typed against the English locale so a
+   * key that does not exist fails the build rather than rendering raw.
+   */
+  messageKey?: ErrorsKey;
   fields?: Record<string, string[]>;
   /**
    * The stable code behind each message in `fields`, same shape and keys.
@@ -48,7 +54,7 @@ interface ApiClientErrorInit {
 export class ApiClientError extends Error {
   readonly status: number;
   readonly kind: ApiErrorKind;
-  readonly messageKey?: string;
+  readonly messageKey?: ErrorsKey;
   readonly fields: Readonly<Record<string, string[]>>;
   readonly codes: Readonly<Record<string, string[]>>;
 
@@ -131,7 +137,7 @@ export function apiClientErrorFromBody(
       status,
       kind: "malformed",
       message: `The server returned an unreadable ${status} response.`,
-      messageKey: "errors:unexpected",
+      messageKey: "unexpected",
     });
   }
 
@@ -150,7 +156,7 @@ export function apiClientErrorFromTransport(cause: unknown): ApiClientError {
     status: 0,
     kind: "network",
     message: "The request could not reach the server.",
-    messageKey: "errors:network",
+    messageKey: "network",
     cause,
   });
 }

@@ -167,6 +167,30 @@ describe("LoginPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  // The ghost submit: with the API unreachable the form cleared its errors,
+  // re-enabled the button, and said nothing at all — the user pressed "Sign in"
+  // and watched it do nothing. A transport failure carries no fields, and the
+  // banner only ever read fields.
+  it("says the server is unreachable instead of failing silently", async () => {
+    server.use(...signedOut);
+
+    mount();
+    await screen.findByLabelText("Email");
+
+    server.use(
+      http.post(`${TEST_API_URL}/api/auth/login/`, () => HttpResponse.error()),
+    );
+
+    await fillAndSubmit();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Could not reach the server. Check your connection and try again.",
+    );
+    // Re-enabled, so the message is an invitation to retry rather than a
+    // dead end.
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
+  });
+
   afterEach(async () => {
     await i18n.changeLanguage("en");
   });

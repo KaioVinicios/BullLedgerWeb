@@ -69,7 +69,7 @@ describe("apiClientErrorFromBody", () => {
     const error = apiClientErrorFromBody({ whatever: true }, 500);
 
     expect(error.kind).toBe("malformed");
-    expect(error.messageKey).toBe("errors:unexpected");
+    expect(error.messageKey).toBe("unexpected");
     expect(error.fields).toEqual({});
   });
 
@@ -105,7 +105,7 @@ describe("apiClientErrorFromTransport", () => {
 
     expect(error.status).toBe(0);
     expect(error.kind).toBe("network");
-    expect(error.messageKey).toBe("errors:network");
+    expect(error.messageKey).toBe("network");
     expect(error.cause).toBe(cause);
   });
 });

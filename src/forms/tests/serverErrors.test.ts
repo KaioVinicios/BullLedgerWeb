@@ -255,6 +255,65 @@ describe("translateServerErrors", () => {
     expect(formErrors).toEqual(["Unable to log in with provided credentials."]);
   });
 
+  /**
+   * A rejection that names no field used to render nothing at all: the form
+   * cleared its previous errors, the button re-enabled, and the user watched a
+   * submit do nothing — the ghost submit. `translateServerErrors` reads only
+   * `fields`, and the two client-generated kinds (`network`, `malformed`) carry
+   * none, so the banner stayed empty on exactly the failures that most need a
+   * sentence.
+   */
+  it("surfaces the network sentence when the request never reached the server", () => {
+    const error = apiClientErrorFromTransport(new TypeError("Failed to fetch"));
+
+    const { fieldErrors, formErrors } = translateServerErrors(error, tPt);
+
+    expect(formErrors).toEqual([
+      "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
+    ]);
+    expect(fieldErrors).toEqual({});
+  });
+
+  it("surfaces a generic sentence when the body was unreadable", () => {
+    // The live API answers `POST /api/auth/login/` with a Django debug page —
+    // normalized to `malformed`, which carries no fields either.
+    const error = apiClientErrorFromBody(
+      "<!DOCTYPE html><h1>Server Error",
+      500,
+    );
+
+    const { formErrors } = translateServerErrors(error, tPt);
+
+    expect(formErrors).toEqual(["Algo deu errado. Tente novamente."]);
+  });
+
+  it("falls back to the server's own sentence when it named no field", () => {
+    const error = apiClientErrorFromBody(
+      { status: 400, message: "Invalid input.", errors: {} },
+      400,
+    );
+
+    const { formErrors } = translateServerErrors(error, tPt);
+
+    expect(formErrors).toEqual(["Invalid input."]);
+  });
+
+  it("adds no fallback when the server already said something", () => {
+    const error = apiClientErrorFromBody(
+      {
+        status: 400,
+        message: "Invalid input.",
+        errors: { email: ["This field is required."] },
+        codes: { email: ["required"] },
+      },
+      400,
+    );
+
+    const { formErrors } = translateServerErrors(error, tPt);
+
+    expect(formErrors).toEqual([]);
+  });
+
   it("pairs each field's messages with its codes positionally", () => {
     const error = apiClientErrorFromBody(
       {

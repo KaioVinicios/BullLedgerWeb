@@ -91,7 +91,7 @@ describe("request", () => {
       request(client.get(`${TEST_API_URL}/debug-page`)),
     ).rejects.toMatchObject({
       kind: "malformed",
-      messageKey: "errors:unexpected",
+      messageKey: "unexpected",
     });
   });
 });
