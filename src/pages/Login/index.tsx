@@ -19,7 +19,7 @@ import {
 import { env } from "@/config/env";
 import { ApiClientError } from "@/lib/apiError";
 import { AuthShell } from "@/pages/Auth/AuthShell";
-import { authLink } from "@/pages/Auth/authLink";
+import { authLink, authLinkQuiet } from "@/pages/Auth/authLink";
 import { GoogleSignIn } from "@/pages/Auth/GoogleSignIn";
 import { PATHS } from "@/routes/path";
 import { loginRoute } from "@/routes/router";
@@ -153,6 +153,14 @@ export function LoginPage() {
                 label={t("fields.password")}
                 autoComplete="current-password"
                 placeholder={t("fields.passwordPlaceholder")}
+                // Recovery belongs to the field it recovers, not to the form's
+                // footer: someone reaches for it while looking at the password
+                // box, and that is where it now sits.
+                labelAction={
+                  <Link to={PATHS.RESET_PASSWORD} className={authLinkQuiet}>
+                    {t("login.forgotPassword")}
+                  </Link>
+                }
                 errors={[
                   ...field.state.meta.errors,
                   ...(serverErrors.fieldErrors.password ?? []),
@@ -164,32 +172,33 @@ export function LoginPage() {
             )}
           </form.Field>
 
-          <div className="flex items-center justify-between gap-3 pt-1">
-            <form.Field name="rememberMe">
-              {(field) => (
-                <div className="flex items-center gap-2.5">
-                  <Checkbox
-                    id={field.name}
-                    checked={field.state.value}
-                    onCheckedChange={(checked) =>
-                      field.handleChange(checked === true)
-                    }
-                    onBlur={field.handleBlur}
-                  />
-                  <Label
-                    htmlFor={field.name}
-                    className="font-normal text-muted-foreground"
-                  >
-                    {t("login.rememberMe")}
-                  </Label>
-                </div>
-              )}
-            </form.Field>
-
-            <Link to={PATHS.RESET_PASSWORD} className={authLink}>
-              {t("login.forgotPassword")}
-            </Link>
-          </div>
+          {/*
+            A session preference, alone on its row. It used to share one with
+            the recovery link under `justify-between`, which grouped two
+            unrelated things by convenience and left each about half the column:
+            both wrapped to two lines in English at full desktop width, and
+            worse in Portuguese. Given the whole measure, each fits on one.
+          */}
+          <form.Field name="rememberMe">
+            {(field) => (
+              <div className="flex items-center gap-2.5 pt-1">
+                <Checkbox
+                  id={field.name}
+                  checked={field.state.value}
+                  onCheckedChange={(checked) =>
+                    field.handleChange(checked === true)
+                  }
+                  onBlur={field.handleBlur}
+                />
+                <Label
+                  htmlFor={field.name}
+                  className="font-normal text-muted-foreground"
+                >
+                  {t("login.rememberMe")}
+                </Label>
+              </div>
+            )}
+          </form.Field>
 
           <FormError errors={serverErrors.formErrors} />
 

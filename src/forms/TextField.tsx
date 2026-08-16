@@ -13,6 +13,14 @@ type TextFieldProps = Omit<ComponentProps<typeof Input>, "id"> & {
   trailing?: ReactNode;
   /** Static text pinned inside the input's left edge, e.g. a sign. */
   leading?: ReactNode;
+  /**
+   * A link or control that belongs to this field, set opposite its label —
+   * "Forgot your password?" beside `Password`.
+   *
+   * Deliberately a sibling of the `Label` rather than a child: inside it, a
+   * click meant for the link would fall through to focusing the input.
+   */
+  labelAction?: ReactNode;
 };
 
 // Single owner of the label ↔ input ↔ hint ↔ error wiring. `aria-describedby`
@@ -25,6 +33,7 @@ export function TextField({
   hint,
   trailing,
   leading,
+  labelAction,
   ...input
 }: TextFieldProps) {
   const invalid = errors.length > 0;
@@ -35,7 +44,17 @@ export function TextField({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={name}>{label}</Label>
+      {labelAction ? (
+        // Baselines, not boxes: the label and its action are different sizes
+        // and weights, and centering their boxes leaves the two texts visibly
+        // off each other.
+        <div className="flex items-baseline justify-between gap-3">
+          <Label htmlFor={name}>{label}</Label>
+          {labelAction}
+        </div>
+      ) : (
+        <Label htmlFor={name}>{label}</Label>
+      )}
       <div className="relative">
         {leading}
         <Input

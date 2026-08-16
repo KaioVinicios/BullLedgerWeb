@@ -167,6 +167,22 @@ describe("LoginPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  // Recovery moved out of the form footer and onto the password field's label
+  // row, which means it now reaches the page through `TextField`'s
+  // `labelAction`. A refactor there could drop it without any type error, and
+  // a login page with no way out for someone who forgot their password is a
+  // dead end — so its presence is asserted rather than assumed.
+  it("keeps password recovery reachable from the password field", async () => {
+    server.use(...signedOut);
+
+    mount();
+    await screen.findByLabelText("Email");
+
+    expect(
+      screen.getByRole("link", { name: "Forgot your password?" }),
+    ).toHaveAttribute("href", "/reset-password");
+  });
+
   // The ghost submit: with the API unreachable the form cleared its errors,
   // re-enabled the button, and said nothing at all — the user pressed "Sign in"
   // and watched it do nothing. A transport failure carries no fields, and the
