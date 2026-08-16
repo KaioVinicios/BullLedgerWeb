@@ -192,6 +192,40 @@ describe("the transfer form", () => {
     ).toBeVisible();
   });
 
+  // A fresh sign-up can reach this route with no accounts at all. Both sides
+  // of a transfer are then unfillable, and a select that still opens onto a
+  // blank panel says nothing about why.
+  it("closes the account pickers when there are no accounts", async () => {
+    server.use(
+      // Ahead of signedIn(), whose own handler for this route would otherwise
+      // match first and hand back two accounts.
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
+        HttpResponse.json(page([])),
+      ),
+      ...signedIn(),
+    );
+    mount();
+
+    const source = await screen.findByRole("combobox", {
+      name: app.ledger.transferForm.source,
+    });
+
+    expect(source).toBeDisabled();
+    expect(source).toHaveTextContent(app.ledger.form.accountEmpty);
+    expect(source).toHaveAccessibleDescription(
+      app.ledger.form.accountEmptyHint,
+    );
+
+    await userEvent.click(source);
+    expect(screen.queryByRole("listbox")).toBeNull();
+
+    expect(
+      screen.getByRole("combobox", {
+        name: app.ledger.transferForm.destination,
+      }),
+    ).toBeDisabled();
+  });
+
   it("refuses the same account on both sides before sending it", async () => {
     let posted: unknown;
 

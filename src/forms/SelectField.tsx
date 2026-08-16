@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Label } from "@/components/ui/label";
 import {
@@ -8,7 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EMPTY_SELECT_TRIGGER } from "@/forms/emptySelect";
 import { FieldError } from "@/forms/FieldError";
+import { cn } from "@/lib/utils";
 
 type SelectFieldProps<T extends string> = {
   name: string;
@@ -20,6 +23,11 @@ type SelectFieldProps<T extends string> = {
   onChange: (value: T) => void;
   errors?: unknown[];
   hint?: ReactNode;
+  /**
+   * What the trigger says in place of a value when `options` is empty. Defaults
+   * to a generic line; pass the specific reason where the field knows it.
+   */
+  emptyLabel?: ReactNode;
 };
 
 /**
@@ -28,6 +36,17 @@ type SelectFieldProps<T extends string> = {
  * their own aria plumbing. A select rather than radios, because archetype
  * field sets stack several of these and a page of radio groups would bury
  * the fields that need real typing.
+ *
+ * **An empty list closes the field rather than opening onto nothing.** With no
+ * options the trigger stops opening and says so in place of the value — see
+ * `emptySelect.ts` for why the disabled dimming is put back there. The text is
+ * the trigger's own children rather than `SelectValue`'s `placeholder`,
+ * because a placeholder shows only while the value is empty: a value left
+ * behind by a row that has since been deleted is not empty, matches no item,
+ * echoes nothing, and would rest the trigger blank — the state this exists to
+ * prevent. The *reason* still belongs in `hint`, which is the field's one
+ * place for it and the only one a screen reader reaches once the trigger has
+ * left the tab order.
  */
 export function SelectField<T extends string>({
   name,
@@ -38,8 +57,11 @@ export function SelectField<T extends string>({
   onChange,
   errors = [],
   hint,
+  emptyLabel,
 }: SelectFieldProps<T>) {
+  const { t } = useTranslation("common");
   const invalid = errors.length > 0;
+  const empty = options.length === 0;
 
   const describedBy: string[] = [];
   if (hint) describedBy.push(`${name}-hint`);
@@ -51,11 +73,20 @@ export function SelectField<T extends string>({
       <Select value={value} onValueChange={(next) => onChange(next as T)}>
         <SelectTrigger
           id={name}
-          className="w-full"
+          className={cn("w-full", empty && EMPTY_SELECT_TRIGGER)}
+          disabled={empty}
           aria-invalid={invalid}
           aria-describedby={describedBy.join(" ") || undefined}
         >
-          <SelectValue />
+          {empty ? (
+            // `min-w-0` so it can shrink inside the flex trigger, and `truncate`
+            // so a long translation ellipses instead of pushing the chevron out.
+            <span className="min-w-0 truncate">
+              {emptyLabel ?? t("field.noOptions")}
+            </span>
+          ) : (
+            <SelectValue />
+          )}
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (

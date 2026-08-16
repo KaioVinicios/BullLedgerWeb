@@ -45,6 +45,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DecimalField } from "@/forms/DecimalField";
+import { EMPTY_SELECT_TRIGGER } from "@/forms/emptySelect";
 import { FieldError } from "@/forms/FieldError";
 import { MoneyField } from "@/forms/MoneyField";
 import { TextField } from "@/forms/TextField";
@@ -306,6 +307,7 @@ export function MovementForm({ movement }: { movement?: Movement }) {
 
   const assetRows = assets?.results ?? [];
   const accountRows = accounts?.results ?? [];
+  const noAccounts = accountRows.length === 0;
 
   const schema = z
     .object({
@@ -595,8 +597,21 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                   value={field.state.value}
                   onValueChange={field.handleChange}
                 >
-                  <SelectTrigger id="movement-account" className="w-full">
-                    <SelectValue />
+                  <SelectTrigger
+                    id="movement-account"
+                    className={cn("w-full", noAccounts && EMPTY_SELECT_TRIGGER)}
+                    disabled={noAccounts}
+                    aria-describedby={
+                      noAccounts ? "movement-account-hint" : undefined
+                    }
+                  >
+                    {noAccounts ? (
+                      <span className="min-w-0 truncate">
+                        {t("ledger.form.accountEmpty")}
+                      </span>
+                    ) : (
+                      <SelectValue />
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     {accountRows.map((row) => (
@@ -606,6 +621,19 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                     ))}
                   </SelectContent>
                 </Select>
+                {/*
+                  Only when there is nothing: the field is otherwise
+                  self-evident, and a hint that is always there stops being
+                  read by the time it matters.
+                */}
+                {noAccounts && (
+                  <p
+                    id="movement-account-hint"
+                    className="text-xs text-muted-foreground"
+                  >
+                    {t("ledger.form.accountEmptyHint")}
+                  </p>
+                )}
                 <FieldError
                   id="movement-account-error"
                   errors={[
@@ -644,7 +672,18 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                         }
                       }}
                     >
-                      <SelectTrigger id="movement-asset" className="w-full">
+                      {/*
+                        No empty treatment here, unlike the account above: this
+                        list always carries "no asset — the account's own cash",
+                        so it is never empty and must keep opening even with no
+                        assets registered. The hint only needed wiring — it had
+                        an id and nothing pointing at it.
+                      */}
+                      <SelectTrigger
+                        id="movement-asset"
+                        className="w-full"
+                        aria-describedby="movement-asset-hint"
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

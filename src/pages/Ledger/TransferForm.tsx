@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DecimalField } from "@/forms/DecimalField";
+import { EMPTY_SELECT_TRIGGER } from "@/forms/emptySelect";
 import { FieldError } from "@/forms/FieldError";
 import { MoneyField } from "@/forms/MoneyField";
 import { TextField } from "@/forms/TextField";
@@ -47,6 +48,7 @@ import {
 } from "@/forms/serverErrors";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { ApiClientError } from "@/lib/apiError";
+import { cn } from "@/lib/utils";
 import { LotSelect } from "@/pages/Ledger/LotSelect";
 import { PATHS } from "@/routes/path";
 import { acceptsQuantity, shapeFor, specFor } from "@/schemas/movementSpec";
@@ -121,6 +123,7 @@ export function TransferForm() {
   });
 
   const accountRows = accounts?.results ?? [];
+  const noAccounts = accountRows.length === 0;
 
   /**
    * The out leg's spec is what decides everything variable on this screen, so
@@ -288,8 +291,21 @@ export function TransferForm() {
         <div className="space-y-2">
           <Label htmlFor={`transfer-${name}`}>{label}</Label>
           <Select value={field.state.value} onValueChange={field.handleChange}>
-            <SelectTrigger id={`transfer-${name}`} className="w-full">
-              <SelectValue placeholder={t("ledger.form.account")} />
+            <SelectTrigger
+              id={`transfer-${name}`}
+              className={cn("w-full", noAccounts && EMPTY_SELECT_TRIGGER)}
+              disabled={noAccounts}
+              aria-describedby={
+                noAccounts ? `transfer-${name}-hint` : undefined
+              }
+            >
+              {noAccounts ? (
+                <span className="min-w-0 truncate">
+                  {t("ledger.form.accountEmpty")}
+                </span>
+              ) : (
+                <SelectValue placeholder={t("ledger.form.account")} />
+              )}
             </SelectTrigger>
             <SelectContent>
               {accountRows.map((row) => (
@@ -299,6 +315,14 @@ export function TransferForm() {
               ))}
             </SelectContent>
           </Select>
+          {noAccounts && (
+            <p
+              id={`transfer-${name}-hint`}
+              className="text-xs text-muted-foreground"
+            >
+              {t("ledger.form.accountEmptyHint")}
+            </p>
+          )}
           <FieldError
             id={`transfer-${name}-error`}
             errors={[

@@ -12,7 +12,8 @@
   },
   "field": {
     "showPassword": "Mostrar senha",
-    "hidePassword": "Ocultar senha"
+    "hidePassword": "Ocultar senha",
+    "noOptions": "Nada para escolher"
   },
   "home": {
     "tagline": "Acompanhe seus investimentos com clareza: posições, transações e desempenho em um só lugar.",

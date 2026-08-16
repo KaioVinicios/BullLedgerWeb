@@ -108,6 +108,26 @@ describe("the quote form", () => {
     ).not.toBeInTheDocument();
   });
 
+  // The other end of "unofferable by construction": a portfolio of nothing but
+  // accrual assets leaves this list empty, and the field said so by opening a
+  // blank panel over itself.
+  it("closes the picker when no asset can carry a quote", async () => {
+    server.use(...signedInWith([savings]));
+    mount(PATHS.PRICING_NEW);
+
+    const asset = await screen.findByRole("combobox", {
+      name: app.pricing.form.asset,
+    });
+
+    expect(asset).toBeDisabled();
+    expect(asset).toHaveTextContent(app.pricing.form.assetEmpty);
+    // The hint is unchanged and still says which assets do carry one.
+    expect(asset).toHaveAccessibleDescription(app.pricing.form.assetHint);
+
+    await userEvent.click(asset);
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
   it("prefills the asset the coverage block sent it", async () => {
     server.use(...signedInWith([petr, savings]));
     mount(`${PATHS.PRICING_NEW}?asset=${petr.id}`);

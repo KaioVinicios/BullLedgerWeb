@@ -29,8 +29,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EMPTY_SELECT_TRIGGER } from "@/forms/emptySelect";
 import { FieldError } from "@/forms/FieldError";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
+import { cn } from "@/lib/utils";
 import { listLots, lotKeys } from "@/services/lots";
 import { holdingQuery, type LotProjection } from "@/services/portfolio";
 import { formatDecimal, SCALE } from "@/utils/decimal";
@@ -122,14 +124,37 @@ export function LotSelect({
     [];
 
   const settled = holding.isSuccess || lots.isSuccess || lots.isError;
-  const nothingToDrawFrom = settled && options.length === 0;
+  const empty = options.length === 0;
+  const nothingToDrawFrom = settled && empty;
 
   return (
     <div className="space-y-2">
       <Label htmlFor={name}>{t("ledger.form.lot")}</Label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger id={name} className="w-full">
-          <SelectValue placeholder={t("ledger.form.lotPlaceholder")} />
+        <SelectTrigger
+          id={name}
+          className={cn("w-full", empty && EMPTY_SELECT_TRIGGER)}
+          disabled={empty}
+          // The hint below has carried an id since it was written and nothing
+          // ever pointed at it. It matters most in exactly the state added
+          // here: once the trigger is disabled it leaves the tab order, and
+          // the description is the only channel left saying why.
+          aria-describedby={`${name}-hint`}
+        >
+          {/*
+            Nothing to draw from and nothing to open: an empty list here still
+            portals a blank panel over the trigger, which answers nothing. The
+            trigger says which kind of nothing it is — a holding with no open
+            lot, or one whose lots have not arrived yet — and the hint below
+            carries the full sentence.
+          */}
+          {empty ? (
+            <span className="min-w-0 truncate">
+              {nothingToDrawFrom ? t("ledger.form.lotNone") : t("loading")}
+            </span>
+          ) : (
+            <SelectValue placeholder={t("ledger.form.lotPlaceholder")} />
+          )}
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (

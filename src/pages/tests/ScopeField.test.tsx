@@ -155,15 +155,27 @@ describe("ScopeField", () => {
 
   // First render of a fresh account: the lists arrive empty, and an empty
   // select with no explanation says nothing about why it has nothing.
-  it("says why an empty list is empty rather than offering a blank select", () => {
+  it("says why an empty list is empty rather than offering a blank select", async () => {
     render(<ScopeField scope="HOLDING" onScopeChange={noop} {...base} />);
 
-    expect(
-      screen.getByRole("combobox", { name: app.targets.form.account }),
-    ).toHaveAccessibleDescription(app.targets.form.noAccounts);
-    expect(
-      screen.getByRole("combobox", { name: app.targets.form.asset }),
-    ).toHaveAccessibleDescription(app.targets.form.noAssets);
+    const account = screen.getByRole("combobox", {
+      name: app.targets.form.account,
+    });
+    const asset = screen.getByRole("combobox", {
+      name: app.targets.form.asset,
+    });
+
+    // Said in two halves that do not repeat each other: the state where the
+    // value would be, the recovery in the description.
+    expect(account).toHaveTextContent(app.targets.form.accountEmpty);
+    expect(account).toHaveAccessibleDescription(app.targets.form.noAccounts);
+    expect(asset).toHaveTextContent(app.targets.form.assetEmpty);
+    expect(asset).toHaveAccessibleDescription(app.targets.form.noAssets);
+
+    // And it does not open onto nothing to say it.
+    expect(account).toBeDisabled();
+    await userEvent.click(account);
+    expect(screen.queryByRole("listbox")).toBeNull();
   });
 
   // The other side of that hint, and the only test with rows in it: an empty

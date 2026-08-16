@@ -12,7 +12,8 @@
   },
   "field": {
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "noOptions": "Nothing to choose from"
   },
   "home": {
     "tagline": "Track your investments with clarity: positions, transactions, and performance in one place.",

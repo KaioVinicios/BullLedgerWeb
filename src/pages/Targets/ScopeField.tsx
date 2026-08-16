@@ -46,8 +46,12 @@ import type { Asset } from "@/services/assets";
  *
  * **An empty list says why it is empty.** A fresh account reaches this screen
  * with no accounts and no assets, and a select with nothing in it explains
- * nothing; the reason goes in the resting hint rather than inside a list the
- * reader would have to open to find empty, as `LotSelect` already does.
+ * nothing. It is said in two halves, neither repeating the other: the trigger
+ * carries the state ("No accounts yet") because that is where the reader looks
+ * for a value, and the hint carries the recovery ("Add an account first.")
+ * because that is the part worth a full sentence. Neither is inside the list,
+ * which the reader would have to open to find empty — and `SelectField` no
+ * longer lets it open at all.
  */
 export function ScopeField({
   scope,
@@ -120,6 +124,7 @@ export function ScopeField({
             renderOption={(id) =>
               accounts.find((row) => row.id === id)?.name ?? id
             }
+            emptyLabel={t("targets.form.accountEmpty")}
             hint={
               accounts.length === 0 ? t("targets.form.noAccounts") : undefined
             }
@@ -137,6 +142,7 @@ export function ScopeField({
             renderOption={(id) =>
               assets.find((row) => row.id === id)?.name ?? id
             }
+            emptyLabel={t("targets.form.assetEmpty")}
             hint={assets.length === 0 ? t("targets.form.noAssets") : undefined}
             onChange={onAssetChange}
             errors={errors.asset ?? []}

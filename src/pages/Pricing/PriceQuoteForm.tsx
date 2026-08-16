@@ -180,6 +180,7 @@ export function PriceQuoteForm() {
                   <SelectField
                     name="asset"
                     label={t("pricing.form.asset")}
+                    emptyLabel={t("pricing.form.assetEmpty")}
                     hint={t("pricing.form.assetHint")}
                     value={field.state.value}
                     options={priceable.map((asset) => asset.id)}

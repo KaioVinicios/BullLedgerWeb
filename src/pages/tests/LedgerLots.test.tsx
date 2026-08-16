@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import { http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
+import common from "@/i18n/locales/en/common.json";
 import { createQueryClient } from "@/lib/queryClient";
 import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
@@ -194,6 +195,36 @@ describe("the lots view", () => {
     expect(
       await screen.findByText(app.ledger.lotsScreen.selectHolding),
     ).toBeVisible();
+  });
+
+  // The filter bar's own version of the same problem: with nothing to filter
+  // by, the picker used to open a blank panel over itself. The screen's
+  // EmptyState below already carries the reason, so the trigger only has to
+  // stop pretending it has something.
+  it("closes a filter that has nothing to filter by", async () => {
+    server.use(
+      // Ahead of signedIn(), whose handler for this route would match first.
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
+        HttpResponse.json(page([])),
+      ),
+      ...signedIn(),
+    );
+    mount(PATHS.LEDGER_LOTS);
+
+    const accountFilter = await screen.findByRole("combobox", {
+      name: app.ledger.filters.account,
+    });
+
+    expect(accountFilter).toBeDisabled();
+    expect(accountFilter).toHaveTextContent(common.field.noOptions);
+
+    await userEvent.click(accountFilter);
+    expect(screen.queryByRole("listbox")).toBeNull();
+
+    // The asset filter still has a row, so it stays open for business.
+    expect(
+      screen.getByRole("combobox", { name: app.ledger.filters.asset }),
+    ).toBeEnabled();
   });
 
   it("renders each contribution's figures from the projection", async () => {

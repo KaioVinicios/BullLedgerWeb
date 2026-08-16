@@ -158,6 +158,57 @@ async function selectOption(label: string, option: string | RegExp) {
 }
 
 describe("the movement entry form", () => {
+  // Nothing can be recorded without an account, and until now the field said
+  // that by opening a blank panel over itself.
+  it("closes the account picker when there are no accounts", async () => {
+    server.use(
+      // Ahead of signedIn(), whose handler for this route would match first.
+      http.get(`${TEST_API_URL}/api/accounts/`, () =>
+        HttpResponse.json(page([])),
+      ),
+      ...signedIn(),
+    );
+    mount(PATHS.LEDGER_NEW);
+
+    const account = await screen.findByRole("combobox", {
+      name: app.ledger.form.account,
+    });
+
+    expect(account).toBeDisabled();
+    expect(account).toHaveTextContent(app.ledger.form.accountEmpty);
+    expect(account).toHaveAccessibleDescription(
+      app.ledger.form.accountEmptyHint,
+    );
+
+    await userEvent.click(account);
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  // The asset picker is the counter-example, and the reason it is asserted
+  // here: it always offers "no asset — the account's own cash", so its list is
+  // never empty and it must keep opening even with no assets at all.
+  it("keeps the asset picker open when there are no assets", async () => {
+    server.use(
+      http.get(`${TEST_API_URL}/api/assets/`, () =>
+        HttpResponse.json(page([])),
+      ),
+      ...signedIn(),
+    );
+    mount(PATHS.LEDGER_NEW);
+
+    const asset = await screen.findByRole("combobox", {
+      name: app.ledger.form.asset,
+    });
+
+    expect(asset).toBeEnabled();
+
+    await userEvent.click(asset);
+
+    expect(
+      await screen.findByRole("option", { name: app.ledger.form.noAsset }),
+    ).toBeVisible();
+  });
+
   it("offers only the archetype's types, and never a transfer", async () => {
     server.use(...signedIn());
     mount(PATHS.LEDGER_NEW);
@@ -716,6 +767,37 @@ describe("the lot selector", () => {
     // Nine units out of a contribution holding seven is a 400 the client can
     // see coming, so it never becomes a request.
     expect(posted).toBeUndefined();
+  });
+
+  // A holding whose lots are all closed cannot be exited at all. The hint
+  // already said so; the trigger used to sit there openable and blank.
+  it("closes itself when there is no open contribution", async () => {
+    server.use(
+      ...signedIn(),
+      http.get(
+        `${TEST_API_URL}/api/portfolio/holdings/${account.id}/${security.id}/`,
+        () =>
+          HttpResponse.json({
+            status: 200,
+            data: { ...holding, lots: [] },
+          }),
+      ),
+    );
+    mount(PATHS.LEDGER_NEW);
+    await startASale();
+
+    const lot = await screen.findByRole("combobox", {
+      name: app.ledger.form.lot,
+    });
+
+    await waitFor(() => expect(lot).toBeDisabled());
+    expect(lot).toHaveTextContent(app.ledger.form.lotNone);
+    // The full sentence stays in the hint, which is the only thing a screen
+    // reader still reaches once the trigger has left the tab order.
+    expect(lot).toHaveAccessibleDescription(app.ledger.form.lotEmpty);
+
+    await userEvent.click(lot);
+    expect(screen.queryByRole("listbox")).toBeNull();
   });
 
   it("falls back to plain labels when the projection is unavailable", async () => {

@@ -14,6 +14,8 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { EMPTY_SELECT_TRIGGER } from "@/forms/emptySelect";
+import { cn } from "@/lib/utils";
 import { DemoBlock, ShowcaseSection } from "@/pages/DesignSystem/Showcase";
 
 export function FormsSection() {
@@ -89,6 +91,57 @@ export function FormsSection() {
             <Switch id="ds-reinvest" />
             <Label htmlFor="ds-reinvest">Reinvest dividends</Label>
           </div>
+        </div>
+      </DemoBlock>
+
+      {/*
+        The state a select spends its first session in, on a portfolio that has
+        nothing in it yet. Shown beside a normal one because the pair is the
+        point: the empty one is recognisably the same control, not an error.
+      */}
+      <DemoBlock
+        label="Nothing to choose"
+        className="grid gap-6 md:grid-cols-2"
+      >
+        <div className="grid gap-2">
+          <Label htmlFor="ds-account">Account</Label>
+          <Select>
+            <SelectTrigger id="ds-account" className="w-full">
+              <SelectValue placeholder="Select an account" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="brokerage">Brokerage</SelectItem>
+              <SelectItem value="retirement">Retirement</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Where this movement was recorded.
+          </p>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="ds-account-empty">Account</Label>
+          <Select>
+            {/*
+              Disabled, so it cannot open onto a blank panel — and the value
+              slot carries the state instead of resting empty. See
+              `forms/emptySelect.ts` for why the dimming is put back.
+            */}
+            <SelectTrigger
+              id="ds-account-empty"
+              className={cn("w-full", EMPTY_SELECT_TRIGGER)}
+              disabled
+              aria-describedby="ds-account-empty-hint"
+            >
+              <span className="min-w-0 truncate">No accounts yet</span>
+            </SelectTrigger>
+            <SelectContent />
+          </Select>
+          <p
+            id="ds-account-empty-hint"
+            className="text-xs text-muted-foreground"
+          >
+            Add an account first.
+          </p>
         </div>
       </DemoBlock>
 

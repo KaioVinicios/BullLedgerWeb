@@ -43,7 +43,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EMPTY_SELECT_TRIGGER } from "@/forms/emptySelect";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
+import { cn } from "@/lib/utils";
 import { PATHS } from "@/routes/path";
 import { accountLabel } from "@/utils/accountLabel";
 import { accountKeys, listAccounts } from "@/services/accounts";
@@ -237,14 +239,31 @@ function HoldingSelect({
   options: ReadonlyArray<{ id: string; name: string }>;
   onChange: (value: string) => void;
 }) {
+  const { t } = useTranslation("common");
+  const empty = options.length === 0;
+
   return (
     <div className="space-y-2">
       <Label htmlFor={id} className="font-normal">
         {label}
       </Label>
       <Select value={value ?? ""} onValueChange={onChange}>
-        <SelectTrigger id={id} className="w-56">
-          <SelectValue placeholder={label} />
+        {/*
+          A filter with nothing to filter by does not open onto a blank panel;
+          it says so where its value goes. No hint underneath, unlike the form
+          fields: the screen's own EmptyState below already carries the reason,
+          and repeating it inside the filter bar would say it twice.
+        */}
+        <SelectTrigger
+          id={id}
+          className={cn("w-56", empty && EMPTY_SELECT_TRIGGER)}
+          disabled={empty}
+        >
+          {empty ? (
+            <span className="min-w-0 truncate">{t("field.noOptions")}</span>
+          ) : (
+            <SelectValue placeholder={label} />
+          )}
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (
