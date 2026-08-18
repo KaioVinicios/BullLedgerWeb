@@ -43,6 +43,18 @@ interface ApiClientErrorInit {
    * nothing here has read yet.
    */
   codes?: Record<string, string[]>;
+  /**
+   * The structured values behind each message in `fields`, same shape and
+   * keys, so a translated sentence keeps its figures. Money arrives as
+   * `{amount, currency}` and decimals and dates as strings — the server sends
+   * the figure, never its spelling, because `BRL 1,000.00` is correct English
+   * and wrong Portuguese for the same number.
+   *
+   * Optional for the same reason `codes` is, and for one more: the server
+   * omits the key entirely when no message on the response takes a parameter,
+   * so its absence is the common case rather than an old body.
+   */
+  params?: Record<string, Record<string, unknown>[]>;
   cause?: unknown;
 }
 
@@ -57,6 +69,7 @@ export class ApiClientError extends Error {
   readonly messageKey?: ErrorsKey;
   readonly fields: Readonly<Record<string, string[]>>;
   readonly codes: Readonly<Record<string, string[]>>;
+  readonly params: Readonly<Record<string, Record<string, unknown>[]>>;
 
   constructor(init: ApiClientErrorInit) {
     super(init.message, { cause: init.cause });
@@ -66,6 +79,7 @@ export class ApiClientError extends Error {
     this.messageKey = init.messageKey;
     this.fields = Object.freeze({ ...(init.fields ?? {}) });
     this.codes = Object.freeze({ ...(init.codes ?? {}) });
+    this.params = Object.freeze({ ...(init.params ?? {}) });
   }
 
   /** Messages for one field, addressed by its exact key (`steps.0.rate`). */
@@ -76,6 +90,11 @@ export class ApiClientError extends Error {
   /** The stable codes behind one field's messages, in the same order. */
   fieldCodes(key: string): string[] {
     return this.codes[key] ?? [];
+  }
+
+  /** The structured values behind one field's messages, in the same order. */
+  fieldParams(key: string): Record<string, unknown>[] {
+    return this.params[key] ?? [];
   }
 
   get nonFieldErrors(): string[] {
@@ -105,6 +124,22 @@ function isMessageMap(value: unknown): value is Record<string, string[]> {
   );
 }
 
+/** `{ field: [{...}, ...] }` — the shape `params` travels in. */
+function isParamsMap(
+  value: unknown,
+): value is Record<string, Record<string, unknown>[]> {
+  if (typeof value !== "object" || value === null) return false;
+
+  return Object.values(value as Record<string, unknown>).every(
+    (entries) =>
+      Array.isArray(entries) &&
+      entries.every(
+        (entry) =>
+          typeof entry === "object" && entry !== null && !Array.isArray(entry),
+      ),
+  );
+}
+
 function isApiErrorBody(body: unknown): body is ApiErrorBody {
   if (typeof body !== "object" || body === null) return false;
 
@@ -114,6 +149,9 @@ function isApiErrorBody(body: unknown): body is ApiErrorBody {
   // `codes` is validated when present but not required: see the comment on
   // ApiClientErrorInit.codes.
   if (candidate.codes !== undefined && !isMessageMap(candidate.codes)) {
+    return false;
+  }
+  if (candidate.params !== undefined && !isParamsMap(candidate.params)) {
     return false;
   }
 
@@ -147,6 +185,7 @@ export function apiClientErrorFromBody(
     message: body.message,
     fields: body.errors,
     codes: body.codes,
+    params: body.params,
   });
 }
 

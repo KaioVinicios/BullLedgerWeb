@@ -476,7 +476,7 @@ export function MovementForm({ movement }: { movement?: Movement }) {
       setServerErrors(
         error instanceof ApiClientError
           ? claimFieldErrors(
-              translateServerErrors(error, tError),
+              translateServerErrors(error, tError, locale),
               CLAIMED_FIELDS,
             )
           : { fieldErrors: {}, formErrors: [tError("unexpected")] },

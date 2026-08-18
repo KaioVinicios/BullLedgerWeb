@@ -1315,6 +1315,12 @@ export interface components {
             codes: {
                 [key: string]: string[];
             };
+            /** @description Same shape and keys as `errors`: the structured values behind each message, so a client can rebuild the sentence in its own language and number formatting. Money arrives as `{amount, currency}`, decimals and dates as strings, domain labels as text. Absent when no message on the response takes any parameter; `{}` for an individual message that takes none. */
+            params?: {
+                [key: string]: {
+                    [key: string]: unknown;
+                }[];
+            };
         };
         /**
          * @description * `CASH_DEPOSIT` - Cash deposit

@@ -177,7 +177,7 @@ export function AccountForm({ account }: { account?: Account }) {
       setServerErrors(
         error instanceof ApiClientError
           ? claimFieldErrors(
-              translateServerErrors(error, tError),
+              translateServerErrors(error, tError, locale),
               CLAIMED_FIELDS,
             )
           : { fieldErrors: {}, formErrors: [tError("unexpected")] },

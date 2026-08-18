@@ -21,6 +21,7 @@ import {
   translateServerErrors,
   type PartitionedServerErrors,
 } from "@/forms/serverErrors";
+import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { ApiClientError } from "@/lib/apiError";
 import { authKeys, updateCurrentUser, type CurrentUser } from "@/services/auth";
 
@@ -44,6 +45,7 @@ export function IdentitySection({ user }: { user: CurrentUser }) {
   const { t } = useTranslation("app");
   // A second scoped `t`: the app-scoped one cannot reach another namespace.
   const { t: tError } = useTranslation("errors");
+  const locale = useFormatLocale();
   const queryClient = useQueryClient();
   const [serverErrors, setServerErrors] =
     useState<PartitionedServerErrors>(NO_SERVER_ERRORS);
@@ -59,7 +61,7 @@ export function IdentitySection({ user }: { user: CurrentUser }) {
     onError: (error) => {
       setServerErrors(
         error instanceof ApiClientError
-          ? claimFieldErrors(translateServerErrors(error, tError), [
+          ? claimFieldErrors(translateServerErrors(error, tError, locale), [
               "first_name",
               "last_name",
             ])

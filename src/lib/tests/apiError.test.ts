@@ -95,6 +95,55 @@ describe("apiClientErrorFromBody", () => {
 
     expect(error.kind).toBe("malformed");
   });
+
+  it("keeps the structured params behind each message", () => {
+    const error = apiClientErrorFromBody(
+      {
+        status: 400,
+        message: "Invalid input.",
+        errors: { lot: ["This contribution has BRL 1,000.00 left."] },
+        codes: { lot: ["movement_lot_overdrawn"] },
+        params: { lot: [{ remaining: { amount: 100000, currency: "BRL" } }] },
+      },
+      400,
+    );
+
+    expect(error.fieldParams("lot")).toEqual([
+      { remaining: { amount: 100000, currency: "BRL" } },
+    ]);
+  });
+
+  it("treats a body without params as valid, with none", () => {
+    // The server omits the key entirely when no message takes a parameter,
+    // so its absence must never read as a malformed body.
+    const error = apiClientErrorFromBody(
+      {
+        status: 400,
+        message: "Invalid input.",
+        errors: { lot: ["Spent."] },
+        codes: { lot: ["movement_lot_exhausted"] },
+      },
+      400,
+    );
+
+    expect(error.kind).toBe("validation");
+    expect(error.fieldParams("lot")).toEqual([]);
+  });
+
+  it("rejects a params map whose values are not arrays of objects", () => {
+    const error = apiClientErrorFromBody(
+      {
+        status: 400,
+        message: "x",
+        errors: { lot: ["Spent."] },
+        codes: { lot: ["c"] },
+        params: { lot: "not an array" },
+      },
+      400,
+    );
+
+    expect(error.kind).toBe("malformed");
+  });
 });
 
 describe("apiClientErrorFromTransport", () => {

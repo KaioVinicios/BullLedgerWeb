@@ -5,6 +5,8 @@ import {
   type ApiClientError,
 } from "@/lib/apiError";
 import { translateServerMessage, type ErrorsKey } from "@/lib/serverMessages";
+import { formatDecimal } from "@/utils/decimal";
+import { formatMoney, type Currency } from "@/utils/money";
 
 export interface PartitionedServerErrors {
   /** Keyed exactly as the server sent them, including `steps.0.rate`. */
@@ -14,9 +16,12 @@ export interface PartitionedServerErrors {
 }
 
 /** Splits any `{field: [...]}` map the way the server groups it: per-field vs. form-level. */
-function partitionMap(map: Record<string, string[]>): PartitionedServerErrors {
-  const fieldErrors: Record<string, string[]> = {};
-  const formErrors: string[] = [];
+function partitionMap<T>(map: Record<string, T[]>): {
+  fieldErrors: Record<string, T[]>;
+  formErrors: T[];
+} {
+  const fieldErrors: Record<string, T[]> = {};
+  const formErrors: T[] = [];
 
   for (const [key, values] of Object.entries(map)) {
     if (key === NON_FIELD_ERRORS || key === DETAIL || key === ALL_FIELDS) {
@@ -94,7 +99,7 @@ export function claimFieldErrors(
  */
 function fallbackMessage(
   error: ApiClientError,
-  t: (key: ErrorsKey) => string,
+  t: (key: ErrorsKey, values?: Record<string, unknown>) => string,
 ): string {
   if (error.messageKey) return t(error.messageKey);
   if (error.message.trim()) return error.message;
@@ -118,27 +123,104 @@ function fallbackMessage(
  */
 export function translateServerErrors(
   error: ApiClientError,
-  t: (key: ErrorsKey) => string,
+  t: (key: ErrorsKey, values?: Record<string, unknown>) => string,
+  locale: string,
 ): PartitionedServerErrors {
   const messages = partitionMap(error.fields);
   const codes = partitionMap(error.codes);
+  const params = partitionMap(error.params);
 
-  const translateAll = (values: string[], forField: string[]) =>
+  const translateAll = (
+    values: string[],
+    forField: string[],
+    withParams: Record<string, unknown>[],
+  ) =>
     values.map((message, index) =>
-      translateServerMessage(message, forField[index], t),
+      translateServerMessage(
+        message,
+        forField[index],
+        displayParams(withParams[index], locale),
+        t,
+      ),
     );
 
   const fieldErrors = Object.fromEntries(
     Object.entries(messages.fieldErrors).map(([field, values]) => [
       field,
-      translateAll(values, codes.fieldErrors[field] ?? []),
+      translateAll(
+        values,
+        codes.fieldErrors[field] ?? [],
+        params.fieldErrors[field] ?? [],
+      ),
     ]),
   );
-  const formErrors = translateAll(messages.formErrors, codes.formErrors);
+  const formErrors = translateAll(
+    messages.formErrors,
+    codes.formErrors,
+    params.formErrors,
+  );
 
   if (formErrors.length === 0 && Object.keys(fieldErrors).length === 0) {
     formErrors.push(fallbackMessage(error, t));
   }
 
   return { fieldErrors, formErrors };
+}
+
+/** The wire shape money travels in, everywhere in this API. */
+function isMoney(
+  value: unknown,
+): value is { amount: number; currency: string } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as { amount?: unknown }).amount === "number" &&
+    typeof (value as { currency?: unknown }).currency === "string"
+  );
+}
+
+/** A canonical decimal string, as the server writes quantities and rates. */
+const DECIMAL = /^-?\d+(\.\d+)$/;
+
+/**
+ * Server params → what a sentence in this locale should print.
+ *
+ * The server sends the figure, never its spelling: `BRL 1,000.00` is correct
+ * English and wrong Portuguese for the same number, and only the client knows
+ * which language the reader is in. Money arrives in the wire shape every other
+ * endpoint uses, so the same formatter renders it.
+ *
+ * A plain integer string is left alone deliberately — grouping "10" into
+ * "10" changes nothing, and a quantity of 1000 units reads better ungrouped
+ * next to a label than as "1.000".
+ */
+function displayValue(value: unknown, locale: string): unknown {
+  if (isMoney(value)) {
+    return formatMoney(
+      { amount: value.amount, currency: value.currency as Currency },
+      locale,
+    );
+  }
+  if (typeof value === "string" && DECIMAL.test(value)) {
+    const decimals = value.split(".")[1]?.length ?? 0;
+    return formatDecimal(value, locale, decimals);
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => displayValue(item, locale)).join(", ");
+  }
+  return value;
+}
+
+function displayParams(
+  params: Record<string, unknown> | undefined,
+  locale: string,
+): Record<string, unknown> | undefined {
+  if (!params) return undefined;
+
+  return Object.fromEntries(
+    Object.entries(params).map(([key, value]) => [
+      key,
+      displayValue(value, locale),
+    ]),
+  );
 }

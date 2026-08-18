@@ -13,6 +13,7 @@ import {
   translateServerErrors,
   type PartitionedServerErrors,
 } from "@/forms/serverErrors";
+import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { ApiClientError } from "@/lib/apiError";
 import { AuthShell } from "@/pages/Auth/AuthShell";
 import { authLink } from "@/pages/Auth/authLink";
@@ -32,6 +33,7 @@ const NO_SERVER_ERRORS: PartitionedServerErrors = {
 export function ResetPasswordPage() {
   const { t } = useTranslation("auth");
   const { t: tError } = useTranslation("errors");
+  const locale = useFormatLocale();
   const [serverErrors, setServerErrors] =
     useState<PartitionedServerErrors>(NO_SERVER_ERRORS);
 
@@ -45,7 +47,7 @@ export function ResetPasswordPage() {
     onError: (error) => {
       setServerErrors(
         error instanceof ApiClientError
-          ? translateServerErrors(error, tError)
+          ? translateServerErrors(error, tError, locale)
           : { fieldErrors: {}, formErrors: [tError("unexpected")] },
       );
     },

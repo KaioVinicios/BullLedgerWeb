@@ -13,6 +13,7 @@ import {
   translateServerErrors,
   type PartitionedServerErrors,
 } from "@/forms/serverErrors";
+import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { ApiClientError } from "@/lib/apiError";
 import { AuthShell } from "@/pages/Auth/AuthShell";
 import { PATHS } from "@/routes/path";
@@ -32,6 +33,7 @@ const NO_SERVER_ERRORS: PartitionedServerErrors = {
 export function ResetPasswordConfirmPage() {
   const { t } = useTranslation("auth");
   const { t: tError } = useTranslation("errors");
+  const locale = useFormatLocale();
   const { uid, token } = resetPasswordConfirmRoute.useParams();
   const [serverErrors, setServerErrors] =
     useState<PartitionedServerErrors>(NO_SERVER_ERRORS);
@@ -64,7 +66,11 @@ export function ResetPasswordConfirmPage() {
       // `token` and `uid` came from the link, not from an input the user can
       // see. Their messages would vanish if they stayed keyed to a field, so
       // they are lifted into the banner — an expired link has to say so.
-      const { fieldErrors, formErrors } = translateServerErrors(error, tError);
+      const { fieldErrors, formErrors } = translateServerErrors(
+        error,
+        tError,
+        locale,
+      );
       const { token: tokenErrors, uid: uidErrors, ...visible } = fieldErrors;
       setServerErrors({
         fieldErrors: visible,

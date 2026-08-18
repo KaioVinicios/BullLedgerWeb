@@ -17,6 +17,7 @@ import {
   type PartitionedServerErrors,
 } from "@/forms/serverErrors";
 import { env } from "@/config/env";
+import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { ApiClientError } from "@/lib/apiError";
 import { AuthShell } from "@/pages/Auth/AuthShell";
 import { TrustPanel } from "@/pages/Auth/TrustPanel";
@@ -40,6 +41,7 @@ export function RegisterPage() {
   const { t } = useTranslation("auth");
   // A second scoped `t`: the auth-scoped one cannot reach another namespace.
   const { t: tError } = useTranslation("errors");
+  const locale = useFormatLocale();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const search = registerRoute.useSearch();
@@ -80,7 +82,7 @@ export function RegisterPage() {
     onError: (error) => {
       setServerErrors(
         error instanceof ApiClientError
-          ? translateServerErrors(error, tError)
+          ? translateServerErrors(error, tError, locale)
           : { fieldErrors: {}, formErrors: [tError("unexpected")] },
       );
     },

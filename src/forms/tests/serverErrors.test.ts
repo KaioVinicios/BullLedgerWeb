@@ -133,7 +133,7 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { formErrors } = translateServerErrors(error, tPt);
+    const { formErrors } = translateServerErrors(error, tPt, "pt-BR");
 
     expect(formErrors).toEqual(["E-mail ou senha incorretos."]);
   });
@@ -151,7 +151,7 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { fieldErrors } = translateServerErrors(error, tPt);
+    const { fieldErrors } = translateServerErrors(error, tPt, "pt-BR");
 
     expect(fieldErrors.email).toEqual(["Já existe uma conta com este e-mail."]);
   });
@@ -177,7 +177,11 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { fieldErrors, formErrors } = translateServerErrors(error, tPt);
+    const { fieldErrors, formErrors } = translateServerErrors(
+      error,
+      tPt,
+      "pt-BR",
+    );
 
     expect(formErrors).toEqual(["As duas senhas precisam ser iguais."]);
     expect(fieldErrors.password1).toEqual([
@@ -197,7 +201,7 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { fieldErrors } = translateServerErrors(error, tPt);
+    const { fieldErrors } = translateServerErrors(error, tPt, "pt-BR");
 
     expect(fieldErrors.token).toEqual(["Este link expirou ou já foi usado."]);
   });
@@ -215,7 +219,7 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { formErrors } = translateServerErrors(error, tEn);
+    const { formErrors } = translateServerErrors(error, tEn, "pt-BR");
 
     expect(formErrors).toEqual(["Incorrect email or password."]);
   });
@@ -231,7 +235,7 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { fieldErrors } = translateServerErrors(error, tPt);
+    const { fieldErrors } = translateServerErrors(error, tPt, "pt-BR");
 
     expect(fieldErrors.name).toEqual(["This field may not be blank."]);
   });
@@ -250,7 +254,7 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { formErrors } = translateServerErrors(error, tPt);
+    const { formErrors } = translateServerErrors(error, tPt, "pt-BR");
 
     expect(formErrors).toEqual(["Unable to log in with provided credentials."]);
   });
@@ -266,7 +270,11 @@ describe("translateServerErrors", () => {
   it("surfaces the network sentence when the request never reached the server", () => {
     const error = apiClientErrorFromTransport(new TypeError("Failed to fetch"));
 
-    const { fieldErrors, formErrors } = translateServerErrors(error, tPt);
+    const { fieldErrors, formErrors } = translateServerErrors(
+      error,
+      tPt,
+      "pt-BR",
+    );
 
     expect(formErrors).toEqual([
       "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
@@ -282,7 +290,7 @@ describe("translateServerErrors", () => {
       500,
     );
 
-    const { formErrors } = translateServerErrors(error, tPt);
+    const { formErrors } = translateServerErrors(error, tPt, "pt-BR");
 
     expect(formErrors).toEqual(["Algo deu errado. Tente novamente."]);
   });
@@ -293,7 +301,7 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { formErrors } = translateServerErrors(error, tPt);
+    const { formErrors } = translateServerErrors(error, tPt, "pt-BR");
 
     expect(formErrors).toEqual(["Invalid input."]);
   });
@@ -309,7 +317,7 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { formErrors } = translateServerErrors(error, tPt);
+    const { formErrors } = translateServerErrors(error, tPt, "pt-BR");
 
     expect(formErrors).toEqual([]);
   });
@@ -325,7 +333,7 @@ describe("translateServerErrors", () => {
       400,
     );
 
-    const { fieldErrors } = translateServerErrors(error, tPt);
+    const { fieldErrors } = translateServerErrors(error, tPt, "pt-BR");
 
     expect(fieldErrors.password1).toEqual([
       "This field may not be blank.",
@@ -368,5 +376,78 @@ describe("claimFieldErrors", () => {
 
     expect(result.fieldErrors).toEqual({});
     expect(result.formErrors).toEqual(["issuer_name: Too long."]);
+  });
+});
+
+describe("translateServerErrors params", () => {
+  const tPt = i18n.getFixedT("pt", "errors");
+
+  const overdrawn = (params: Record<string, unknown>) =>
+    apiClientErrorFromBody(
+      {
+        status: 400,
+        message: "Invalid input.",
+        errors: { lot: ["English the reader never sees."] },
+        codes: { lot: ["movement_lot_overdrawn"] },
+        params: { lot: [params] },
+      },
+      400,
+    );
+
+  const exhausted = (params?: Record<string, unknown>) =>
+    apiClientErrorFromBody(
+      {
+        status: 400,
+        message: "Invalid input.",
+        errors: { lot: ["English the reader never sees."] },
+        codes: { lot: ["movement_lot_exhausted"] },
+        ...(params ? { params: { lot: [params] } } : {}),
+      },
+      400,
+    );
+
+  it("spells money the way the reader's language spells it", () => {
+    // The same figure, two languages: the server sends {amount, currency} and
+    // never the spelling, because the two locales disagree about both the
+    // separators and the space after the symbol.
+    const error = exhausted({ label: { amount: 100000, currency: "BRL" } });
+
+    const pt = translateServerErrors(error, tPt, "pt-BR");
+    const en = translateServerErrors(error, tPt, "en-US");
+
+    // Intl separates the symbol from the digits with U+00A0, not a space, so
+    // the assertion normalizes it away. Written as an escape: a literal
+    // U+00A0 is invisible in a diff and ESLint rejects it outright.
+    const spaces = (value: string | undefined) =>
+      value?.replace(/\u00a0/g, " ");
+
+    expect(spaces(pt.fieldErrors.lot?.[0])).toContain("R$ 1.000,00");
+    expect(spaces(en.fieldErrors.lot?.[0])).toContain("R$1,000.00");
+  });
+
+  it("interpolates the server's figures into the translated sentence", () => {
+    const result = translateServerErrors(
+      overdrawn({
+        label: "Aporte 1",
+        remaining: "10.5",
+        needed: "25.25",
+        date: "2026-07-10",
+      }),
+      tPt,
+      "pt-BR",
+    );
+
+    // Decimals follow the locale too: 10.5 reads as 10,5 to this reader.
+    expect(result.fieldErrors.lot?.[0]).toBe(
+      "Aporte 1 tem 10,5 em 2026-07-10, e este lançamento precisa de 25,25.",
+    );
+  });
+
+  it("still renders when the server sent no params for a known code", () => {
+    const result = translateServerErrors(exhausted(), tPt, "pt-BR");
+
+    expect(result.fieldErrors.lot?.[0]).toContain(
+      "já foi totalmente resgatado",
+    );
   });
 });

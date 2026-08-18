@@ -101,7 +101,7 @@ export function ReportingSection({ profile }: { profile: Profile }) {
     onError: (error) => {
       setServerErrors(
         error instanceof ApiClientError
-          ? claimFieldErrors(translateServerErrors(error, tError), [
+          ? claimFieldErrors(translateServerErrors(error, tError, locale), [
               "reporting_currency",
               "inflation_reference_country",
             ])

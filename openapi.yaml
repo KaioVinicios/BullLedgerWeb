@@ -2919,6 +2919,19 @@ components:
             code behind each message — translate by this, never by matching the English
             text in `errors`, which a library upgrade can reword without notice. A
             message raised without a specific code falls back to "invalid".
+        params:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              additionalProperties: {}
+          description: 'Same shape and keys as `errors`: the structured values behind
+            each message, so a client can rebuild the sentence in its own language
+            and number formatting. Money arrives as `{amount, currency}`, decimals
+            and dates as strings, domain labels as text. Absent when no message on
+            the response takes any parameter; `{}` for an individual message that
+            takes none.'
       required:
       - codes
       - errors
