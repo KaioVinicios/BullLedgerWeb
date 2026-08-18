@@ -607,6 +607,15 @@
       "noAsset": "Sem ativo — o caixa da própria conta",
       "assetHint": "Deixe vazio para depósito, saque, taxa ou imposto na própria conta.",
       "type": "O que aconteceu",
+      "typesForArchetype": "{{archetype}} aceita: {{types}}.",
+      "typeExpects": {
+        "unitsAndLot": "Pergunta quantas unidades saíram da posição e de qual aporte elas vieram.",
+        "units": "Pergunta quantas unidades se moveram e quanto valiam.",
+        "lot": "Pergunta de qual aporte isso sai.",
+        "unitsNoCash": "Muda a quantidade que você tem; nenhum dinheiro se move.",
+        "cashOnly": "Registra só dinheiro — a quantidade que você tem não muda."
+      },
+      "typeExpectsFee": "Pode ter taxa junto.",
       "occurredOn": "Data do acontecido",
       "occurredOnHint": "A data real do evento, que não é necessariamente hoje. Registrar com data retroativa é normal.",
       "amountPaid": "Total pago",
@@ -634,6 +643,7 @@
       "lotEmpty": "Esta posição não tem aporte aberto de onde sair.",
       "lotNone": "Nenhum aporte aberto",
       "lotOverdrawn": "Esse aporte tem apenas {{remaining}}.",
+      "lotExhausted": "Este aporte já foi totalmente resgatado.",
       "position": "Posição atual: {{quantity}}",
       "identityMatch": "{{quantity}} × {{price}} = {{gross}}",
       "identityMismatch": "{{quantity}} × {{price}} dá {{gross}}, que não é o que este valor resulta. Vale conferir — pode estar certo mesmo assim.",

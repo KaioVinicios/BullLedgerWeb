@@ -60,6 +60,7 @@ import { cn } from "@/lib/utils";
 import { LotSelect } from "@/pages/Ledger/LotSelect";
 import { PositionHint } from "@/pages/Ledger/PositionHint";
 import { TradeIdentityHint } from "@/pages/Ledger/TradeIdentityHint";
+import { TypeAvailabilityHint } from "@/pages/Ledger/TypeAvailabilityHint";
 import { PATHS } from "@/routes/path";
 import { MOVEMENT_TYPES, type Archetype } from "@/schemas/apiEnums";
 import {
@@ -94,7 +95,6 @@ import {
   SCALE,
 } from "@/utils/decimal";
 import {
-  formatMoney,
   minorUnitsToDecimalString,
   parseMoneyInput,
   type Currency,
@@ -121,11 +121,13 @@ const MONEY_SCALE = 2;
 /**
  * Server keys with an input here.
  *
- * Both spellings of the two money fields are claimed on purpose. The serializer
- * rejects under `cash_delta` / `fee`, but `Movement.clean()` rejects under the
- * *model* field names — `cash_delta_minor`, `fee_minor` — and a message keyed
- * on a name no input claims lands in the banner instead of on the field.
- * Phase 5's live walk found exactly that shape of bug with `issuer`.
+ * The two money fields used to be claimed under both spellings: the serializer
+ * rejects under `cash_delta` / `fee`, while `Movement.clean()` rejected under
+ * the *model* names — `cash_delta_minor`, `fee_minor` — and a message keyed on
+ * a name no input claims lands in the banner instead of on the field. The API
+ * now keys both halves on the wire name, so the duplicates are gone; the
+ * dotted children (`cash_delta.amount`) are still claimed, because that is
+ * what the serializer produces for a malformed money object.
  */
 const CLAIMED_FIELDS = [
   "account",
@@ -135,9 +137,7 @@ const CLAIMED_FIELDS = [
   "quantity_delta",
   "unit_price",
   "cash_delta",
-  "cash_delta_minor",
   "fee",
-  "fee_minor",
   "fx_rate",
   "lot",
   "note",
@@ -443,18 +443,24 @@ export function MovementForm({ movement }: { movement?: Movement }) {
         return;
       }
 
-      // A lump-principal contribution is drawn down in money instead.
+      /**
+       * A lump-principal contribution is drawn down in money, and its yield
+       * lives outside the lot — interest and coupons carry no lot at all. So
+       * the remainder can never rise to cover a redemption paying principal
+       * plus return, and comparing magnitudes here refused every profitable
+       * CDB before the request was even sent.
+       *
+       * The server checks the same thing this now does: that something is left
+       * to draw from (`movement_lot_exhausted`). See
+       * `docs/backend/business-rules.md`.
+       */
       const principal = lot.principal_remaining;
-      if (principal !== null && values.amount.trim() !== "") {
-        const currency = currencyFor(asset, values.account, accountRows);
-        const wanted = parseMoneyInput(values.amount, currency, locale);
-
-        if (
-          wanted &&
-          Math.abs(wanted.amount) > Math.abs(principal.native.amount)
-        ) {
-          overdrawn(formatMoney(principal.native, locale));
-        }
+      if (principal !== null && principal.native.amount <= 0) {
+        ctx.addIssue({
+          code: "custom",
+          message: t("ledger.form.lotExhausted"),
+          path: ["lot"],
+        });
       }
     });
 
@@ -558,15 +564,15 @@ export function MovementForm({ movement }: { movement?: Movement }) {
     amountRef.current?.focus();
   }
 
+  // The dotted child is the serializer's own rejection of a malformed money
+  // object; the bare key is every domain rule about the amount itself.
   const amountErrors = [
     ...(serverErrors.fieldErrors.cash_delta ?? []),
-    ...(serverErrors.fieldErrors.cash_delta_minor ?? []),
     ...(serverErrors.fieldErrors["cash_delta.amount"] ?? []),
   ];
 
   const feeErrors = [
     ...(serverErrors.fieldErrors.fee ?? []),
-    ...(serverErrors.fieldErrors.fee_minor ?? []),
     ...(serverErrors.fieldErrors["fee.amount"] ?? []),
   ];
 
@@ -737,9 +743,21 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                         </Label>
                         <Select
                           value={field.state.value}
-                          onValueChange={(next) =>
-                            field.handleChange(next as MovementType)
-                          }
+                          onValueChange={(next) => {
+                            /*
+                              Radix clears its own value when the selected item
+                              unmounts, and that happens for one render every
+                              time the asset changes to an archetype whose
+                              column excludes the current type: the list is
+                              rebuilt before the handler above has re-picked a
+                              valid type, and the clear lands *after* it. The
+                              result was a blank type trigger and a submit
+                              carrying no type at all. An empty string is never
+                              a movement type, so it never reaches form state.
+                            */
+                            if (next === "") return;
+                            field.handleChange(next as MovementType);
+                          }}
                         >
                           <SelectTrigger id="movement-type" className="w-full">
                             <SelectValue />
@@ -773,6 +791,16 @@ export function MovementForm({ movement }: { movement?: Movement }) {
                             ...field.state.meta.errors,
                             ...(serverErrors.fieldErrors.type ?? []),
                           ]}
+                        />
+                        {/*
+                          Why the list above looks the way it does, and what
+                          the chosen type is about to ask for. Both read off
+                          the same spec table the validator uses.
+                        */}
+                        <TypeAvailabilityHint
+                          specs={specs}
+                          archetype={archetype}
+                          type={field.state.value}
                         />
                       </div>
                     )}

@@ -607,6 +607,15 @@
       "noAsset": "No asset — the account's own cash",
       "assetHint": "Leave this empty for a deposit, withdrawal, fee, or tax on the account itself.",
       "type": "What happened",
+      "typesForArchetype": "{{archetype}} accepts: {{types}}.",
+      "typeExpects": {
+        "unitsAndLot": "Asks how many units left the position, and which contribution they came out of.",
+        "units": "Asks how many units moved, and what they were worth.",
+        "lot": "Asks which contribution this comes out of.",
+        "unitsNoCash": "Changes how many units you hold; no money moves.",
+        "cashOnly": "Records money only — the number of units you hold does not change."
+      },
+      "typeExpectsFee": "A fee can ride along.",
       "occurredOn": "Date it happened",
       "occurredOnHint": "The real-world date of the event, which is not necessarily today. Back-dating is normal.",
       "amountPaid": "Total paid",
@@ -634,6 +643,7 @@
       "lotEmpty": "This holding has no open contribution to draw from.",
       "lotNone": "No open contribution",
       "lotOverdrawn": "That contribution only holds {{remaining}}.",
+      "lotExhausted": "This contribution has already been fully drawn down.",
       "position": "Currently held: {{quantity}}",
       "identityMatch": "{{quantity}} × {{price}} = {{gross}}",
       "identityMismatch": "{{quantity}} × {{price}} is {{gross}}, which is not what this amount works out to. Worth a second look — it may still be right.",

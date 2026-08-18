@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import { http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
+import errors from "@/i18n/locales/en/errors.json";
 import { createQueryClient } from "@/lib/queryClient";
 import { TEST_API_URL } from "@/mocks/env";
 import { MOVEMENT_TYPE_SPECS } from "@/mocks/movementTypes";
@@ -151,6 +152,25 @@ function tailOf(message: string) {
   return new RegExp(tail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
 }
 
+/**
+ * Anchors on the longest literal run of an interpolated message.
+ *
+ * `tailOf` is the wrong tool when the message *ends* with a placeholder —
+ * "{{archetype}} accepts: {{types}}." leaves a tail of ".", which matches
+ * almost any text on the page. Derived from the locale either way, so a copy
+ * change still breaks the test that asserts it.
+ */
+function literalOf(message: string) {
+  const longest = message
+    .split(/\{\{\w+\}\}/)
+    .reduce(
+      (best, part) => (part.trim().length > best.trim().length ? part : best),
+      "",
+    );
+
+  return new RegExp(longest.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+}
+
 /** Radix comboboxes need the trigger opened before the option exists. */
 async function selectOption(label: string, option: string | RegExp) {
   await userEvent.click(await screen.findByRole("combobox", { name: label }));
@@ -207,6 +227,94 @@ describe("the movement entry form", () => {
     expect(
       await screen.findByRole("option", { name: app.ledger.form.noAsset }),
     ).toBeVisible();
+  });
+
+  /**
+   * The type list is filtered by the server's matrix, which is right — an
+   * invalid combination should be unofferable. But a list that silently
+   * shrinks answers a question nobody asked and leaves the one they did:
+   * *where is Dividend?* These two lines say which types the chosen asset
+   * accepts, and what the chosen type will ask for.
+   */
+  describe("the availability hint", () => {
+    it("names what the chosen asset accepts, so a missing type reads as a rule", async () => {
+      server.use(...signedIn());
+      mount(PATHS.LEDGER_NEW);
+
+      await selectOption(app.ledger.form.asset, "CDB 2030");
+
+      const hint = await screen.findByText(
+        literalOf(app.ledger.form.typesForArchetype),
+      );
+
+      expect(hint).toHaveTextContent(app.enums.movementType.COUPON);
+      // The absence is the point: Dividend belongs to shares, and the hint is
+      // what tells the reader that rather than leaving them hunting.
+      expect(hint).not.toHaveTextContent(app.enums.movementType.DIVIDEND);
+    });
+
+    it("says nothing at all for a movement of the account's own cash", async () => {
+      // No asset, no archetype, nothing to explain — and a hint that is always
+      // there stops being read by the time it matters.
+      server.use(...signedIn());
+      mount(PATHS.LEDGER_NEW);
+
+      await selectOption(app.ledger.form.account, "Corretora");
+
+      expect(
+        screen.queryByText(literalOf(app.ledger.form.typesForArchetype)),
+      ).not.toBeInTheDocument();
+    });
+
+    it("states what the chosen type expects before anything is typed", async () => {
+      server.use(...signedIn());
+      mount(PATHS.LEDGER_NEW);
+
+      await selectOption(app.ledger.form.asset, "PETR4");
+      await selectOption(app.ledger.form.type, app.enums.movementType.SELL);
+
+      // A sale carries both units and a contribution, and can take a fee —
+      // three things the form is about to ask for and none of them obvious
+      // from the word "Sell".
+      const expectation = await screen.findByText(
+        literalOf(app.ledger.form.typeExpects.unitsAndLot),
+      );
+      expect(expectation).toHaveTextContent(app.ledger.form.typeExpectsFee);
+
+      await selectOption(app.ledger.form.type, app.enums.movementType.DIVIDEND);
+
+      expect(
+        await screen.findByText(
+          literalOf(app.ledger.form.typeExpects.cashOnly),
+        ),
+      ).toBeVisible();
+    });
+  });
+
+  /**
+   * Found while building the availability hint, which rendered nothing and
+   * said why: the type had become an empty string.
+   *
+   * Radix clears its own value when the selected item unmounts, which is
+   * exactly what happens for one render when the asset changes to an
+   * archetype whose column excludes the current type. The clear landed after
+   * the handler that re-picks a valid type, leaving a blank trigger and a
+   * submit carrying no type — visible to a user as a form that had silently
+   * forgotten what they were recording.
+   */
+  it("keeps a valid type when the new asset excludes the current one", async () => {
+    server.use(...signedIn());
+    mount(PATHS.LEDGER_NEW);
+
+    // Deposit is the default with no asset, and is invalid for a certificate.
+    await selectOption(app.ledger.form.asset, "CDB 2030");
+
+    const type = await screen.findByRole("combobox", {
+      name: app.ledger.form.type,
+    });
+
+    await waitFor(() => expect(type).not.toHaveTextContent(""));
+    expect(type).toHaveTextContent(app.enums.movementType.BUY);
   });
 
   it("offers only the archetype's types, and never a transfer", async () => {
@@ -392,7 +500,7 @@ describe("the movement entry form", () => {
     expect(amount).toHaveFocus();
   });
 
-  it("lands a model-keyed rejection on the input that produced it", async () => {
+  it("lands a rejection on the input that produced it, translated", async () => {
     server.use(
       ...signedIn(),
       http.post(`${TEST_API_URL}/api/movements/`, () =>
@@ -400,13 +508,17 @@ describe("the movement entry form", () => {
           {
             status: 400,
             message: "Invalid input.",
-            // The server rejects from `clean()`, which keys on *model* field
-            // names — not the serializer's. A form claiming only `cash_delta`
-            // would send this to the banner instead of to the input.
+            // Both halves of the server now key on the wire name the client
+            // submits. This used to arrive under the *model* name
+            // (`cash_delta_minor`), and the form claimed both spellings so the
+            // message would not land in the banner instead of on the input.
             errors: {
-              cash_delta_minor: ["cash_delta must be negative for Withdrawal."],
+              cash_delta: [
+                "A Withdrawal takes money out of the account — enter what you paid.",
+              ],
             },
-            codes: { cash_delta_minor: ["movement_cash_sign_invalid"] },
+            codes: { cash_delta: ["movement_cash_not_negative"] },
+            params: { cash_delta: [{ type: "Withdrawal" }] },
           },
           { status: 400 },
         ),
@@ -425,8 +537,12 @@ describe("the movement entry form", () => {
       screen.getByRole("button", { name: app.ledger.form.create }),
     );
 
+    // The reader's own copy, with the type the server named interpolated in —
+    // never the English sentence the API happened to send.
     expect(
-      await screen.findByText(/cash_delta must be negative/),
+      await screen.findByText(
+        errors.movementCashNotNegative.replace("{{type}}", "Withdrawal"),
+      ),
     ).toBeVisible();
     expect(screen.getByLabelText(app.ledger.form.amountPaid)).toHaveAttribute(
       "aria-invalid",
@@ -769,6 +885,126 @@ describe("the lot selector", () => {
     expect(posted).toBeUndefined();
   });
 
+  /**
+   * A lump-principal contribution is counted in money, and its yield lives
+   * outside the lot — interest and coupons carry no lot at all. So a redemption
+   * paying principal plus return legitimately exceeds what was paid in, and the
+   * magnitude comparison that is right for units refused every profitable CDB
+   * here before the request was even sent. See `docs/backend/business-rules.md`.
+   */
+  describe("a lump-principal contribution", () => {
+    const certificateHolding = {
+      ...holding,
+      asset: certificate.id,
+      archetype: "FIXED_INCOME" as const,
+      quantity: null,
+      lots: [
+        {
+          ...holding.lots[0]!,
+          lot: "77777777-7777-4777-8777-777777777777",
+          label: "Aporte — 2026-01-10",
+          quantity_remaining: null,
+          principal_remaining: pair(100_000),
+          entry_quantity: null,
+          entry_unit_price: null,
+          exits: [],
+        },
+      ],
+    };
+
+    function withCertificateHolding(principalRemaining: number) {
+      return http.get(
+        `${TEST_API_URL}/api/portfolio/holdings/${account.id}/${certificate.id}/`,
+        () =>
+          HttpResponse.json({
+            status: 200,
+            data: {
+              ...certificateHolding,
+              lots: [
+                {
+                  ...certificateHolding.lots[0]!,
+                  principal_remaining: pair(principalRemaining),
+                },
+              ],
+            },
+          }),
+      );
+    }
+
+    async function startARedemption() {
+      await selectOption(app.ledger.form.account, "Corretora");
+      await selectOption(app.ledger.form.asset, "CDB 2030");
+      await selectOption(
+        app.ledger.form.type,
+        app.enums.movementType.REDEMPTION,
+      );
+    }
+
+    it("lets a redemption exceed the principal contributed", async () => {
+      let posted: unknown;
+
+      server.use(
+        ...signedIn(),
+        withCertificateHolding(100_000),
+        http.post(`${TEST_API_URL}/api/movements/`, async ({ request }) => {
+          posted = await request.json();
+          return HttpResponse.json(
+            { status: 201, data: recorded },
+            { status: 201 },
+          );
+        }),
+      );
+
+      mount(PATHS.LEDGER_NEW);
+      await startARedemption();
+      await selectOption(app.ledger.form.lot, /Aporte — 2026-01-10/);
+
+      // R$1,000 in, R$1,150 out: the R$150 is yield the lot never held.
+      await userEvent.type(
+        screen.getByLabelText(app.ledger.form.amountReceived),
+        "1150.00",
+      );
+      await userEvent.click(
+        screen.getByRole("button", { name: app.ledger.form.create }),
+      );
+
+      await waitFor(() => expect(posted).toBeDefined());
+    });
+
+    it("still refuses one drawn from a contribution already spent", async () => {
+      let posted: unknown;
+
+      server.use(
+        ...signedIn(),
+        withCertificateHolding(0),
+        http.post(`${TEST_API_URL}/api/movements/`, async ({ request }) => {
+          posted = await request.json();
+          return HttpResponse.json(
+            { status: 201, data: recorded },
+            { status: 201 },
+          );
+        }),
+      );
+
+      mount(PATHS.LEDGER_NEW);
+      await startARedemption();
+      await selectOption(app.ledger.form.lot, /Aporte — 2026-01-10/);
+
+      await userEvent.type(
+        screen.getByLabelText(app.ledger.form.amountReceived),
+        "100.00",
+      );
+      await userEvent.click(
+        screen.getByRole("button", { name: app.ledger.form.create }),
+      );
+
+      expect(
+        await screen.findByText(app.ledger.form.lotExhausted),
+      ).toBeVisible();
+      expect(posted).toBeUndefined();
+    });
+  });
+
   // A holding whose lots are all closed cannot be exited at all. The hint
   // already said so; the trigger used to sit there openable and blank.
   it("closes itself when there is no open contribution", async () => {
@@ -908,10 +1144,13 @@ describe("the exchange rate", () => {
             message: "Invalid input.",
             errors: {
               fx_rate: [
-                "No FX rate available for USD->BRL on 2026-03-04; provide fx_rate explicitly.",
+                "No USD to BRL rate is on file for 2026-03-04. Enter the rate you used.",
               ],
             },
             codes: { fx_rate: ["movement_fx_rate_unresolvable"] },
+            params: {
+              fx_rate: [{ currency: "USD", base: "BRL", date: "2026-03-04" }],
+            },
           },
           { status: 400 },
         ),
@@ -932,8 +1171,18 @@ describe("the exchange rate", () => {
     );
 
     // Optional until the day has no rate to resolve; then it is the only way
-    // forward, and the server's own sentence says so on the input itself.
-    expect(await screen.findByText(/No FX rate available/)).toBeVisible();
+    // forward, and the input itself says so — in the reader's language, with
+    // the currencies and the date the server named in `params`. Asserted
+    // against the shipped locale rather than a hand-typed sentence, so a copy
+    // change breaks this and nothing else.
+    expect(
+      await screen.findByText(
+        errors.movementFxRateUnresolvable
+          .replace("{{currency}}", "USD")
+          .replace("{{base}}", "BRL")
+          .replace("{{date}}", "2026-03-04"),
+      ),
+    ).toBeVisible();
     expect(screen.getByLabelText(app.ledger.form.fxRate)).toHaveAttribute(
       "aria-invalid",
       "true",

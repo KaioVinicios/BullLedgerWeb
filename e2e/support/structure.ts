@@ -221,6 +221,38 @@ export function seedSavings(
   });
 }
 
+/**
+ * A lump-principal certificate — the archetype whose contributions are counted
+ * in money rather than in units, and whose yield lives outside the lot.
+ *
+ * `issuer` is required and has no default: a certificate is a debt of a named
+ * bank, and the API rejects one without an issuer
+ * (`certificate_issuer_required`). Seeding the institution is the caller's job
+ * so the spec that needs a certificate also owns the bank that issued it.
+ */
+export function seedCertificate(
+  page: Page,
+  options: { name: string; issuer: string },
+): Promise<Asset> {
+  return seed<Asset>(page, ENDPOINTS.assets, {
+    name: options.name,
+    archetype: "FIXED_INCOME",
+    issuer: options.issuer,
+    currency: "BRL",
+    country: "BR",
+    instrument_kind: "CERTIFICATE",
+    issuer_type: "BANK",
+    maturity_date: "2030-01-01",
+    rate_type: "FLOATING",
+    rate_index: "CDI",
+    coupon_rate: "0",
+    coupon_frequency: "NONE",
+    tax_advantaged: false,
+    early_redemption: true,
+    deposit_insurance: "FGC",
+  });
+}
+
 export function seedFund(
   page: Page,
   options: { name: string },
