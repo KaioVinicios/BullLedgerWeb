@@ -130,6 +130,16 @@ one cause.
 
 Things worth knowing before changing any of it:
 
+- **Another project's dev server on 5173 used to hijack the whole run.**
+  `webServer.reuseExistingServer` is true outside CI, and it decides by asking
+  only whether *something* answers on the port. A Vite server for a different
+  project answers 200, Playwright concludes this app is already up and never
+  starts it, and every spec drives a stranger's app: `/app/*` does not exist
+  over there, so forty specs time out on controls that never render and not one
+  of them says why. `e2e/support/global-setup.ts` now checks the served
+  `<title>` before the first spec and fails the run with a single sentence
+  naming the port. If you see it, `lsof -nP -iTCP:5173 -sTCP:LISTEN` names the
+  process to stop.
 - **The mailbox path is not under `test-results/`.** Playwright empties its
   output directory at the start of every run, and the API — still holding the
   file it was started with — would go on writing to a deleted inode. Every

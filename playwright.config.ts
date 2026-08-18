@@ -18,6 +18,13 @@ const baseURL = "http://localhost:5173";
  */
 export default defineConfig({
   testDir: "./e2e",
+  /**
+   * Runs before the first spec and fails the whole run if either server is not
+   * the one this suite means to drive. `reuseExistingServer` below decides by
+   * asking only whether *something* answers on the port, and a dev server for
+   * another project answers just as well — see `e2e/support/global-setup.ts`.
+   */
+  globalSetup: "./e2e/support/global-setup.ts",
   fullyParallel: true,
   /**
    * One at a time, and not because the specs share state — they do not: each
