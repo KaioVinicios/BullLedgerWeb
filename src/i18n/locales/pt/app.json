@@ -514,6 +514,7 @@
       "issuerType": "Tipo de emissor",
       "issuer": "Instituição emissora",
       "issuerHint": "Um certificado precisa nomear uma das suas instituições como emissora.",
+      "issuerHintBond": "Um título público pode não ter instituição por trás — deixe em branco e informe o emissor ao lado.",
       "noIssuer": "Nenhuma — não é uma das suas instituições",
       "issuerName": "Nome do emissor",
       "maturityDate": "Data de vencimento",

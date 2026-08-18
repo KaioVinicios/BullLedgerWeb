@@ -514,6 +514,7 @@
       "issuerType": "Issuer type",
       "issuer": "Issuing institution",
       "issuerHint": "A certificate must name one of your institutions as its issuer.",
+      "issuerHintBond": "A bond may be government paper with no institution behind it — leave this empty and name the issuer beside it.",
       "noIssuer": "None — not one of your institutions",
       "issuerName": "Issuer name",
       "maturityDate": "Maturity date",

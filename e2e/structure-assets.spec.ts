@@ -55,10 +55,11 @@ test("creates one asset of each archetype through its own field set", async ({
   await page.getByLabel(app.assets.form.maturityDate).fill("2030-01-15");
   await page.getByRole("combobox", { name: app.assets.form.issuer }).click();
   await page.getByRole("option", { name: "Banco Inter" }).click();
-  // A CDB pays no coupons: the API requires a zero coupon rate when the
-  // frequency is NONE (surfaced by this very spec, live, on the right
-  // field), and the yield rides in `rate_value` instead.
-  await page.getByLabel(app.assets.form.couponRate).fill("0");
+  // A CDB pays no coupons, and the form no longer asks: it omits both inputs
+  // and sends a zero rate with a NONE frequency itself. This spec used to fill the rate
+  // by hand, which is how the gap was found — the form offered a coupon the
+  // API always rejects. The yield rides in `rate_value` instead.
+  await expect(page.getByLabel(app.assets.form.couponRate)).toHaveCount(0);
   await page
     .getByLabel(app.assets.form.rateValue, { exact: true })
     .fill("13.75");

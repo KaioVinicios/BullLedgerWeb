@@ -12,6 +12,7 @@ import { server } from "@/mocks/server";
 import { PATHS } from "@/routes/path";
 import { createAppRouter } from "@/routes/router";
 import type { Asset } from "@/services/assets";
+import type { Institution } from "@/services/institutions";
 
 const user = { pk: 1, email: "ana@example.com", first_name: "", last_name: "" };
 
@@ -27,6 +28,15 @@ const bitcoin: Asset = {
   decimals: 18,
   price_currency: "USD",
   chain: null,
+};
+
+/** A certificate must name one of the user's institutions as its issuer. */
+const institution: Institution = {
+  id: "7f6e5d4c-3b2a-4190-8e7d-6c5b4a392817",
+  name: "Banco Inter",
+  kinds: ["BANK"],
+  country: "BR",
+  archived_at: null,
 };
 
 function page<T>(results: T[], count = results.length) {
@@ -301,6 +311,102 @@ describe("the archetype-driven asset form", () => {
       archetype: "FIXED_INCOME",
       maturity_date: "2030-01-15",
       coupon_rate: "0.1375",
+    });
+  });
+
+  /**
+   * A certificate pays everything back at maturity, so it has no coupon. The
+   * form used to ask anyway — offering a frequency and a rate — and the server
+   * rejected the answer with `certificate_coupon_frequency`. Reported from the
+   * live form: a CDB with a semiannual coupon could be filled in completely
+   * and only then refused.
+   */
+  it("does not ask a certificate for a coupon it cannot have", async () => {
+    server.use(...signedIn());
+    mount(PATHS.ASSETS_NEW);
+
+    await userEvent.click(
+      await screen.findByRole("radio", {
+        name: app.enums.archetype.FIXED_INCOME,
+      }),
+    );
+
+    // CERTIFICATE is the default instrument kind, so this is the resting
+    // state — and the absence is silent, like every other field an archetype
+    // does not use.
+    expect(
+      screen.queryByLabelText(app.assets.form.couponRate),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("combobox", { name: app.assets.form.couponFrequency }),
+    ).not.toBeInTheDocument();
+    // A bond does pay a coupon, so both come back.
+    await userEvent.click(
+      screen.getByRole("combobox", { name: app.assets.form.instrumentKind }),
+    );
+    await userEvent.click(
+      await screen.findByRole("option", {
+        name: app.enums.instrumentKind.BOND,
+      }),
+    );
+
+    expect(screen.getByLabelText(app.assets.form.couponRate)).toBeVisible();
+    expect(
+      screen.getByRole("combobox", { name: app.assets.form.couponFrequency }),
+    ).toBeVisible();
+  });
+
+  it("records a certificate as zero-coupon without asking", async () => {
+    let posted: Record<string, unknown> | undefined;
+
+    server.use(
+      // Ahead of signedIn(), whose empty institutions list would match first.
+      http.get(`${TEST_API_URL}/api/institutions/`, () =>
+        HttpResponse.json(page([institution])),
+      ),
+      ...signedIn(),
+      http.post(`${TEST_API_URL}/api/assets/`, async ({ request }) => {
+        posted = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(
+          { status: 201, data: bitcoin },
+          { status: 201 },
+        );
+      }),
+    );
+
+    const { router } = mount(PATHS.ASSETS_NEW);
+
+    await userEvent.click(
+      await screen.findByRole("radio", {
+        name: app.enums.archetype.FIXED_INCOME,
+      }),
+    );
+    await userEvent.type(
+      screen.getByLabelText(app.assets.form.name),
+      "CDB Inter",
+    );
+    await userEvent.click(
+      screen.getByRole("combobox", { name: app.assets.form.issuer }),
+    );
+    await userEvent.click(
+      await screen.findByRole("option", { name: institution.name }),
+    );
+    await userEvent.type(
+      screen.getByLabelText(app.assets.form.maturityDate),
+      "2030-02-09",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: app.assets.form.create }),
+    );
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(PATHS.ASSETS),
+    );
+    // The two values the server requires, supplied without a question.
+    expect(posted).toMatchObject({
+      instrument_kind: "CERTIFICATE",
+      coupon_rate: "0",
+      coupon_frequency: "NONE",
     });
   });
 

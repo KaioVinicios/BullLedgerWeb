@@ -394,7 +394,12 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                 path: ["issuer"],
               });
             }
-            if (percentToFraction(values.coupon_rate, locale) === null) {
+            // Only a bond is asked for a coupon rate; a certificate has no
+            // input to fill in and supplies zero at the wire.
+            if (
+              values.instrument_kind !== "CERTIFICATE" &&
+              percentToFraction(values.coupon_rate, locale) === null
+            ) {
               ctx.addIssue({
                 code: "custom",
                 message: t("assets.form.errors.percentRequired"),
@@ -494,9 +499,17 @@ export function AssetForm({ asset }: { asset?: Asset }) {
             maturity_date: value.maturity_date,
             rate_type: value.rate_type,
             rate_index: value.rate_index,
-            // Validated non-null by the schema before this runs.
-            coupon_rate: percentToFraction(value.coupon_rate, locale) ?? "0",
-            coupon_frequency: value.coupon_frequency,
+            // A certificate has no coupon and is not asked for one, so the
+            // two the API still requires are supplied here rather than left
+            // to whatever the inputs last held for a bond.
+            ...(value.instrument_kind === "CERTIFICATE"
+              ? { coupon_rate: "0", coupon_frequency: "NONE" as const }
+              : {
+                  // Validated non-null by the schema before this runs.
+                  coupon_rate:
+                    percentToFraction(value.coupon_rate, locale) ?? "0",
+                  coupon_frequency: value.coupon_frequency,
+                }),
             tax_advantaged: value.tax_advantaged,
             early_redemption: value.early_redemption,
             deposit_insurance: value.deposit_insurance,
@@ -827,30 +840,75 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           />
                         )}
                       </form.Field>
-                      <form.Field name="issuer">
-                        {(field) => (
-                          <SelectField
-                            name="issuer"
-                            label={t("assets.form.issuer")}
-                            hint={t("assets.form.issuerHint")}
-                            value={field.state.value}
-                            options={[
-                              NO_ISSUER,
-                              ...institutions.map((row) => row.id),
-                            ]}
-                            renderOption={(option) =>
-                              option === NO_ISSUER
-                                ? t("assets.form.noIssuer")
-                                : institutionName(option)
-                            }
-                            onChange={field.handleChange}
-                            errors={[
-                              ...field.state.meta.errors,
-                              ...fieldErrors("issuer"),
-                            ]}
-                          />
-                        )}
-                      </form.Field>
+                    </div>
+
+                    <form.Subscribe
+                      selector={(state) => state.values.instrument_kind}
+                    >
+                      {(instrumentKind) => (
+                        <div className="grid gap-6 sm:grid-cols-2">
+                          <form.Field name="issuer">
+                            {(field) => (
+                              <SelectField
+                                name="issuer"
+                                label={t("assets.form.issuer")}
+                                /*
+                              The requirement is the certificate's, not fixed
+                              income's: a bond may be government paper with no
+                              institution behind it, and naming one is exactly
+                              what "Nome do emissor" beside this is for. The
+                              hint used to assert the certificate rule on a
+                              bond, where it is false.
+                            */
+                                hint={t(
+                                  instrumentKind === "CERTIFICATE"
+                                    ? "assets.form.issuerHint"
+                                    : "assets.form.issuerHintBond",
+                                )}
+                                value={field.state.value}
+                                options={[
+                                  NO_ISSUER,
+                                  ...institutions.map((row) => row.id),
+                                ]}
+                                renderOption={(option) =>
+                                  option === NO_ISSUER
+                                    ? t("assets.form.noIssuer")
+                                    : institutionName(option)
+                                }
+                                onChange={field.handleChange}
+                                errors={[
+                                  ...field.state.meta.errors,
+                                  ...fieldErrors("issuer"),
+                                ]}
+                              />
+                            )}
+                          </form.Field>
+                          {instrumentKind === "CERTIFICATE" ? null : (
+                            <form.Field name="issuer_name">
+                              {(field) => (
+                                <TextField
+                                  name="issuer_name"
+                                  label={t("assets.form.issuerName")}
+                                  hint={t("assets.form.optional")}
+                                  autoComplete="off"
+                                  errors={[
+                                    ...field.state.meta.errors,
+                                    ...fieldErrors("issuer_name"),
+                                  ]}
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                  }
+                                />
+                              )}
+                            </form.Field>
+                          )}
+                        </div>
+                      )}
+                    </form.Subscribe>
+
+                    <div className="grid gap-6 sm:grid-cols-2">
                       <form.Field name="maturity_date">
                         {(field) => (
                           <TextField
@@ -884,6 +942,9 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           />
                         )}
                       </form.Field>
+                    </div>
+
+                    <div className="grid gap-6 sm:grid-cols-2">
                       <form.Field name="rate_type">
                         {(field) => (
                           <SelectField
@@ -914,18 +975,31 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           />
                         )}
                       </form.Field>
-                      <form.Field name="coupon_rate">
+                      {/*
+                        A certificate pays everything back at maturity, so a
+                        coupon is not a question it can be asked: the server
+                        rejects one that carries a rate or a schedule
+                        (`certificate_coupon_frequency`), and asking anyway is
+                        how a CDB could be filled in completely and only then
+                        refused.
+
+                        Absent rather than disabled, and with no note in their
+                        place. This form already omits every field an
+                        archetype does not use without remarking on it — a CDB
+                        has no ticker either — and a sentence here would
+                        introduce the word "coupon" to someone who has not
+                        seen it, only to say it does not apply. `toRequest`
+                        supplies the two values the API still requires.
+                      */}
+                      <form.Field name="rate_value">
                         {(field) => (
                           <PercentField
-                            name="coupon_rate"
-                            label={t("assets.form.couponRate")}
-                            // Two percent fields sit on this form; without
-                            // saying what each is for, the live walk could
-                            // not tell them apart either.
-                            hint={t("assets.form.couponRateHint")}
+                            name="rate_value"
+                            label={t("assets.form.rateValue")}
+                            hint={t("assets.form.rateValueHint")}
                             errors={[
                               ...field.state.meta.errors,
-                              ...fieldErrors("coupon_rate"),
+                              ...fieldErrors("rate_value"),
                             ]}
                             value={field.state.value}
                             onBlur={field.handleBlur}
@@ -933,21 +1007,54 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           />
                         )}
                       </form.Field>
-                      <form.Field name="coupon_frequency">
-                        {(field) => (
-                          <SelectField
-                            name="coupon_frequency"
-                            label={t("assets.form.couponFrequency")}
-                            value={field.state.value}
-                            options={COUPON_FREQUENCIES}
-                            renderOption={(option) =>
-                              t(`enums.couponFrequency.${option}`)
-                            }
-                            onChange={field.handleChange}
-                            errors={fieldErrors("coupon_frequency")}
-                          />
-                        )}
-                      </form.Field>
+                    </div>
+
+                    <div className="space-y-4">
+                      <form.Subscribe
+                        selector={(state) => state.values.instrument_kind}
+                      >
+                        {(instrumentKind) =>
+                          instrumentKind === "CERTIFICATE" ? null : (
+                            <>
+                              <form.Field name="coupon_rate">
+                                {(field) => (
+                                  <PercentField
+                                    name="coupon_rate"
+                                    label={t("assets.form.couponRate")}
+                                    // Two percent fields sit on this form;
+                                    // without saying what each is for, the
+                                    // live walk could not tell them apart
+                                    // either.
+                                    hint={t("assets.form.couponRateHint")}
+                                    errors={[
+                                      ...field.state.meta.errors,
+                                      ...fieldErrors("coupon_rate"),
+                                    ]}
+                                    value={field.state.value}
+                                    onBlur={field.handleBlur}
+                                    onChange={field.handleChange}
+                                  />
+                                )}
+                              </form.Field>
+                              <form.Field name="coupon_frequency">
+                                {(field) => (
+                                  <SelectField
+                                    name="coupon_frequency"
+                                    label={t("assets.form.couponFrequency")}
+                                    value={field.state.value}
+                                    options={COUPON_FREQUENCIES}
+                                    renderOption={(option) =>
+                                      t(`enums.couponFrequency.${option}`)
+                                    }
+                                    onChange={field.handleChange}
+                                    errors={fieldErrors("coupon_frequency")}
+                                  />
+                                )}
+                              </form.Field>
+                            </>
+                          )
+                        }
+                      </form.Subscribe>
                       <form.Field name="deposit_insurance">
                         {(field) => (
                           <SelectField
@@ -960,23 +1067,6 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                             }
                             onChange={field.handleChange}
                             errors={fieldErrors("deposit_insurance")}
-                          />
-                        )}
-                      </form.Field>
-                      <form.Field name="issuer_name">
-                        {(field) => (
-                          <TextField
-                            name="issuer_name"
-                            label={t("assets.form.issuerName")}
-                            hint={t("assets.form.optional")}
-                            autoComplete="off"
-                            errors={[
-                              ...field.state.meta.errors,
-                              ...fieldErrors("issuer_name"),
-                            ]}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
                           />
                         )}
                       </form.Field>
@@ -1008,25 +1098,6 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           </form.Field>
                         )}
                       </form.Subscribe>
-                      <form.Field name="rate_value">
-                        {(field) => (
-                          <PercentField
-                            name="rate_value"
-                            label={t("assets.form.rateValue")}
-                            hint={t("assets.form.rateValueHint")}
-                            errors={[
-                              ...field.state.meta.errors,
-                              ...fieldErrors("rate_value"),
-                            ]}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={field.handleChange}
-                          />
-                        )}
-                      </form.Field>
-                    </div>
-
-                    <div className="space-y-4">
                       <form.Field name="tax_advantaged">
                         {(field) => (
                           <div className="flex items-start gap-3 rounded-md bg-muted/50 p-3">
