@@ -384,3 +384,14 @@ docs/backend-requests/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Wrangler's local state and the secrets `wrangler dev` reads.
+/.wrangler/
+.dev.vars
+.dev.vars.*
+
+# `wrangler types` output. The Worker takes its runtime types from
+# @cloudflare/workers-types via worker/tsconfig.json, so this file is not part
+# of the build — but running the command drops 15k generated lines here, and
+# they should never reach a commit.
+/worker-configuration.d.ts

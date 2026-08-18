@@ -18,7 +18,10 @@
     "api:sync": "bun run api:schema && bun run api:types",
     "test:e2e": "playwright test",
     "check": "bun run lint && bun run format:check && bun run typecheck && bun run test",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:cf": "bun run build && wrangler dev",
+    "deploy": "bun run build && wrangler deploy",
+    "deploy:check": "wrangler deploy --dry-run"
   },
   "dependencies": {
     "@fontsource-variable/geist-mono": "^5.2.8",
@@ -50,6 +53,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
+    "@cloudflare/workers-types": "^5.20260818.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "1.62.0",
     "@rolldown/plugin-babel": "^0.2.3",
@@ -79,6 +83,7 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12",
-    "vitest": "4.1.10"
+    "vitest": "4.1.10",
+    "wrangler": "^4.123.0"
   }
 }

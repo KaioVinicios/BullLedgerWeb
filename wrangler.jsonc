@@ -1,5 +1,5 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "bull-ledger-web",
   // Pins the Workers runtime behaviour to what this code was tested against.
   // Bump it deliberately, never on every deploy: a newer date can change
@@ -8,22 +8,41 @@
   "observability": {
     "enabled": true,
   },
-  // The Worker owns the whole hostname, so `workers.dev` stays off — one
-  // origin for the SPA means one origin for the API's credentialed CORS and
-  // cookie `Domain` to allow.
+  // The SPA and the API share one hostname, so `workers.dev` and preview URLs
+  // both stay off. They are not merely redundant here — each one is a *second*
+  // origin serving the same app, and on that origin `/api/*` proxies to the
+  // API while the browser sends cookies scoped to the real hostname. Every
+  // request arrives unauthenticated, which reads as a broken deploy rather
+  // than as a URL that was never meant to work.
   "workers_dev": false,
+  "preview_urls": false,
   "routes": [
     {
-      // Fill both in before the first deploy. `--dry-run` only warns about
-      // these placeholders; the real deploy is what fails, on the unknown
-      // zone. `pattern` is a route match, so it needs the path too:
-      // `app.voynan.com/*`, not `app.voynan.com`. `zone_id` is the zone's ID
-      // on the Cloudflare dashboard overview, and the hostname needs a
-      // proxied DNS record in that zone.
-      "pattern": "<DOMAIN_ROUTE_PATTERN>",
-      "zone_id": "<YOUR_ZONE_ID>",
+      // `custom_domain` rather than a zone route: this Worker owns the whole
+      // hostname, which is what a custom domain means. It needs no `zone_id`
+      // and no hand-made DNS record — Cloudflare provisions both on the first
+      // deploy — and unlike a route pattern it takes no trailing `/*`.
+      //
+      // Reclaiming this hostname is the deploy's real risk: whatever answers
+      // here today stops answering the moment this lands. Confirm the API is
+      // reachable behind `API_ORIGIN` *before* deploying, not after.
+      "pattern": "bull-ledger.voynan.com",
+      "custom_domain": true,
     },
   ],
+  "main": "./worker/index.ts",
+  "vars": {
+    // The origin the Worker proxies API traffic to — scheme and host, no path,
+    // no trailing slash. Deliberately blank: the hosting behind this hostname
+    // is being replaced, and `worker/index.ts` fails with a message naming
+    // this key rather than proxying somewhere wrong.
+    //
+    // A var, not a secret: a hostname is not sensitive, and keeping it in the
+    // config is what makes a deploy reproducible from the repository alone.
+    // It is also read at runtime, so changing the API's home is a config edit
+    // and a redeploy — the SPA bundle never has to be rebuilt for it.
+    "API_ORIGIN": "",
+  },
   "assets": {
     // `bun run build` writes here (Vite's default `outDir`).
     "directory": "./dist",
@@ -32,9 +51,23 @@
     // without this, `GET /app/accounts` typed into the address bar is a 404
     // from the asset server before React ever loads. Serving `index.html`
     // for unmatched paths hands routing back to the client.
-    //
-    // Hashed files under `/assets/*` still match on their own, so this never
-    // masks a genuinely missing bundle with an HTML response.
     "not_found_handling": "single-page-application",
+    // The only paths the Worker runs on. Everything else — the shell, the
+    // hashed bundles, the favicon — is served straight off the asset network,
+    // which costs no invocation and cannot be broken by a bug in the proxy.
+    //
+    // `/system/*` is here for the schema, not for people: `scripts/
+    // fetch-schema.ts` reads `/system/schema/` off `VITE_API_URL`, so once
+    // that variable points at this hostname, leaving `/system/*` out would
+    // hand `bun run api:sync` and the CI schema-drift job `index.html` and a
+    // parse error instead of an OpenAPI document.
+    //
+    // `/admin/*` is deliberately absent. Django serves it, but nothing about
+    // this hostname's purpose requires exposing it to the public internet;
+    // reach it on the API's own origin.
+    //
+    // Naming the patterns explicitly also turns off the `Sec-Fetch-Mode:
+    // navigate` heuristic, so a document request to `/api/...` still proxies.
+    "run_worker_first": ["/api/*", "/system/*"],
   },
 }
