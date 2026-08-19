@@ -15,6 +15,12 @@
     "hidePassword": "Hide password",
     "noOptions": "Nothing to choose from"
   },
+  "copy": {
+    "action": "Copy",
+    "done": "Copied",
+    "label": "{{action}} {{label}}",
+    "failed": "Could not copy — select the text and copy it by hand."
+  },
   "home": {
     "tagline": "Track your investments with clarity: positions, transactions, and performance in one place.",
     "notOpen": "BullLedger is still being built and isn’t open yet.",

@@ -15,6 +15,12 @@
     "hidePassword": "Ocultar senha",
     "noOptions": "Nada para escolher"
   },
+  "copy": {
+    "action": "Copiar",
+    "done": "Copiado",
+    "label": "{{action}} {{label}}",
+    "failed": "Não foi possível copiar — selecione o texto e copie manualmente."
+  },
   "home": {
     "tagline": "Acompanhe seus investimentos com clareza: posições, transações e desempenho em um só lugar.",
     "notOpen": "A BullLedger ainda está em construção e não está aberta.",
