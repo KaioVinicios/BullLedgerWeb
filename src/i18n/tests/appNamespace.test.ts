@@ -51,6 +51,7 @@ describe("the app namespace", () => {
       "accounts",
       "allocation",
       "assets",
+      "donate",
       "feedback",
       "help",
       // Two entries, one letter apart, and both are real: `holding` is one

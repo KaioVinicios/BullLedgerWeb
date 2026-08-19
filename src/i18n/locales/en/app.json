@@ -34,7 +34,8 @@
     "label": "Support",
     "links": {
       "help": "Help",
-      "feedback": "Feedback"
+      "feedback": "Feedback",
+      "donate": "Support the project"
     },
     "legal": {
       "terms": "Terms",
@@ -89,6 +90,10 @@
       "title": "Feedback",
       "description": "Tell us what's broken, confusing, or missing."
     },
+    "donate": {
+      "title": "Support the project",
+      "description": "PIX inside Brazil, crypto from anywhere else."
+    },
     "allocation": {
       "title": "Allocation",
       "description": "How your portfolio divides, by archetype, currency, and country."
@@ -113,6 +118,41 @@
     "assets": "The assets you register will be listed here.",
     "help": "Guides will be published here as each part of the product lands.",
     "feedback": "A channel for reports and suggestions will open here before launch."
+  },
+  "donate": {
+    "lede": "BullLedger is built and paid for by one person. The closed beta runs on infrastructure that costs money every month, and contributions are what keep it running.",
+    "noReturn": "A contribution buys nothing: no feature, no discount, no priority. The product is the same whether you give or not.",
+    "regions": {
+      "brazil": "Brazil",
+      "international": "United States, Canada, and elsewhere"
+    },
+    "methods": {
+      "pix": {
+        "label": "PIX",
+        "detail": "Random key"
+      },
+      "btc": {
+        "label": "Bitcoin",
+        "detail": "Bitcoin network"
+      },
+      "eth": {
+        "label": "Ethereum",
+        "detail": "Ethereum, ERC-20"
+      },
+      "usdtTrc20": {
+        "label": "USDT",
+        "detail": "Tron, TRC20"
+      },
+      "usdtSolana": {
+        "label": "USDT",
+        "detail": "Solana, SPL"
+      }
+    },
+    "networkWarning": "Send only on the network named on each address. Anything sent on another chain is lost.",
+    "empty": {
+      "title": "No way to contribute yet",
+      "description": "This deployment has no receiving addresses configured, so there is nothing to pay into."
+    }
   },
   "profile": {
     "identity": {

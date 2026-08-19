@@ -2,6 +2,7 @@ import {
   IconBriefcase,
   IconBuildingBank,
   IconCoins,
+  IconHeart,
   IconHelpCircle,
   IconLayoutDashboard,
   IconListDetails,
@@ -121,6 +122,10 @@ export interface LegalLink {
 export const FOOTER_ITEMS: readonly FooterItem[] = [
   { path: PATHS.HELP, labelKey: "help", icon: IconHelpCircle },
   { path: PATHS.FEEDBACK, labelKey: "feedback", icon: IconMessageReport },
+  // Last of the three, and in the footer rather than in primary navigation:
+  // asking for money is the quietest thing this shell does, and it must never
+  // sit above the portfolio the user came to read.
+  { path: PATHS.DONATE, labelKey: "donate", icon: IconHeart },
 ];
 
 /** Canonical public documents, opened in a new tab — never mirrored under /app. */

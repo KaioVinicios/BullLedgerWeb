@@ -551,6 +551,13 @@ const feedbackRoute = createRoute({
   ...appScreenOptions,
 });
 
+const donateRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: APP_SEGMENTS.DONATE,
+  component: lazyRouteComponent(() => import("@/pages/Donate"), "DonatePage"),
+  ...appScreenOptions,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   designSystemRoute,
@@ -592,6 +599,7 @@ const routeTree = rootRoute.addChildren([
     profileRoute,
     helpRoute,
     feedbackRoute,
+    donateRoute,
   ]),
 ]);
 

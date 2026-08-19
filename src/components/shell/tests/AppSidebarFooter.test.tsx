@@ -45,7 +45,7 @@ describe("AppSidebarFooter", () => {
     ).not.toBe(footer);
   });
 
-  it("renders both product destinations", async () => {
+  it("renders every product destination", async () => {
     const footer = await mountAt(PATHS.APP);
 
     for (const label of Object.values(app.footer.links)) {

@@ -66,6 +66,16 @@ export default defineConfig({
       // src/config/env.ts validates at import time, so tests that pull it in
       // need a valid value here.
       VITE_API_URL: TEST_API_URL,
+      // The donation screen renders whatever addresses the environment gave
+      // it, so without these the route and sidebar suites would only ever see
+      // its empty state. Obvious fakes: nobody should be able to paste a value
+      // out of a test run and have it reach a real wallet.
+      VITE_DONATE_PIX_KEY: "00000000-0000-4000-8000-000000000000",
+      VITE_DONATE_BTC_ADDRESS: "bc1qtestonlytestonlytestonlytestonlyte",
+      VITE_DONATE_ETH_ADDRESS: "0x0000000000000000000000000000000000000000",
+      VITE_DONATE_USDT_TRC20_ADDRESS: "TTestOnlyTestOnlyTestOnlyTestOnlyTe",
+      VITE_DONATE_USDT_SOLANA_ADDRESS:
+        "TestOnlySolanaAddressTestOnlySolanaAddr",
     },
   },
 });

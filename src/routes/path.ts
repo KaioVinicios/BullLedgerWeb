@@ -48,6 +48,10 @@ export const APP_SEGMENTS = {
   PROFILE: "profile",
   HELP: "help",
   FEEDBACK: "feedback",
+  // Named for what it is rather than for how it is framed. The sidebar says
+  // "Support the project"; the URL says `donate`, because a path should be
+  // legible out of context and money is what this one is about.
+  DONATE: "donate",
 } as const;
 
 /**
@@ -132,6 +136,7 @@ export const PATHS = {
   PROFILE: `${APP}/${APP_SEGMENTS.PROFILE}`,
   HELP: `${APP}/${APP_SEGMENTS.HELP}`,
   FEEDBACK: `${APP}/${APP_SEGMENTS.FEEDBACK}`,
+  DONATE: `${APP}/${APP_SEGMENTS.DONATE}`,
   VERIFY_EMAIL: "/verify-email/$key",
   RESEND_VERIFICATION: "/resend-verification",
   RESET_PASSWORD: "/reset-password",

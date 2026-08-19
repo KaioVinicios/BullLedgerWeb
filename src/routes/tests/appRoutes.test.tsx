@@ -58,6 +58,7 @@ describe("the authenticated route surface", () => {
     [PATHS.PROFILE, app.screens.profile.title],
     [PATHS.HELP, app.screens.help.title],
     [PATHS.FEEDBACK, app.screens.feedback.title],
+    [PATHS.DONATE, app.screens.donate.title],
   ])("renders %s with its own heading", async (path, heading) => {
     server.use(
       http.get(`${TEST_API_URL}/api/auth/user/`, () => HttpResponse.json(user)),

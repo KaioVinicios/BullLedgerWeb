@@ -34,7 +34,8 @@
     "label": "Suporte",
     "links": {
       "help": "Ajuda",
-      "feedback": "Feedback"
+      "feedback": "Feedback",
+      "donate": "Apoie o projeto"
     },
     "legal": {
       "terms": "Termos",
@@ -89,6 +90,10 @@
       "title": "Feedback",
       "description": "Conte o que está quebrado, confuso ou faltando."
     },
+    "donate": {
+      "title": "Apoie o projeto",
+      "description": "PIX no Brasil, cripto de qualquer outro lugar."
+    },
     "allocation": {
       "title": "Alocação",
       "description": "Como sua carteira se divide, por arquétipo, moeda e país."
@@ -113,6 +118,41 @@
     "assets": "Os ativos que você registrar aparecerão aqui.",
     "help": "Os guias serão publicados aqui conforme cada parte do produto ficar pronta.",
     "feedback": "Um canal para relatos e sugestões vai abrir aqui antes do lançamento."
+  },
+  "donate": {
+    "lede": "O BullLedger é construído e pago por uma pessoa só. O beta fechado roda sobre uma infraestrutura que custa dinheiro todo mês, e é a contribuição de vocês que mantém isso de pé.",
+    "noReturn": "Contribuir não compra nada: nenhum recurso, nenhum desconto, nenhuma prioridade. O produto é o mesmo, doando ou não.",
+    "regions": {
+      "brazil": "Brasil",
+      "international": "Estados Unidos, Canadá e exterior"
+    },
+    "methods": {
+      "pix": {
+        "label": "PIX",
+        "detail": "Chave aleatória"
+      },
+      "btc": {
+        "label": "Bitcoin",
+        "detail": "Rede Bitcoin"
+      },
+      "eth": {
+        "label": "Ethereum",
+        "detail": "Ethereum, ERC-20"
+      },
+      "usdtTrc20": {
+        "label": "USDT",
+        "detail": "Tron, TRC20"
+      },
+      "usdtSolana": {
+        "label": "USDT",
+        "detail": "Solana, SPL"
+      }
+    },
+    "networkWarning": "Envie apenas pela rede indicada em cada endereço. O que for enviado por outra rede se perde.",
+    "empty": {
+      "title": "Ainda não há como contribuir",
+      "description": "Esta instalação não tem nenhum endereço de recebimento configurado, então não há para onde enviar."
+    }
   },
   "profile": {
     "identity": {

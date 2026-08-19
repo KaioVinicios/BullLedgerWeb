@@ -66,6 +66,12 @@ const DESTINATIONS = [
     label: app.footer.links.feedback,
     title: app.screens.feedback.title,
   },
+  {
+    path: PATHS.DONATE,
+    landmark: SUPPORT,
+    label: app.footer.links.donate,
+    title: app.screens.donate.title,
+  },
 ];
 
 test("walks every area, and each one survives a reload", async ({ page }) => {
