@@ -100,11 +100,15 @@ test("walks every area, and each one survives a reload", async ({ page }) => {
     await expect(page.locator("a[aria-current='page']")).toHaveCount(1);
   }
 
-  // A deep route reloaded is the same screen, not a bounce to the root.
+  // A deep route reloaded is the same screen, not a bounce to the root. The
+  // loop leaves the browser on whatever `DESTINATIONS` ends with, so this
+  // reads that rather than naming a route: hard-coding one meant appending a
+  // destination silently moved the check off the screen it was standing on.
+  const landed = DESTINATIONS[DESTINATIONS.length - 1];
   await page.reload();
-  await expect(page).toHaveURL(PATHS.FEEDBACK);
+  await expect(page).toHaveURL(landed.path);
   await expect(
-    page.getByRole("heading", { level: 1, name: app.screens.feedback.title }),
+    page.getByRole("heading", { level: 1, name: landed.title }),
   ).toBeVisible();
 });
 
