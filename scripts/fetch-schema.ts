@@ -9,6 +9,8 @@
  */
 import { writeFile } from "node:fs/promises";
 
+import { findOpenApiProblem } from "./schema-payload.ts";
+
 const apiUrl = process.env.VITE_API_URL;
 
 if (!apiUrl) {
@@ -28,6 +30,21 @@ if (!response.ok) {
   process.exit(1);
 }
 
-await writeFile("openapi.yaml", await response.text());
+// A 200 says the request reached *something*, not that the something was the
+// API — see `schema-payload.ts`. Checking before the write is what keeps a
+// wrong URL from destroying the committed schema.
+const body = await response.text();
+const problem = findOpenApiProblem({
+  url: schemaUrl.href,
+  contentType: response.headers.get("content-type"),
+  body,
+});
+
+if (problem) {
+  console.error(problem);
+  process.exit(1);
+}
+
+await writeFile("openapi.yaml", body);
 
 console.log(`Wrote openapi.yaml from ${schemaUrl.href}`);
