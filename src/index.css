@@ -47,6 +47,30 @@
   --chart-3: oklch(0.681 0.162 75.834);
   --chart-4: oklch(0.554 0.135 66.442);
   --chart-5: oklch(0.476 0.114 61.907);
+  /* The ambient dot field behind the authenticated content. Every number
+     below is a contrast budget rather than a taste call, and the light theme
+     is where the budget bites: --muted-foreground measures 4.83:1 on
+     --background, and PageHeader paints it straight onto the page on every
+     screen, so only 0.33 separates it from the 4.5:1 AA floor. That caps any
+     dot at 1.068:1 against the page — which is not enough range for the wave
+     to brighten. So here it does not: all five stops are pinned to that same
+     1.068:1 and the wave spends its variation on hue instead, running pale
+     yellow to bronze at one fixed lightness. Hue costs no contrast. Measured
+     over the resting dot, muted text holds 4.52:1 on every stop, body 18.6:1.
+     The dark theme has 7.56:1 to spend and does let the dots brighten. */
+  --field-dot: color-mix(in srgb, var(--foreground) 1.2%, transparent);
+  --field-wave-1: color-mix(in srgb, var(--chart-1) 13.6%, transparent);
+  --field-wave-2: color-mix(in srgb, var(--chart-2) 6.4%, transparent);
+  --field-wave-3: color-mix(in srgb, var(--chart-3) 4.3%, transparent);
+  --field-wave-4: color-mix(in srgb, var(--chart-4) 3.2%, transparent);
+  --field-wave-5: color-mix(in srgb, var(--chart-5) 2.8%, transparent);
+  /* Theme-independent, so it is set once and inherited by .dark. */
+  --field-grid: radial-gradient(
+    circle at center,
+    #000 0 1.1px,
+    transparent 1.7px
+  );
+  --field-grid-size: 20px;
   --radius: 0.875rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
@@ -93,6 +117,18 @@
   --chart-3: oklch(0.681 0.162 75.834);
   --chart-4: oklch(0.554 0.135 66.442);
   --chart-5: oklch(0.476 0.114 61.907);
+  /* 7.56:1 from --muted-foreground to --background here, against the light
+     theme's 4.83:1, so the wave gets to do what the brief actually asks and
+     brighten. The stops are graded rather than pinned: chart-1 leads at the
+     crest and spends the budget down to 4.60:1, and each stop behind it gives
+     some back (5.10, 5.60, 6.20, 6.70), so the dots fade rather than switch
+     off. Against the page the crest reads 1.644:1 and the tail 1.129:1. */
+  --field-dot: color-mix(in srgb, var(--foreground) 5.5%, transparent);
+  --field-wave-1: color-mix(in srgb, var(--chart-1) 15.9%, transparent);
+  --field-wave-2: color-mix(in srgb, var(--chart-2) 15.3%, transparent);
+  --field-wave-3: color-mix(in srgb, var(--chart-3) 14.4%, transparent);
+  --field-wave-4: color-mix(in srgb, var(--chart-4) 11.4%, transparent);
+  --field-wave-5: color-mix(in srgb, var(--chart-5) 3.9%, transparent);
   --sidebar: oklch(0.21 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.795 0.184 86.047);
@@ -214,5 +250,165 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  /* The same flattening, for the reader who asked us rather than the OS —
+     the "Disable animations" switch in Profile writes this attribute, and
+     store/motionPreference.ts explains why the answer lives on the device.
+     The declarations are spelled out twice because the two conditions are a
+     media query and a selector, and CSS gives no way to share one block
+     between them; they must stay identical, so change them together. */
+  html[data-reduce-motion] *,
+  html[data-reduce-motion] *::before,
+  html[data-reduce-motion] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* The pulse field — the ambient background behind the authenticated content.
+
+   Three facts drive the construction:
+
+   1. The dots must not move. Only the light crossing them moves. So the grid
+      is a *mask* rather than paint: one static stencil cuts both the element's
+      own background (the resting grey) and its child (the travelling gold)
+      into the same dots. Nothing about the stencil changes per frame, and a
+      dot can never drift out of register with itself.
+   2. The only animated property is `transform` on that child, which is what
+      the compositor can move without repainting. Animating the mask instead
+      would have been the obvious way to write this and would repaint a
+      full-viewport layer sixty times a second.
+   3. It is viewport-locked, not page-locked. A grid that scrolled past would
+      be a second thing moving on screen while someone reads a figure.
+
+   Deliberately spent against PRODUCT.md's "one accent, spent deliberately":
+   this is gold used as decoration, which that principle reserves. The budget
+   in the token comments is what keeps it honest — at 1.07:1 in light and
+   1.64:1 at the dark crest it stays under every figure on the screen. */
+@layer components {
+  .pulse-field {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Behind the content, in front of the wrapper's background. Needs the
+       `isolate` its host sets, or a negative index would drop it behind that
+       background and out of sight. */
+    z-index: -1;
+    /* `clip`, not `hidden`: `hidden` would make this a scroll container, and
+       the sticky child would then stick to *it* — which never scrolls — and
+       sit motionless at the top of a long page. `clip` clips without that. */
+    overflow: clip;
+  }
+
+  .pulse-field-viewport {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    mask-image: var(--field-grid);
+    mask-size: var(--field-grid-size) var(--field-grid-size);
+    mask-repeat: repeat;
+    background-color: var(--field-dot);
+  }
+
+  .pulse-field-wave {
+    position: absolute;
+    /* Twice the box in both axes, centred on it, so the band still has
+       somewhere to be at both ends of its travel. */
+    inset: -50%;
+    /* Read leading edge first: a point on screen meets --field-wave-1 at the
+       crest and lets go of --field-wave-5 last, because the element slides
+       down-right and each point therefore walks *down* the gradient. */
+    background-image: linear-gradient(
+      135deg,
+      transparent 38%,
+      var(--field-wave-5) 44%,
+      var(--field-wave-4) 47%,
+      var(--field-wave-3) 50%,
+      var(--field-wave-2) 53%,
+      var(--field-wave-1) 56%,
+      transparent 62%
+    );
+    animation: pulse-field-sweep 20s linear infinite;
+    will-change: transform;
+  }
+}
+
+/* The surface the eight structure and activity screens put their content on.
+
+   Those screens are the ones that lay a table, a group block, or a hint
+   straight onto the page rather than into a Card, so before this the field
+   ran at full strength directly behind their text. A Card was the obvious
+   fix and the wrong one: it would have restyled sixteen containers into a
+   heavier component than the screens were designed with. This changes one
+   thing instead — the same --background they already showed, now painted
+   rather than merely revealed.
+
+   90% is measured, not picked. It hands --muted-foreground back the figure
+   its token was designed for: 7.36:1 against 7.56:1 in dark, where reading
+   over a lit dot had cost it down to 4.60:1, and 4.80:1 against 4.83:1 in
+   light. What the last tenth buys is the part of the brief a fully opaque
+   surface would have thrown away — the dark crest still moves the surface by
+   5/255, which is under the threshold for noticing a static texture and over
+   it for noticing a band of it crossing the screen. Movement survives being
+   dimmed far better than pattern does, which is the whole reason a tenth is
+   enough.
+
+   The field is untouched everywhere else: full strength in the gutters,
+   between blocks, above and below the content. These screens read as content
+   sitting *on* the field rather than in front of it. */
+@layer components {
+  .content-surface {
+    background-color: color-mix(in srgb, var(--background) 90%, transparent);
+  }
+
+  /* The two panels that already carried a muted tint and sit outside any
+     Card — the targets explainer and the form's live summary. They keep
+     their appearance and stop being a window: the tint is composited against
+     the page here rather than against whatever was behind it. They arrived
+     disagreeing, 50% and 40%, on two screens that never appear together;
+     45% is the one value, and the 1.5/255 either of them moves by is below
+     anything an eye resolves. */
+  .content-surface-muted {
+    background-color: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--muted) 45%, var(--background)) 90%,
+      transparent
+    );
+  }
+}
+
+/* Eight seconds of travel, twelve of stillness. The pause is the point: an
+   ambient effect that never stops is a thing to look at rather than a place
+   to read, so most of the cycle has nothing moving at all. The jump from the
+   last keyframe back to the first crosses the whole screen, and is invisible
+   because both ends park the band outside the box.
+
+   Linear, which is the one place in this project where an eased curve is the
+   wrong answer. Easing expresses a thing starting and stopping, and this band
+   does neither on screen — it is already at speed when it arrives and still
+   at speed when it leaves, and both ends of the curve happen outside the box
+   where nobody can read them. An ease-out here does real damage: solving
+   cubic-bezier(0.42, 0, 0.35, 1) at the midpoint puts two thirds of the
+   travel in the first half of the sweep, so the wave crossed briskly and
+   then crawled. Constant speed is what a wave crossing a window looks like.
+
+   37% is arithmetic rather than taste. The band spans 24% of a gradient line
+   that runs 2(W+H) for a box of 2W by 2H, so it clears a W by H screen once
+   the translation sum passes 0.74(W+H) — and since a translate percentage is
+   read against the element's own 2W by 2H, that lands on 37% whatever the
+   viewport's proportions. Below it the band is still on screen when the
+   timeline says it should be gone; above it the pause starts early and the
+   eight seconds stop being eight seconds. */
+@keyframes pulse-field-sweep {
+  0% {
+    transform: translate3d(-37%, -37%, 0);
+  }
+
+  40%,
+  100% {
+    transform: translate3d(37%, 37%, 0);
   }
 }

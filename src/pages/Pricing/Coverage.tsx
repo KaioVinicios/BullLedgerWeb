@@ -51,7 +51,7 @@ export function Coverage({
     return (
       <div
         role="status"
-        className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed px-4 py-3"
+        className="content-surface flex flex-wrap items-center gap-3 rounded-xl border border-dashed px-4 py-3"
       >
         <IconAlertTriangle
           aria-hidden
@@ -104,7 +104,7 @@ export function Coverage({
       {unpriced.length > 0 && (
         <section
           aria-labelledby="coverage-title"
-          className="space-y-3 rounded-xl border p-4"
+          className="content-surface space-y-3 rounded-xl border p-4"
         >
           <div className="space-y-1">
             <h2 id="coverage-title" className="text-sm font-medium">
@@ -144,7 +144,7 @@ export function Coverage({
       {unconverted.length > 0 && (
         <section
           aria-labelledby="coverage-fx-title"
-          className="space-y-3 rounded-xl border border-dashed p-4"
+          className="content-surface space-y-3 rounded-xl border border-dashed p-4"
         >
           <div className="space-y-1">
             <h2 id="coverage-fx-title" className="text-sm font-medium">

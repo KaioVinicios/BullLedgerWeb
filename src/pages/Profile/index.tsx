@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { PageContainer } from "@/components/PageContainer";
 import { PageHeader } from "@/components/PageHeader";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { AppearanceSection } from "@/pages/Profile/AppearanceSection";
 import { IdentitySection } from "@/pages/Profile/IdentitySection";
 import { ReportingSection } from "@/pages/Profile/ReportingSection";
 import { currentUserQuery } from "@/services/auth";
@@ -30,6 +31,7 @@ export function ProfilePage() {
       <div className="space-y-6">
         <IdentitySection user={user} />
         <ReportingSection profile={profile} />
+        <AppearanceSection />
       </div>
     </PageContainer>
   );

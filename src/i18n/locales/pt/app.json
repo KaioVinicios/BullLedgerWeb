@@ -176,6 +176,16 @@
       },
       "noInflation": "Nenhuma — não exibir retorno real"
     },
+    "appearance": {
+      "title": "Aparência",
+      "description": "Preferências deste navegador. Não são enviadas para o servidor e não acompanham você em outro dispositivo.",
+      "hideBackground": "Desabilitar o fundo animado",
+      "hideBackgroundHint": "O campo de pontos atrás do conteúdo.",
+      "reduceMotion": "Desabilitar animações",
+      "reduceMotionHint": "As animações podem prejudicar o desempenho em dispositivos mais antigos.",
+      "coveredByReduceMotion": "Já desligado por “Desabilitar animações”.",
+      "systemReduced": "Seu sistema já pede movimento reduzido, então nenhuma animação está em execução. O fundo continua visível, parado."
+    },
     "actions": {
       "save": "Salvar",
       "saving": "Salvando…",

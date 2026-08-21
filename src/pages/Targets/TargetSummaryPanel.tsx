@@ -42,7 +42,7 @@ export function TargetSummaryPanel({ clauses }: { clauses: TargetClauses }) {
   return (
     <aside
       aria-labelledby="target-summary-title"
-      className="space-y-3 rounded-xl border bg-muted/40 p-4 lg:sticky lg:top-6"
+      className="content-surface-muted space-y-3 rounded-xl border p-4 lg:sticky lg:top-6"
     >
       <h2
         id="target-summary-title"

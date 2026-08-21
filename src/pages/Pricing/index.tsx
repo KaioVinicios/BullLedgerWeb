@@ -228,7 +228,7 @@ export function PricingPage() {
               }
             />
           ) : (
-            <div className="overflow-x-auto rounded-xl border">
+            <div className="content-surface overflow-x-auto rounded-xl border">
               <Table>
                 <TableHeader>
                   <TableRow>

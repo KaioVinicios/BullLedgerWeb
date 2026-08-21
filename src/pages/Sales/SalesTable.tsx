@@ -42,7 +42,7 @@ export function SalesTable({ rows }: { rows: SaleRow[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto rounded-xl border">
+      <div className="content-surface overflow-x-auto rounded-xl border">
         <Table>
           <TableHeader>
             <TableRow>

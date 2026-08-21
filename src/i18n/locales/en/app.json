@@ -176,6 +176,16 @@
       },
       "noInflation": "None — don't show real return"
     },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Preferences for this browser. They are not sent to the server, and they do not follow you to another device.",
+      "hideBackground": "Disable the animated background",
+      "hideBackgroundHint": "The field of dots behind the content.",
+      "reduceMotion": "Disable animations",
+      "reduceMotionHint": "Animations can hurt performance on older devices.",
+      "coveredByReduceMotion": "Already off, through “Disable animations”.",
+      "systemReduced": "Your system already asks for reduced motion, so no animation is running. The background stays visible, still."
+    },
     "actions": {
       "save": "Save",
       "saving": "Saving…",

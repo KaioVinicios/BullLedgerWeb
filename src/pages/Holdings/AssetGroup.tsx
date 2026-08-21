@@ -72,7 +72,7 @@ export function AssetGroupBlock({
   return (
     <section
       aria-labelledby={titleId}
-      className="space-y-3 rounded-xl border p-4"
+      className="content-surface space-y-3 rounded-xl border p-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <button

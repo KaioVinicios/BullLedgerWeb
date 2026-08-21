@@ -22,6 +22,20 @@
           document.documentElement.classList.toggle("dark", dark);
         } catch (e) {}
       })();
+
+      // And the motion preference, for the same reason: someone who asked for
+      // no animation should not be shown one while the bundle parses. The key
+      // and the attribute belong to src/store/motionPreference.ts, which owns
+      // every change after this frame; the shape is what zustand's `persist`
+      // writes.
+      (function () {
+        try {
+          var stored = localStorage.getItem("bullledger-motion");
+          if (stored && JSON.parse(stored).state.reduceMotion) {
+            document.documentElement.setAttribute("data-reduce-motion", "");
+          }
+        } catch (e) {}
+      })();
     </script>
   </head>
   <body>

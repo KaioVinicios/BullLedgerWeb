@@ -42,7 +42,7 @@ export function ResolutionExplainer({
   return (
     <section
       aria-labelledby="targets-resolution"
-      className="space-y-3 rounded-xl border bg-muted/50 p-4"
+      className="content-surface-muted space-y-3 rounded-xl border p-4"
     >
       <h2 id="targets-resolution" className="text-sm font-medium">
         {t("targets.resolution.title")}

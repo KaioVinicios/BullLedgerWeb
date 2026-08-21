@@ -1,6 +1,7 @@
 import { Outlet } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { PulseField } from "@/components/PulseField";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { AppSidebar } from "@/components/shell/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -39,8 +40,15 @@ export function AppShell() {
         <main
           id="content"
           tabIndex={-1}
-          className="flex-1 px-4 py-6 outline-none md:px-6"
+          className="relative isolate flex-1 px-4 py-6 outline-none md:px-6"
         >
+          {/* Scoped to the content region deliberately: the header, the
+              sidebar, and every nav keep a flat surface, because chrome that
+              shimmers is chrome you end up looking at. `isolate` is the
+              load-bearing half of the pair — without it the field's negative
+              z-index escapes this element and lands behind the wrapper's
+              background, where nobody sees it again. */}
+          <PulseField />
           <Outlet />
         </main>
       </div>

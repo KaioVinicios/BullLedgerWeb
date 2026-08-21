@@ -57,7 +57,7 @@ export function InstanceRows({
 
   if (failed) {
     return (
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed px-4 py-3 text-sm">
+      <div className="content-surface flex flex-wrap items-center gap-3 rounded-lg border border-dashed px-4 py-3 text-sm">
         <span className="text-muted-foreground">
           {t("holdings.instances.error")}
         </span>

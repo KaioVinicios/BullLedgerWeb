@@ -89,7 +89,7 @@ export function TargetCard({
   ).join(NAME_SEPARATOR);
 
   return (
-    <div className="rounded-xl border p-4">
+    <div className="content-surface rounded-xl border p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <Link

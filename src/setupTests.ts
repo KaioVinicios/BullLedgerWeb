@@ -55,6 +55,29 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 };
 
+// jsdom hands back a `localStorage` that is not a Storage — the object is
+// there, its methods are not — so anything that persists to it fails on the
+// first write. `store/motionPreference.ts` survives that by falling back to
+// memory, which would quietly make its persistence tests assert the fallback
+// instead of the behaviour. A real one, so they assert the real path.
+{
+  const store = new Map<string, string>();
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    value: {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) =>
+        void store.set(key, String(value)),
+      removeItem: (key: string) => void store.delete(key),
+      clear: () => store.clear(),
+      key: (index: number) => [...store.keys()][index] ?? null,
+      get length() {
+        return store.size;
+      },
+    },
+  });
+}
+
 // jsdom implements none of the pointer-capture API, and Radix's Select calls
 // it from its pointer handlers — opening one in a test throws without these.
 // scrollIntoView is the same story when the opened list positions itself.
