@@ -77,6 +77,8 @@ const singleCurrency: HoldingDetail = {
   quantity: "100",
   principal: null,
   current_value: pair(BRL(5_240_000), BRL(5_240_000)),
+  quote_date: "2026-08-03",
+  quote_source: "MANUAL",
   cost_basis_remaining: pair(BRL(4_428_000), BRL(4_428_000)),
   invested: pair(BRL(4_461_000), BRL(4_461_000)),
   realized_gain: pair(BRL(120_000), BRL(120_000)),
@@ -243,6 +245,8 @@ describe("the holding detail screen", () => {
       ...signedIn({
         ...singleCurrency,
         current_value: null,
+        quote_date: null,
+        quote_source: null,
         unrealized_gain: null,
         reporting: {
           ...singleCurrency.reporting,

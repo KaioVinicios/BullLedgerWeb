@@ -81,7 +81,14 @@ test("says nothing about age when no single asset is in view", async ({
   });
 
   await page.goto(PATHS.PRICING);
-  await expect(page.getByRole("row", { name: /Petrobras/ })).toBeVisible();
+  // Two rows, and both are real: the purchase above seeded a `TRADE` quote for
+  // its own day, and `seedPriceQuote` added a `MANUAL` one five days later.
+  // The claim under test is about the *age note*, not about how many quotes an
+  // asset has, so this asserts the table is populated and leaves the count to
+  // the specs that own it.
+  await expect(
+    page.getByRole("row", { name: /Petrobras/ }).first(),
+  ).toBeVisible();
 
   // Unfiltered, the newest row is the newest across the whole portfolio and
   // says nothing about any one asset. Claiming otherwise would be a lie the

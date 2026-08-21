@@ -251,6 +251,8 @@ describe("TargetCard", () => {
       quantity: "1",
       principal: null,
       current_value: null,
+      quote_date: null,
+      quote_source: null,
       cost_basis_remaining: { native: money, base: money },
       invested: { native: money, base: money },
       realized_gain: { native: money, base: money },

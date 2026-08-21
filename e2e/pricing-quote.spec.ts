@@ -18,6 +18,9 @@ import { createSignedInAccount, freshUser } from "./support/users";
  * than rendering a zero, and recording the price makes the server stop
  * reporting it — which is the projection re-reading, observed rather than
  * assumed.
+ *
+ * Since trades seed quotes, the unpriced holding has to be opened by a bonus
+ * issue rather than a purchase — see the movement below.
  */
 test("names a holding with no price, then prices it", async ({ page }) => {
   await createSignedInAccount(page, freshUser());
@@ -29,14 +32,19 @@ test("names a holding with no price, then prices it", async ({ page }) => {
 
   // A position, so the rollup has something it needs a price for. Without a
   // holding there is nothing to value and nothing to report as missing.
+  //
+  // **A bonus, not a purchase, and that is the whole precondition.** Any
+  // movement carrying a unit price seeds that day's quote for the asset, so a
+  // BUY or a SELL prices the very holding this journey needs unpriced. A
+  // bonus issue moves units and no money: it opens the position without
+  // observing a price, which is the state the coverage block exists to report.
   await recordMovement(page, {
     account: account.id,
     asset: asset.id,
-    type: "BUY",
+    type: "BONUS",
     occurred_on: "2026-03-04",
     quantity_delta: "10",
-    unit_price: "19.40",
-    cash_delta: { amount: -19_400, currency: "BRL" },
+    cash_delta: { amount: 0, currency: "BRL" },
   });
 
   await page.goto(PATHS.PRICING);

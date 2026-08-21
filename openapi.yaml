@@ -739,14 +739,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
-        required: true
+              $ref: '#/components/schemas/CookieTokenRefreshRequest'
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenRefresh'
+                $ref: '#/components/schemas/CookieTokenRefresh'
           description: ''
   /api/auth/user/:
     get:
@@ -3336,6 +3335,42 @@ components:
           readOnly: true
       required:
       - user
+    CookieTokenRefresh:
+      type: object
+      description: |-
+        Refresh serializer that rejects a token whose user is gone.
+
+        simplejwt looks the token's `user_id` claim up with a bare
+        `objects.get()` and only handles the user it finds being inactive; a
+        user that no longer exists raises `User.DoesNotExist`, which no
+        handler recognises and which therefore surfaces as a 500. The token is
+        simply unusable, so it is reported the way every other unusable
+        refresh token is — the 401 the blacklist path already returns.
+      properties:
+        refresh:
+          type: string
+          description: WIll override cookie.
+        access:
+          type: string
+          readOnly: true
+      required:
+      - access
+    CookieTokenRefreshRequest:
+      type: object
+      description: |-
+        Refresh serializer that rejects a token whose user is gone.
+
+        simplejwt looks the token's `user_id` claim up with a bare
+        `objects.get()` and only handles the user it finds being inactive; a
+        user that no longer exists raises `User.DoesNotExist`, which no
+        handler recognises and which therefore surfaces as a 500. The token is
+        simply unusable, so it is reported the way every other unusable
+        refresh token is — the 401 the blacklist path already returns.
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+          description: WIll override cookie.
     CountryEnum:
       enum:
       - BR
@@ -3945,6 +3980,14 @@ components:
           allOf:
           - $ref: '#/components/schemas/MoneyPair'
           nullable: true
+        quote_date:
+          type: string
+          format: date
+          nullable: true
+        quote_source:
+          allOf:
+          - $ref: '#/components/schemas/PriceSourceEnum'
+          nullable: true
         cost_basis_remaining:
           $ref: '#/components/schemas/MoneyPair'
         invested:
@@ -3998,6 +4041,8 @@ components:
       - on_date
       - principal
       - quantity
+      - quote_date
+      - quote_source
       - real_return
       - realized_gain
       - registration
@@ -6050,10 +6095,12 @@ components:
       enum:
       - MANUAL
       - FEED
+      - TRADE
       type: string
       description: |-
         * `MANUAL` - Manual
         * `FEED` - Feed
+        * `TRADE` - Trade
     PricingModeEnum:
       enum:
       - MARKET
@@ -6676,25 +6723,6 @@ components:
       description: |-
         * `WHOLE_AMOUNT` - Whole amount
         * `GAINS_ONLY` - Gains only
-    TokenRefresh:
-      type: object
-      properties:
-        access:
-          type: string
-          readOnly: true
-        refresh:
-          type: string
-      required:
-      - access
-      - refresh
-    TokenRefreshRequest:
-      type: object
-      properties:
-        refresh:
-          type: string
-          minLength: 1
-      required:
-      - refresh
     TransferLegs:
       type: object
       properties:

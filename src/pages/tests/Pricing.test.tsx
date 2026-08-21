@@ -63,6 +63,15 @@ const quotes: PriceQuote[] = [
     price: "33.95",
     price_source: "FEED",
   },
+  // The server writes this one itself, from a BUY's execution price — the
+  // screen never posts it, but it lists it like any other row.
+  {
+    id: "88888888-8888-4888-8888-888888888888",
+    asset: petr.id,
+    date: "2026-06-10",
+    price: "33.40",
+    price_source: "TRADE",
+  },
 ];
 
 function page<T>(results: T[], count = results.length) {
@@ -132,6 +141,10 @@ describe("the quotes screen", () => {
     // Source is a word before it is a shade.
     expect(screen.getByText(app.enums.priceSource.MANUAL)).toBeVisible();
     expect(screen.getByText(app.enums.priceSource.FEED)).toBeVisible();
+    // Including the source the user never picks: a quote derived from their
+    // own trade is a word too, not the raw key behind it.
+    expect(screen.getByText(app.enums.priceSource.TRADE)).toBeVisible();
+    expect(screen.queryByText(/enums\.priceSource/)).not.toBeInTheDocument();
 
     // A price is not Money: no currency symbol and no minor-unit division —
     // the decimal string as recorded, with the asset's currency code beside it.

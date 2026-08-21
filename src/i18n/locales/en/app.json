@@ -1151,7 +1151,8 @@
     },
     "priceSource": {
       "MANUAL": "Manual",
-      "FEED": "Feed"
+      "FEED": "Feed",
+      "TRADE": "Trade"
     },
     "pricingMode": {
       "MARKET": "Market price",

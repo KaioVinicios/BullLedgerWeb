@@ -744,6 +744,8 @@ const holding: HoldingDetail = {
   quantity: "7",
   principal: pair(100_000),
   current_value: pair(120_000),
+  quote_date: "2026-03-04",
+  quote_source: "TRADE",
   cost_basis_remaining: pair(100_000),
   invested: pair(100_000),
   realized_gain: pair(0),

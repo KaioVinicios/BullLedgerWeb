@@ -1504,6 +1504,35 @@ export interface components {
             readonly user: components["schemas"]["EmailUserDetails"];
         };
         /**
+         * @description Refresh serializer that rejects a token whose user is gone.
+         *
+         *     simplejwt looks the token's `user_id` claim up with a bare
+         *     `objects.get()` and only handles the user it finds being inactive; a
+         *     user that no longer exists raises `User.DoesNotExist`, which no
+         *     handler recognises and which therefore surfaces as a 500. The token is
+         *     simply unusable, so it is reported the way every other unusable
+         *     refresh token is — the 401 the blacklist path already returns.
+         */
+        CookieTokenRefresh: {
+            /** @description WIll override cookie. */
+            refresh?: string;
+            readonly access: string;
+        };
+        /**
+         * @description Refresh serializer that rejects a token whose user is gone.
+         *
+         *     simplejwt looks the token's `user_id` claim up with a bare
+         *     `objects.get()` and only handles the user it finds being inactive; a
+         *     user that no longer exists raises `User.DoesNotExist`, which no
+         *     handler recognises and which therefore surfaces as a 500. The token is
+         *     simply unusable, so it is reported the way every other unusable
+         *     refresh token is — the 401 the blacklist path already returns.
+         */
+        CookieTokenRefreshRequest: {
+            /** @description WIll override cookie. */
+            refresh?: string;
+        };
+        /**
          * @description * `BR` - Brazil
          *     * `US` - United States
          *     * `CA` - Canada
@@ -1790,6 +1819,9 @@ export interface components {
             quantity: string | null;
             principal: components["schemas"]["MoneyPair"] | null;
             current_value: components["schemas"]["MoneyPair"] | null;
+            /** Format: date */
+            quote_date: string | null;
+            quote_source: components["schemas"]["PriceSourceEnum"] | null;
             cost_basis_remaining: components["schemas"]["MoneyPair"];
             invested: components["schemas"]["MoneyPair"];
             realized_gain: components["schemas"]["MoneyPair"];
@@ -2877,9 +2909,10 @@ export interface components {
         /**
          * @description * `MANUAL` - Manual
          *     * `FEED` - Feed
+         *     * `TRADE` - Trade
          * @enum {string}
          */
-        PriceSourceEnum: "MANUAL" | "FEED";
+        PriceSourceEnum: "MANUAL" | "FEED" | "TRADE";
         /**
          * @description * `MARKET` - Market
          *     * `NAV` - NAV
@@ -3201,13 +3234,6 @@ export interface components {
          * @enum {string}
          */
         TaxedOnEnum: "WHOLE_AMOUNT" | "GAINS_ONLY";
-        TokenRefresh: {
-            readonly access: string;
-            refresh: string;
-        };
-        TokenRefreshRequest: {
-            refresh: string;
-        };
         TransferLegs: {
             out: components["schemas"]["Movement"];
             in: components["schemas"]["Movement"];
@@ -4017,9 +4043,9 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
-                "application/json": components["schemas"]["TokenRefreshRequest"];
+                "application/json": components["schemas"]["CookieTokenRefreshRequest"];
             };
         };
         responses: {
@@ -4028,7 +4054,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TokenRefresh"];
+                    "application/json": components["schemas"]["CookieTokenRefresh"];
                 };
             };
         };
