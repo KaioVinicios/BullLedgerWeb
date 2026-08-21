@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import { http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
+import explain from "@/i18n/locales/en/explain.json";
 import { createQueryClient } from "@/lib/queryClient";
 import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
@@ -511,6 +512,25 @@ describe("the holdings screen, by asset", () => {
     const group = await screen.findByRole("region", { name: /PETR4/ });
 
     expect(within(group).getByText(/XP Corretora/)).toBeVisible();
+  });
+
+  it("explains average cost, which is a price and not an amount spent", async () => {
+    const user = userEvent.setup();
+    server.use(...signedIn());
+    mount(byAsset);
+
+    // Scoped to one group: every asset group carries its own hint, the same
+    // way each carries its own figures.
+    const group = await screen.findByRole("region", { name: /PETR4/ });
+    await user.click(
+      within(group).getByRole("button", {
+        name: `What is ${explain.holding.average_cost.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.holding.average_cost.body),
+    ).toBeInTheDocument();
   });
 
   it("states the average cost as a price, not as money", async () => {

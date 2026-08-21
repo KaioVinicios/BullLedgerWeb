@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { SignedFigure } from "@/components/SignedFigure";
 import { UnpricedNote } from "@/components/UnpricedNote";
@@ -13,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
+import type { ExplainMetric } from "@/i18n/explain";
 import type { HoldingDetail } from "@/services/portfolio";
 import { formatCalendarDate, type CalendarDate } from "@/utils/date";
 import { formatDecimal, SCALE } from "@/utils/decimal";
@@ -53,28 +55,52 @@ export function FigureTable({
 
   const rows: Array<{
     label: string;
+    metric: ExplainMetric;
     pair: MoneyPair | null;
     signed?: boolean;
   }> = [
-    { label: t("holding.figures.principal"), pair: holding.principal },
-    { label: t("holding.figures.currentValue"), pair: holding.current_value },
+    {
+      label: t("holding.figures.principal"),
+      metric: "holding.principal",
+      pair: holding.principal,
+    },
+    {
+      label: t("holding.figures.currentValue"),
+      metric: "holding.current_value",
+      pair: holding.current_value,
+    },
     {
       label: t("holding.figures.costBasis"),
+      metric: "holding.cost_basis_remaining",
       pair: holding.cost_basis_remaining,
     },
-    { label: t("holding.figures.invested"), pair: holding.invested },
+    {
+      label: t("holding.figures.invested"),
+      metric: "holding.invested",
+      pair: holding.invested,
+    },
     {
       label: t("holding.figures.realized"),
+      metric: "holding.realized_gain",
       pair: holding.realized_gain,
       signed: true,
     },
     {
       label: t("holding.figures.unrealized"),
+      metric: "holding.unrealized_gain",
       pair: holding.unrealized_gain,
       signed: true,
     },
-    { label: t("holding.figures.income"), pair: holding.income_received },
-    { label: t("holding.figures.costs"), pair: holding.costs },
+    {
+      label: t("holding.figures.income"),
+      metric: "holding.income_received",
+      pair: holding.income_received,
+    },
+    {
+      label: t("holding.figures.costs"),
+      metric: "holding.costs",
+      pair: holding.costs,
+    },
   ];
 
   return (
@@ -95,8 +121,9 @@ export function FigureTable({
 
       <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
         <div className="flex gap-2">
-          <dt className="text-muted-foreground">
+          <dt className="flex items-center gap-0.5 text-muted-foreground">
             {t("holding.figures.quantity")}
+            <InfoHint metric="holding.quantity" />
           </dt>
           <dd className="font-mono tabular-nums">
             {/* Null is legitimate: a lump-principal FIXED_INCOME position has
@@ -115,8 +142,9 @@ export function FigureTable({
 
         {holding.holding_period_days !== null && (
           <div className="flex gap-2">
-            <dt className="text-muted-foreground">
+            <dt className="flex items-center gap-0.5 text-muted-foreground">
               {t("holding.figures.holdingPeriod")}
+              <InfoHint metric="holding.holding_period_days" />
             </dt>
             <dd className="tabular-nums">
               {t("holding.figures.days", {
@@ -163,7 +191,12 @@ export function FigureTable({
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.label}>
-                <TableCell>{row.label}</TableCell>
+                <TableCell>
+                  <span className="inline-flex items-center gap-0.5">
+                    {row.label}
+                    <InfoHint metric={row.metric} />
+                  </span>
+                </TableCell>
                 {row.pair === null ? (
                   <TableCell colSpan={collapsed ? 1 : 2} className="text-right">
                     <UnpricedNote reason="NO_QUOTE" />

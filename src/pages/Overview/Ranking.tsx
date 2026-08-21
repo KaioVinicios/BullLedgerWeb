@@ -18,6 +18,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { SignedPercent } from "@/components/SignedPercent";
 import {
@@ -49,11 +50,19 @@ export function Ranking({ accountId }: { accountId: string | undefined }) {
 
   return (
     <section aria-labelledby="overview-ranking" className="space-y-4">
-      <h2 id="overview-ranking" className="text-sm font-medium">
+      {/* The rate is explained once, here, and not on each row: every row
+          already carries its sale count and holding period, and three
+          identical buttons would repeat one sentence three times. */}
+      <h2
+        id="overview-ranking"
+        className="flex items-center gap-0.5 text-sm font-medium"
+      >
         {t("overview.ranking.title")}
+        <InfoHint metric="ranking.monthly_profit_rate" />
       </h2>
-      <p className="text-xs text-muted-foreground">
+      <p className="flex items-center gap-0.5 text-xs text-muted-foreground">
         {t("overview.ranking.realizedOnly")}
+        <InfoHint metric="ranking.realized_only" />
       </p>
 
       <RankList label={t("overview.ranking.best")} rows={data.best} />

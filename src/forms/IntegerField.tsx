@@ -1,6 +1,7 @@
 import type { ReactNode, Ref } from "react";
 
 import { TextField } from "@/forms/TextField";
+import type { ExplainMetric } from "@/i18n/explain";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { useNumericInput } from "@/hooks/useNumericInput";
 
@@ -12,6 +13,8 @@ type IntegerFieldProps = {
   label: string;
   errors: unknown[];
   hint?: ReactNode;
+  /** See `TextField`. */
+  metric?: ExplainMetric;
   value: string;
   onBlur: () => void;
   onChange: (value: string) => void;
@@ -32,6 +35,7 @@ export function IntegerField({
   label,
   errors,
   hint,
+  metric,
   value,
   onBlur,
   onChange,
@@ -49,6 +53,7 @@ export function IntegerField({
 
   return (
     <TextField
+      metric={metric}
       ref={ref}
       name={name}
       label={label}

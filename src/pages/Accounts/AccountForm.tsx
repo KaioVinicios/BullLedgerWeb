@@ -10,6 +10,7 @@ import { z } from "zod";
 import { FormError } from "@/components/FormError";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { InfoHint } from "@/components/InfoHint";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -56,6 +57,7 @@ import {
   type AccountRequest,
 } from "@/services/accounts";
 import { institutionKeys, listInstitutions } from "@/services/institutions";
+import { registrationMetric } from "@/i18n/explain";
 import { accountLabel } from "@/utils/accountLabel";
 import { minorUnitsToDecimalString, parseMoneyInput } from "@/utils/money";
 import { formatNumericString } from "@/utils/intl";
@@ -469,6 +471,7 @@ export function AccountForm({ account }: { account?: Account }) {
                           >
                             {t(`enums.registration.${code}`)}
                           </Label>
+                          <InfoHintFor registration={code} />
                         </div>
                       ))}
                     </RadioGroup>
@@ -597,9 +600,10 @@ export function AccountForm({ account }: { account?: Account }) {
                           <div className="space-y-3">
                             <span
                               id="tax-regime-label"
-                              className="block text-sm font-medium"
+                              className="flex items-center gap-0.5 text-sm font-medium"
                             >
                               {t("accounts.form.taxRegime")}
+                              <InfoHint metric="account.tax_regime" />
                             </span>
                             <RadioGroup
                               value={field.state.value}
@@ -635,9 +639,10 @@ export function AccountForm({ account }: { account?: Account }) {
                           <div className="space-y-3">
                             <span
                               id="taxed-on-label"
-                              className="block text-sm font-medium"
+                              className="flex items-center gap-0.5 text-sm font-medium"
                             >
                               {t("accounts.form.taxedOn")}
+                              <InfoHint metric="account.taxed_on" />
                             </span>
                             <RadioGroup
                               value={field.state.value}
@@ -704,4 +709,17 @@ export function AccountForm({ account }: { account?: Account }) {
       </Card>
     </form>
   );
+}
+
+/**
+ * The explainer for one registration option, when there is one.
+ *
+ * The key is built from the code, so the type cannot reach it and
+ * `registrationMetric` does the narrowing. A registration with no entry
+ * renders nothing rather than a button onto blankness.
+ */
+function InfoHintFor({ registration }: { registration: string }) {
+  const metric = registrationMetric(registration);
+
+  return metric ? <InfoHint metric={metric} /> : null;
 }

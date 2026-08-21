@@ -11,6 +11,7 @@ import { FormError } from "@/components/FormError";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { InfoHint } from "@/components/InfoHint";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
@@ -717,6 +718,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="rate_type"
                             label={t("assets.form.rateType")}
+                            metric="asset.rate_type"
                             value={field.state.value}
                             options={RATE_TYPES}
                             renderOption={(option) =>
@@ -732,6 +734,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="rate_index"
                             label={t("assets.form.rateIndex")}
+                            metric="asset.rate_index"
                             value={field.state.value}
                             options={RATE_INDEXES}
                             renderOption={(option) =>
@@ -747,6 +750,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="compounding"
                             label={t("assets.form.compounding")}
+                            metric="asset.compounding"
                             value={field.state.value}
                             options={COMPOUNDINGS}
                             renderOption={(option) =>
@@ -762,6 +766,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="liquidity"
                             label={t("assets.form.liquidity")}
+                            metric="asset.liquidity"
                             value={field.state.value}
                             options={LIQUIDITIES}
                             renderOption={(option) =>
@@ -777,6 +782,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="deposit_insurance"
                             label={t("assets.form.depositInsurance")}
+                            metric="asset.deposit_insurance"
                             value={field.state.value}
                             options={DEPOSIT_INSURANCES}
                             renderOption={(option) =>
@@ -815,6 +821,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="instrument_kind"
                             label={t("assets.form.instrumentKind")}
+                            metric="asset.instrument_kind"
                             value={field.state.value}
                             options={INSTRUMENT_KINDS}
                             renderOption={(option) =>
@@ -830,6 +837,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="issuer_type"
                             label={t("assets.form.issuerType")}
+                            metric="asset.issuer_type"
                             value={field.state.value}
                             options={ISSUER_TYPES}
                             renderOption={(option) =>
@@ -915,6 +923,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                             name="maturity_date"
                             type="date"
                             label={t("assets.form.maturityDate")}
+                            metric="asset.maturity_date"
                             errors={[
                               ...field.state.meta.errors,
                               ...fieldErrors("maturity_date"),
@@ -931,6 +940,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                             name="issue_date"
                             type="date"
                             label={t("assets.form.issueDate")}
+                            metric="asset.issue_date"
                             hint={t("assets.form.optional")}
                             errors={[
                               ...field.state.meta.errors,
@@ -950,6 +960,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="rate_type"
                             label={t("assets.form.rateType")}
+                            metric="asset.rate_type"
                             value={field.state.value}
                             options={RATE_TYPES}
                             renderOption={(option) =>
@@ -965,6 +976,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="rate_index"
                             label={t("assets.form.rateIndex")}
+                            metric="asset.rate_index"
                             value={field.state.value}
                             options={RATE_INDEXES}
                             renderOption={(option) =>
@@ -1041,6 +1053,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                                   <SelectField
                                     name="coupon_frequency"
                                     label={t("assets.form.couponFrequency")}
+                                    metric="asset.coupon_frequency"
                                     value={field.state.value}
                                     options={COUPON_FREQUENCIES}
                                     renderOption={(option) =>
@@ -1060,6 +1073,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           <SelectField
                             name="deposit_insurance"
                             label={t("assets.form.depositInsurance")}
+                            metric="asset.deposit_insurance"
                             value={field.state.value}
                             options={DEPOSIT_INSURANCES}
                             renderOption={(option) =>
@@ -1079,6 +1093,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                               <MoneyField
                                 name="face_value"
                                 label={t("assets.form.faceValue")}
+                                metric="asset.face_value"
                                 currency={currency}
                                 hint={t("assets.form.optional")}
                                 errors={[
@@ -1135,6 +1150,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                             >
                               {t("assets.form.earlyRedemption")}
                             </Label>
+                            <InfoHint metric="asset.early_redemption" />
                           </div>
                         )}
                       </form.Field>
@@ -1149,6 +1165,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <SelectField
                           name="security_type"
                           label={t("assets.form.securityType")}
+                          metric="asset.security_type"
                           value={field.state.value}
                           options={SECURITY_TYPES}
                           renderOption={(option) =>
@@ -1164,6 +1181,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <SelectField
                           name="exchange"
                           label={t("assets.form.exchange")}
+                          metric="asset.exchange"
                           value={field.state.value}
                           options={EXCHANGES}
                           renderOption={(code) => code}
@@ -1177,6 +1195,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <TextField
                           name="ticker"
                           label={t("assets.form.ticker")}
+                          metric="asset.ticker"
                           autoComplete="off"
                           className="font-mono uppercase"
                           errors={[
@@ -1194,6 +1213,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <TextField
                           name="isin"
                           label={t("assets.form.isin")}
+                          metric="asset.isin"
                           hint={t("assets.form.optional")}
                           autoComplete="off"
                           className="font-mono"
@@ -1221,6 +1241,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                           >
                             {t("assets.form.paysDistributions")}
                           </Label>
+                          <InfoHint metric="asset.pays_distributions" />
                         </div>
                       )}
                     </form.Field>
@@ -1234,6 +1255,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <TextField
                           name="fund_category"
                           label={t("assets.form.fundCategory")}
+                          metric="asset.fund_category"
                           autoComplete="off"
                           errors={[
                             ...field.state.meta.errors,
@@ -1250,6 +1272,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <DecimalField
                           name="unit_price"
                           label={t("assets.form.unitPrice")}
+                          metric="asset.unit_price"
                           hint={t("assets.form.optional")}
                           scale={SCALE.unitPrice}
                           integerDigits={INTEGER_DIGITS.unitPrice}
@@ -1268,6 +1291,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <PercentField
                           name="management_fee"
                           label={t("assets.form.managementFee")}
+                          metric="asset.management_fee"
                           hint={t("assets.form.optional")}
                           errors={[
                             ...field.state.meta.errors,
@@ -1284,6 +1308,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <PercentField
                           name="performance_fee"
                           label={t("assets.form.performanceFee")}
+                          metric="asset.performance_fee"
                           hint={t("assets.form.optional")}
                           errors={[
                             ...field.state.meta.errors,
@@ -1322,6 +1347,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <TextField
                           name="symbol"
                           label={t("assets.form.symbol")}
+                          metric="asset.symbol"
                           autoComplete="off"
                           className="font-mono uppercase"
                           errors={[
@@ -1339,6 +1365,7 @@ export function AssetForm({ asset }: { asset?: Asset }) {
                         <TextField
                           name="chain"
                           label={t("assets.form.chain")}
+                          metric="asset.chain"
                           hint={t("assets.form.optional")}
                           autoComplete="off"
                           errors={[

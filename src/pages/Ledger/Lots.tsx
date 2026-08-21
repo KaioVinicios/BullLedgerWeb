@@ -21,6 +21,7 @@ import { IconStack2 } from "@tabler/icons-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ListError } from "@/components/ListError";
 import { ListSkeleton } from "@/components/ListSkeleton";
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { PageContainer } from "@/components/PageContainer";
 import { PageHeader } from "@/components/PageHeader";
@@ -136,25 +137,46 @@ export function LedgerLotsPage() {
                       {t("ledger.lotsScreen.columns.label")}
                     </TableHead>
                     <TableHead>
-                      {t("ledger.lotsScreen.columns.status")}
+                      <span className="inline-flex items-center gap-0.5">
+                        {t("ledger.lotsScreen.columns.status")}
+                        <InfoHint metric="lot.status" />
+                      </span>
                     </TableHead>
                     <TableHead className="text-right">
-                      {t("ledger.lotsScreen.columns.remaining")}
+                      <span className="inline-flex items-center gap-0.5">
+                        {t("ledger.lotsScreen.columns.remaining")}
+                        <InfoHint metric="lot.quantity_remaining" />
+                      </span>
                     </TableHead>
                     <TableHead className="text-right">
-                      {t("ledger.lotsScreen.columns.invested")}
+                      <span className="inline-flex items-center gap-0.5">
+                        {t("ledger.lotsScreen.columns.invested")}
+                        <InfoHint metric="lot.invested" />
+                      </span>
                     </TableHead>
                     <TableHead className="text-right">
-                      {t("ledger.lotsScreen.columns.income")}
+                      <span className="inline-flex items-center gap-0.5">
+                        {t("ledger.lotsScreen.columns.income")}
+                        <InfoHint metric="lot.income_attributed" />
+                      </span>
                     </TableHead>
                     <TableHead className="text-right">
-                      {t("ledger.lotsScreen.columns.realized")}
+                      <span className="inline-flex items-center gap-0.5">
+                        {t("ledger.lotsScreen.columns.realized")}
+                        <InfoHint metric="lot.realized_gain" />
+                      </span>
                     </TableHead>
                     <TableHead className="text-right">
-                      {t("ledger.lotsScreen.columns.unrealized")}
+                      <span className="inline-flex items-center gap-0.5">
+                        {t("ledger.lotsScreen.columns.unrealized")}
+                        <InfoHint metric="lot.unrealized_gain" />
+                      </span>
                     </TableHead>
                     <TableHead className="text-right">
-                      {t("ledger.lotsScreen.columns.return")}
+                      <span className="inline-flex items-center gap-0.5">
+                        {t("ledger.lotsScreen.columns.return")}
+                        <InfoHint metric="lot.lot_return" />
+                      </span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>

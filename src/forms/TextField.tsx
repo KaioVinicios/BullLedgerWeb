@@ -1,14 +1,23 @@
 import type { ComponentProps, ReactNode } from "react";
 
+import { InfoHint } from "@/components/InfoHint";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "@/forms/FieldError";
+import type { ExplainMetric } from "@/i18n/explain";
 
 type TextFieldProps = Omit<ComponentProps<typeof Input>, "id"> & {
   name: string;
   label: string;
   errors: unknown[];
   hint?: ReactNode;
+  /**
+   * The explainer for a field whose *name* is the unfamiliar part — face
+   * value, ISIN, deposit insurance. `hint` says how to fill the field in;
+   * this says what the field is. A field whose hint already answers that
+   * takes no metric: saying it twice on one field is worse than once.
+   */
+  metric?: ExplainMetric;
   /** Control pinned inside the input, e.g. the password reveal toggle. */
   trailing?: ReactNode;
   /** Static text pinned inside the input's left edge, e.g. a sign. */
@@ -31,6 +40,7 @@ export function TextField({
   label,
   errors,
   hint,
+  metric,
   trailing,
   leading,
   labelAction,
@@ -49,11 +59,11 @@ export function TextField({
         // and weights, and centering their boxes leaves the two texts visibly
         // off each other.
         <div className="flex items-baseline justify-between gap-3">
-          <Label htmlFor={name}>{label}</Label>
+          <FieldLabel name={name} label={label} metric={metric} />
           {labelAction}
         </div>
       ) : (
-        <Label htmlFor={name}>{label}</Label>
+        <FieldLabel name={name} label={label} metric={metric} />
       )}
       <div className="relative">
         {leading}
@@ -73,5 +83,31 @@ export function TextField({
       )}
       <FieldError id={`${name}-error`} errors={errors} />
     </div>
+  );
+}
+
+/**
+ * A field's label, with its explainer when it has one.
+ *
+ * The hint is a sibling of the `Label` rather than a child: inside it, a click
+ * meant for the popover would fall through to focusing the input — the same
+ * reason `labelAction` sits outside.
+ */
+export function FieldLabel({
+  name,
+  label,
+  metric,
+}: {
+  name: string;
+  label: string;
+  metric?: ExplainMetric;
+}) {
+  if (!metric) return <Label htmlFor={name}>{label}</Label>;
+
+  return (
+    <span className="flex items-center gap-0.5">
+      <Label htmlFor={name}>{label}</Label>
+      <InfoHint metric={metric} />
+    </span>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 
 import { TextField } from "@/forms/TextField";
+import type { ExplainMetric } from "@/i18n/explain";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { useNumericInput } from "@/hooks/useNumericInput";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,8 @@ type PercentFieldProps = {
   label: string;
   errors: unknown[];
   hint?: ReactNode;
+  /** See `TextField`. */
+  metric?: ExplainMetric;
   value: string;
   onBlur: () => void;
   onChange: (value: string) => void;
@@ -57,6 +60,7 @@ export function PercentField({
   label,
   errors,
   hint,
+  metric,
   value,
   onBlur,
   onChange,
@@ -73,6 +77,7 @@ export function PercentField({
 
   return (
     <TextField
+      metric={metric}
       name={name}
       label={label}
       inputMode="decimal"

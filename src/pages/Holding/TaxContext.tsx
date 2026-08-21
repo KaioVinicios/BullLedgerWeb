@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { COST_BASIS_METHOD_BY_COUNTRY } from "@/schemas/apiEnums";
 import type { Account } from "@/services/accounts";
@@ -54,8 +55,9 @@ export function TaxContext({
         </h2>
         <dl className="space-y-1 text-sm">
           <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">
+            <dt className="flex items-center gap-0.5 text-muted-foreground">
               {t("holding.basis.method")}
+              <InfoHint metric="basis.method" />
             </dt>
             <dd className="font-medium">
               {t(`enums.costBasisMethod.${method}`)}
@@ -76,7 +78,7 @@ export function TaxContext({
         </h2>
         <dl className="space-y-1 text-sm">
           <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">
+            <dt className="flex items-center gap-0.5 text-muted-foreground">
               {t("holding.tax.registration")}
             </dt>
             <dd className="font-medium">
@@ -86,8 +88,9 @@ export function TaxContext({
 
           {holding.tax_advantaged !== null && (
             <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">
+              <dt className="flex items-center gap-0.5 text-muted-foreground">
                 {t("holding.tax.advantaged")}
+                <InfoHint metric="asset.tax_advantaged" />
               </dt>
               <dd className="font-medium">
                 {t(
@@ -101,7 +104,10 @@ export function TaxContext({
 
           {account.contribution_room && (
             <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">{t("holding.tax.room")}</dt>
+              <dt className="flex items-center gap-0.5 text-muted-foreground">
+                {t("holding.tax.room")}
+                <InfoHint metric="account.contribution_room" />
+              </dt>
               <dd>
                 <MoneyValue value={account.contribution_room} />
               </dd>
@@ -110,7 +116,7 @@ export function TaxContext({
 
           {limit && (
             <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">
+              <dt className="flex items-center gap-0.5 text-muted-foreground">
                 {t("holding.tax.limit", { year })}
               </dt>
               <dd>

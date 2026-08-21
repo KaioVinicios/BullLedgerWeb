@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -11,6 +10,8 @@ import {
 } from "@/components/ui/select";
 import { EMPTY_SELECT_TRIGGER } from "@/forms/emptySelect";
 import { FieldError } from "@/forms/FieldError";
+import { FieldLabel } from "@/forms/TextField";
+import type { ExplainMetric } from "@/i18n/explain";
 import { cn } from "@/lib/utils";
 
 type SelectFieldProps<T extends string> = {
@@ -23,6 +24,8 @@ type SelectFieldProps<T extends string> = {
   onChange: (value: T) => void;
   errors?: unknown[];
   hint?: ReactNode;
+  /** See `TextField`: what the field *is*, where its name is the hard part. */
+  metric?: ExplainMetric;
   /**
    * What the trigger says in place of a value when `options` is empty. Defaults
    * to a generic line; pass the specific reason where the field knows it.
@@ -57,6 +60,7 @@ export function SelectField<T extends string>({
   onChange,
   errors = [],
   hint,
+  metric,
   emptyLabel,
 }: SelectFieldProps<T>) {
   const { t } = useTranslation("common");
@@ -69,7 +73,7 @@ export function SelectField<T extends string>({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={name}>{label}</Label>
+      <FieldLabel name={name} label={label} metric={metric} />
       <Select value={value} onValueChange={(next) => onChange(next as T)}>
         <SelectTrigger
           id={name}

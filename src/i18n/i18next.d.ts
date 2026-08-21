@@ -4,6 +4,7 @@ import type common from "./locales/en/common.json";
 import type auth from "./locales/en/auth.json";
 import type errors from "./locales/en/errors.json";
 import type app from "./locales/en/app.json";
+import type explain from "./locales/en/explain.json";
 
 // Makes t() keys and namespaces type-checked against the English resources —
 // a mistyped key or namespace fails the build. English is the source of truth;
@@ -16,6 +17,7 @@ declare module "i18next" {
       auth: typeof auth;
       errors: typeof errors;
       app: typeof app;
+      explain: typeof explain;
     };
   }
 }

@@ -4,6 +4,7 @@ import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 
 import { InstitutionLogo } from "@/components/InstitutionLogo";
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { SignedFigure } from "@/components/SignedFigure";
 import { SignedPercent } from "@/components/SignedPercent";
@@ -121,6 +122,7 @@ export function AssetGroupBlock({
             <div className="flex items-baseline gap-2">
               <dt className="text-muted-foreground">
                 {t("holdings.totals.invested")}
+                <InfoHint metric="holding.invested" />
               </dt>
               <dd>
                 <MoneyValue value={group.invested} />
@@ -131,6 +133,7 @@ export function AssetGroupBlock({
             <div className="flex items-baseline gap-2">
               <dt className="text-muted-foreground">
                 {t("holdings.totals.unrealized")}
+                <InfoHint metric="holding.unrealized_gain" />
               </dt>
               <dd>
                 <SignedFigure value={group.unrealizedGain} />
@@ -141,6 +144,7 @@ export function AssetGroupBlock({
             <div className="flex items-baseline gap-2">
               <dt className="text-muted-foreground">
                 {t("holdings.totals.unitCost")}
+                <InfoHint metric="holding.average_cost" />
               </dt>
               <dd className="font-mono tabular-nums">
                 {formatUnitPrice(group.unitCost, currency, locale)}
@@ -151,6 +155,7 @@ export function AssetGroupBlock({
             <div className="flex items-baseline gap-2">
               <dt className="text-muted-foreground">
                 {t("holdings.totals.currentPrice")}
+                <InfoHint metric="holding.current_price" />
               </dt>
               <dd className="font-mono tabular-nums">
                 {formatUnitPrice(group.currentPrice, currency, locale)}
@@ -171,13 +176,22 @@ export function AssetGroupBlock({
               <TableRow>
                 <TableHead>{t("holdings.columns.asset")}</TableHead>
                 <TableHead className="text-right">
-                  {t("holdings.columns.quantity")}
+                  <span className="inline-flex items-center gap-0.5">
+                    {t("holdings.columns.quantity")}
+                    <InfoHint metric="holding.quantity" />
+                  </span>
                 </TableHead>
                 <TableHead className="text-right">
-                  {t("holdings.columns.value")}
+                  <span className="inline-flex items-center gap-0.5">
+                    {t("holdings.columns.value")}
+                    <InfoHint metric="holding.current_value" />
+                  </span>
                 </TableHead>
                 <TableHead className="text-right">
-                  {t("holdings.columns.return")}
+                  <span className="inline-flex items-center gap-0.5">
+                    {t("holdings.columns.return")}
+                    <InfoHint metric="holding.total_return" />
+                  </span>
                 </TableHead>
               </TableRow>
             </TableHeader>

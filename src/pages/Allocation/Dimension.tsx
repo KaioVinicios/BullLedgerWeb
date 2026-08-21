@@ -4,6 +4,7 @@ import {
   AllocationBar,
   type AllocationSegment,
 } from "@/components/AllocationBar";
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { PercentValue } from "@/components/PercentValue";
 import {
@@ -68,10 +69,16 @@ export function Dimension({
             <TableRow>
               <TableHead>{t("allocation.columns.category")}</TableHead>
               <TableHead className="text-right">
-                {t("allocation.columns.value")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("allocation.columns.value")}
+                  <InfoHint metric="allocation.value" />
+                </span>
               </TableHead>
               <TableHead className="text-right">
-                {t("allocation.columns.weight")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("allocation.columns.weight")}
+                  <InfoHint metric="allocation.weight" />
+                </span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -83,6 +90,7 @@ export function Dimension({
                   {!segment.complete && (
                     <span className="ml-2 text-xs text-muted-foreground">
                       {t("allocation.sliceIncomplete")}
+                      <InfoHint metric="allocation.slice_incomplete" />
                     </span>
                   )}
                 </TableCell>

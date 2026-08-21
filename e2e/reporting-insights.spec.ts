@@ -1,4 +1,5 @@
 import app from "@/i18n/locales/en/app.json" with { type: "json" };
+import explain from "@/i18n/locales/en/explain.json" with { type: "json" };
 import { PATHS } from "@/routes/path";
 
 import type { Page } from "@playwright/test";
@@ -140,4 +141,27 @@ test("says a portfolio with no sale is not ranked, rather than showing an empty 
 
   // Nothing above was ever sold, so the realized ranking has nothing to rank.
   await expect(page.getByText(app.overview.ranking.empty)).toBeVisible();
+});
+
+test("opens an explainer beside a figure and dismisses it with the keyboard", async ({
+  page,
+}) => {
+  await createSignedInAccount(page, freshUser());
+  await seedPortfolio(page);
+
+  await page.goto(PATHS.APP);
+
+  // The one thing a unit test cannot make: that a real browser gives focus to
+  // the popover, takes Escape, and hands focus back to where it came from.
+  const trigger = page.getByRole("button", {
+    name: `What is ${explain.portfolio.real_return.label.toLocaleLowerCase()}?`,
+  });
+  await trigger.click();
+
+  const body = page.getByText(explain.portfolio.real_return.body);
+  await expect(body).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(body).toBeHidden();
+  await expect(trigger).toBeFocused();
 });

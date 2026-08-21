@@ -2,11 +2,13 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { SignedFigure } from "@/components/SignedFigure";
 import { SignedPercent } from "@/components/SignedPercent";
 import { UnpricedNote } from "@/components/UnpricedNote";
 import { PATHS } from "@/routes/path";
+import type { ExplainMetric } from "@/i18n/explain";
 import type { HoldingDetail } from "@/services/portfolio";
 
 /**
@@ -26,7 +28,11 @@ export function Headline({ holding }: { holding: HoldingDetail }) {
 
   return (
     <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-      <Figure label={t("holding.headline.value")} lead>
+      <Figure
+        label={t("holding.headline.value")}
+        metric="holding.current_value"
+        lead
+      >
         {reporting.value ? (
           <MoneyValue value={reporting.value} className="text-3xl" />
         ) : (
@@ -34,7 +40,10 @@ export function Headline({ holding }: { holding: HoldingDetail }) {
         )}
       </Figure>
 
-      <Figure label={t("holding.headline.unrealized")}>
+      <Figure
+        label={t("holding.headline.unrealized")}
+        metric="holding.unrealized_gain"
+      >
         {reporting.unrealized_gain ? (
           <SignedFigure value={reporting.unrealized_gain} className="text-xl" />
         ) : (
@@ -42,7 +51,10 @@ export function Headline({ holding }: { holding: HoldingDetail }) {
         )}
       </Figure>
 
-      <Figure label={t("holding.headline.realized")}>
+      <Figure
+        label={t("holding.headline.realized")}
+        metric="holding.realized_gain"
+      >
         {reporting.realized_gain ? (
           <SignedFigure value={reporting.realized_gain} className="text-xl" />
         ) : (
@@ -50,7 +62,7 @@ export function Headline({ holding }: { holding: HoldingDetail }) {
         )}
       </Figure>
 
-      <Figure label={t("holding.headline.invested")}>
+      <Figure label={t("holding.headline.invested")} metric="holding.invested">
         {reporting.invested ? (
           <MoneyValue value={reporting.invested} className="text-xl" />
         ) : (
@@ -58,7 +70,10 @@ export function Headline({ holding }: { holding: HoldingDetail }) {
         )}
       </Figure>
 
-      <Figure label={t("holding.headline.income")}>
+      <Figure
+        label={t("holding.headline.income")}
+        metric="holding.income_received"
+      >
         {reporting.income_received ? (
           <MoneyValue value={reporting.income_received} className="text-xl" />
         ) : (
@@ -66,7 +81,10 @@ export function Headline({ holding }: { holding: HoldingDetail }) {
         )}
       </Figure>
 
-      <Figure label={t("holding.headline.totalReturn")}>
+      <Figure
+        label={t("holding.headline.totalReturn")}
+        metric="holding.total_return"
+      >
         {holding.total_return ? (
           <SignedPercent value={holding.total_return} className="text-xl" />
         ) : (
@@ -78,7 +96,10 @@ export function Headline({ holding }: { holding: HoldingDetail }) {
           `real_return` means no inflation reference is set — a setting the
           user controls, so the screen points at it rather than hiding the
           slot behind an em dash that explains nothing. */}
-      <Figure label={t("holding.headline.realReturn")}>
+      <Figure
+        label={t("holding.headline.realReturn")}
+        metric="holding.real_return"
+      >
         {holding.real_return ? (
           <SignedPercent value={holding.real_return} className="text-xl" />
         ) : (
@@ -96,10 +117,12 @@ export function Headline({ holding }: { holding: HoldingDetail }) {
 
 function Figure({
   label,
+  metric,
   lead = false,
   children,
 }: {
   label: string;
+  metric?: ExplainMetric;
   /** The one figure the screen is answering; everything else supports it. */
   lead?: boolean;
   children: ReactNode;
@@ -107,7 +130,13 @@ function Figure({
   return (
     <div className="space-y-1">
       <div className={lead ? "text-3xl" : "text-xl"}>{children}</div>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      {/* With the label, never with the number: the figures own the
+          hierarchy, and an icon beside one would be the only chrome
+          competing with it. */}
+      <p className="flex items-center gap-0.5 text-xs text-muted-foreground">
+        {label}
+        {metric && <InfoHint metric={metric} />}
+      </p>
     </div>
   );
 }

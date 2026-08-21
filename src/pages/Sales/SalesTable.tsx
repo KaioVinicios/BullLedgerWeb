@@ -17,6 +17,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { SignedFigure } from "@/components/SignedFigure";
 import { SignedPercent } from "@/components/SignedPercent";
@@ -47,20 +48,35 @@ export function SalesTable({ rows }: { rows: SaleRow[] }) {
             <TableRow>
               <TableHead>{t("sales.columns.asset")}</TableHead>
               <TableHead className="text-right">
-                {t("sales.columns.costRemoved")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("sales.columns.costRemoved")}
+                  <InfoHint metric="sale.cost_removed" />
+                </span>
               </TableHead>
               <TableHead className="text-right">
-                {t("sales.columns.quantity")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("sales.columns.quantity")}
+                  <InfoHint metric="sale.quantity_sold" />
+                </span>
               </TableHead>
               <TableHead>{t("sales.columns.purchasedOn")}</TableHead>
               <TableHead className="text-right">
-                {t("sales.columns.proceeds")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("sales.columns.proceeds")}
+                  <InfoHint metric="sale.proceeds" />
+                </span>
               </TableHead>
               <TableHead className="text-right">
-                {t("sales.columns.profit")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("sales.columns.profit")}
+                  <InfoHint metric="sale.profit" />
+                </span>
               </TableHead>
               <TableHead className="text-right">
-                {t("sales.columns.profitRate")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("sales.columns.profitRate")}
+                  <InfoHint metric="sale.profit_rate" />
+                </span>
               </TableHead>
               <TableHead>{t("sales.columns.soldOn")}</TableHead>
             </TableRow>
@@ -160,7 +176,10 @@ export function SaleLotRow({ row }: { row: SaleRow }) {
             {formatCalendarDate(row.sold_on as CalendarDate, locale)}
             {/* A word, never colour alone. */}
             {!row.fully_sold && (
-              <Badge variant="outline">{t("sales.partial")}</Badge>
+              <>
+                <Badge variant="outline">{t("sales.partial")}</Badge>
+                <InfoHint metric="sale.fully_sold" />
+              </>
             )}
           </div>
         </TableCell>
@@ -184,7 +203,10 @@ export function SaleExitRow({ sale }: { sale: SaleExit }) {
   return (
     <TableRow className="bg-muted/30 text-sm">
       <TableCell className="py-2 pl-10 whitespace-nowrap text-muted-foreground">
-        {t(`sales.kind.${sale.kind}`)}
+        <span className="inline-flex items-center gap-0.5">
+          {t(`sales.kind.${sale.kind}`)}
+          <InfoHint metric="sale.kind" />
+        </span>
       </TableCell>
       <TableCell className="py-2 text-right">
         {/* Each tranche has its own cost_removed — showing it here keeps a

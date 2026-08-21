@@ -48,6 +48,7 @@ import { useTranslation } from "react-i18next";
 import { IconArrowRight } from "@tabler/icons-react";
 import { Bar, BarChart, ReferenceLine, XAxis, YAxis } from "recharts";
 
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { PercentValue } from "@/components/PercentValue";
 import {
@@ -214,13 +215,22 @@ export function AssetAllocation({
                 {t("overview.byAsset.asset")}
               </th>
               <th scope="col" className="text-right font-normal">
-                {t("overview.byAsset.value")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("overview.byAsset.value")}
+                  <InfoHint metric="allocation.value" />
+                </span>
               </th>
               <th scope="col" className="text-right font-normal">
-                {t("overview.byAsset.invested")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("overview.byAsset.invested")}
+                  <InfoHint metric="allocation.invested" />
+                </span>
               </th>
               <th scope="col" className="text-right font-normal">
-                {t("overview.byAsset.weight")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("overview.byAsset.weight")}
+                  <InfoHint metric="allocation.weight" />
+                </span>
               </th>
             </tr>
           </thead>

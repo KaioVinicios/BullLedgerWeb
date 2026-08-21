@@ -26,7 +26,7 @@ test("restores an asset list's filter and ordering from the URL alone", async ({
   await page.goto(PATHS.ASSETS_NEW);
   await page.getByRole("radio", { name: app.enums.archetype.CRYPTO }).click();
   await page.getByLabel(app.assets.form.name, { exact: true }).fill("Bitcoin");
-  await page.getByLabel(app.assets.form.symbol).fill("BTC");
+  await page.getByLabel(app.assets.form.symbol, { exact: true }).fill("BTC");
   await page.getByRole("button", { name: app.assets.form.create }).click();
   await expect(page).toHaveURL(new RegExp(`${PATHS.ASSETS}$`));
 

@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import { http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
+import explain from "@/i18n/locales/en/explain.json";
 import { createQueryClient } from "@/lib/queryClient";
 import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
@@ -200,6 +201,24 @@ describe("SalesTable", () => {
     expect(
       screen.queryByRole("button", { name: app.sales.collapse }),
     ).not.toBeInTheDocument();
+  });
+
+  it("explains the result column where the column is, fees and all", async () => {
+    // The standing fee note at the foot of the table qualifies every row.
+    // This qualifies the column, at the column — the two overlap in words
+    // and not in job, so both stay.
+    const user = userEvent.setup();
+    render(<SalesTable rows={[singleSale]} />);
+
+    await user.click(
+      screen.getByRole("button", {
+        name: `What is ${explain.sale.profit_rate.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.sale.profit_rate.body),
+    ).toBeInTheDocument();
   });
 
   it("expands a multi-sale lot into one row per sale", async () => {

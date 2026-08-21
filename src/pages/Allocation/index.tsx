@@ -17,6 +17,8 @@ import { IconCheck, IconChartPie } from "@tabler/icons-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ListError } from "@/components/ListError";
 import { ListSkeleton } from "@/components/ListSkeleton";
+import { InfoHint } from "@/components/InfoHint";
+import type { ExplainMetric } from "@/i18n/explain";
 import { PageContainer } from "@/components/PageContainer";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -164,6 +166,11 @@ export function AllocationPage() {
             </TabsList>
           </Tabs>
 
+          {/* Beside the strip, never inside a trigger: a button nested in a
+              tab would swallow the click meant to select it. The hint follows
+              the open dimension, which is the one being read. */}
+          <InfoHint metric={DIMENSION_METRIC[dimension]} />
+
           <Dimension
             slices={slices}
             total={allocation.data.total_value}
@@ -174,3 +181,10 @@ export function AllocationPage() {
     </PageContainer>
   );
 }
+
+/** Each allocation dimension explains what it splits by. */
+const DIMENSION_METRIC: Record<AllocationDimension, ExplainMetric> = {
+  archetype: "allocation.by_archetype",
+  currency: "allocation.by_currency",
+  country: "allocation.by_country",
+};

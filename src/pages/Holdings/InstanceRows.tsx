@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
+import { InfoHint } from "@/components/InfoHint";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -106,7 +107,10 @@ export function InstanceRows({
           <TableRow>
             <TableHead>{t("holdings.instances.columns.openedOn")}</TableHead>
             <TableHead className="text-right">
-              {t("holdings.instances.columns.quantity")}
+              <span className="inline-flex items-center gap-0.5">
+                {t("holdings.instances.columns.quantity")}
+                <InfoHint metric="lot.quantity_remaining" />
+              </span>
             </TableHead>
             <TableHead className="text-right">
               {t("holdings.instances.columns.unitPrice")}

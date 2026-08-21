@@ -27,6 +27,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { IconArrowRight } from "@tabler/icons-react";
 
+import { InfoHint } from "@/components/InfoHint";
 import { PageContainer } from "@/components/PageContainer";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -69,10 +70,11 @@ export function HoldingPage() {
           <Badge variant="outline">
             {t(`enums.archetype.${holding.archetype}`)}
           </Badge>
-          <span className="text-xs text-muted-foreground tabular-nums">
+          <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground tabular-nums">
             {t("holding.valuedOn", {
               date: formatCalendarDate(holding.on_date as CalendarDate, locale),
             })}
+            <InfoHint metric="holding.quote_date" />
           </span>
         </div>
 

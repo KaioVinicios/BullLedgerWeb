@@ -34,8 +34,12 @@ test("creates one asset of each archetype through its own field set", async ({
   await expect(page.getByText(app.assets.form.wrapperNote)).toBeVisible();
 
   // CASH_DEPOSIT — the default reveals its fields and not the others'.
-  await expect(page.getByLabel(app.assets.form.compounding)).toBeVisible();
-  await expect(page.getByLabel(app.assets.form.ticker)).toHaveCount(0);
+  await expect(
+    page.getByLabel(app.assets.form.compounding, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel(app.assets.form.ticker, { exact: true }),
+  ).toHaveCount(0);
   await page
     .getByLabel(app.assets.form.name, { exact: true })
     .fill("Poupança Nubank");
@@ -47,19 +51,27 @@ test("creates one asset of each archetype through its own field set", async ({
   await page
     .getByRole("radio", { name: app.enums.archetype.FIXED_INCOME })
     .click();
-  await expect(page.getByLabel(app.assets.form.maturityDate)).toBeVisible();
-  await expect(page.getByLabel(app.assets.form.compounding)).toHaveCount(0);
+  await expect(
+    page.getByLabel(app.assets.form.maturityDate, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel(app.assets.form.compounding, { exact: true }),
+  ).toHaveCount(0);
   await page
     .getByLabel(app.assets.form.name, { exact: true })
     .fill("CDB 110% CDI");
-  await page.getByLabel(app.assets.form.maturityDate).fill("2030-01-15");
+  await page
+    .getByLabel(app.assets.form.maturityDate, { exact: true })
+    .fill("2030-01-15");
   await page.getByRole("combobox", { name: app.assets.form.issuer }).click();
   await page.getByRole("option", { name: "Banco Inter" }).click();
   // A CDB pays no coupons, and the form no longer asks: it omits both inputs
   // and sends a zero rate with a NONE frequency itself. This spec used to fill the rate
   // by hand, which is how the gap was found — the form offered a coupon the
   // API always rejects. The yield rides in `rate_value` instead.
-  await expect(page.getByLabel(app.assets.form.couponRate)).toHaveCount(0);
+  await expect(
+    page.getByLabel(app.assets.form.couponRate, { exact: true }),
+  ).toHaveCount(0);
   await page
     .getByLabel(app.assets.form.rateValue, { exact: true })
     .fill("13.75");
@@ -71,31 +83,43 @@ test("creates one asset of each archetype through its own field set", async ({
   await page
     .getByRole("radio", { name: app.enums.archetype.EXCHANGE_SECURITY })
     .click();
-  await expect(page.getByLabel(app.assets.form.ticker)).toBeVisible();
-  await expect(page.getByLabel(app.assets.form.maturityDate)).toHaveCount(0);
+  await expect(
+    page.getByLabel(app.assets.form.ticker, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel(app.assets.form.maturityDate, { exact: true }),
+  ).toHaveCount(0);
   await page.getByLabel(app.assets.form.name, { exact: true }).fill("Vale ON");
-  await page.getByLabel(app.assets.form.ticker).fill("VALE3");
+  await page.getByLabel(app.assets.form.ticker, { exact: true }).fill("VALE3");
   await page.getByRole("button", { name: app.assets.form.create }).click();
   await expect(page).toHaveURL(new RegExp(`${PATHS.ASSETS}$`));
 
   // NAV_FUND.
   await page.goto(PATHS.ASSETS_NEW);
   await page.getByRole("radio", { name: app.enums.archetype.NAV_FUND }).click();
-  await expect(page.getByLabel(app.assets.form.fundCategory)).toBeVisible();
+  await expect(
+    page.getByLabel(app.assets.form.fundCategory, { exact: true }),
+  ).toBeVisible();
   await page
     .getByLabel(app.assets.form.name, { exact: true })
     .fill("Fundo Multimercado");
-  await page.getByLabel(app.assets.form.fundCategory).fill("Multimercado");
+  await page
+    .getByLabel(app.assets.form.fundCategory, { exact: true })
+    .fill("Multimercado");
   await page.getByRole("button", { name: app.assets.form.create }).click();
   await expect(page).toHaveURL(new RegExp(`${PATHS.ASSETS}$`));
 
   // CRYPTO.
   await page.goto(PATHS.ASSETS_NEW);
   await page.getByRole("radio", { name: app.enums.archetype.CRYPTO }).click();
-  await expect(page.getByLabel(app.assets.form.symbol)).toBeVisible();
-  await expect(page.getByLabel(app.assets.form.fundCategory)).toHaveCount(0);
+  await expect(
+    page.getByLabel(app.assets.form.symbol, { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel(app.assets.form.fundCategory, { exact: true }),
+  ).toHaveCount(0);
   await page.getByLabel(app.assets.form.name, { exact: true }).fill("Bitcoin");
-  await page.getByLabel(app.assets.form.symbol).fill("BTC");
+  await page.getByLabel(app.assets.form.symbol, { exact: true }).fill("BTC");
   await page.getByRole("button", { name: app.assets.form.create }).click();
   await expect(page).toHaveURL(new RegExp(`${PATHS.ASSETS}$`));
 

@@ -1,6 +1,7 @@
 import type { ReactNode, Ref } from "react";
 
 import { TextField } from "@/forms/TextField";
+import type { ExplainMetric } from "@/i18n/explain";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { useNumericInput } from "@/hooks/useNumericInput";
 
@@ -13,6 +14,8 @@ type DecimalFieldProps = {
   integerDigits?: number;
   errors: unknown[];
   hint?: ReactNode;
+  /** See `TextField`. */
+  metric?: ExplainMetric;
   value: string;
   onBlur: () => void;
   onChange: (value: string) => void;
@@ -48,6 +51,7 @@ export function DecimalField({
   integerDigits,
   errors,
   hint,
+  metric,
   value,
   onBlur,
   onChange,
@@ -66,6 +70,7 @@ export function DecimalField({
 
   return (
     <TextField
+      metric={metric}
       ref={ref}
       name={name}
       label={label}

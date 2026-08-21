@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import { http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
+import explain from "@/i18n/locales/en/explain.json";
 import { createQueryClient } from "@/lib/queryClient";
 import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
@@ -398,6 +399,43 @@ describe("the overview screen", () => {
     expect(screen.getByText("R$18,200.00")).toBeVisible();
   });
 
+  it("offers an explainer beside each headline figure", async () => {
+    server.use(...signedIn());
+    mount();
+
+    for (const entry of [
+      explain.portfolio.total_value,
+      explain.portfolio.nominal_return,
+      explain.portfolio.real_return,
+      explain.portfolio.free_cash,
+    ]) {
+      expect(
+        await screen.findByRole("button", {
+          name: `What is ${entry.label.toLocaleLowerCase()}?`,
+        }),
+      ).toBeInTheDocument();
+    }
+  });
+
+  it("explains real return without claiming a twelve-month window", async () => {
+    // The figure is deflated from the first holding to today, not over a
+    // trailing year. Copy saying "the last 12 months" would describe a
+    // calculation the server does not do.
+    const user = userEvent.setup();
+    server.use(...signedIn());
+    mount();
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: `What is ${explain.portfolio.real_return.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.portfolio.real_return.body),
+    ).toBeInTheDocument();
+  });
+
   it("groups holdings under their account with its cash and subtotal", async () => {
     server.use(...signedIn());
     mount();
@@ -407,6 +445,49 @@ describe("the overview screen", () => {
 
     expect(within(group).getByText("R$291,400.00")).toBeVisible();
     expect(within(group).getByText("R$12,000.00")).toBeVisible();
+  });
+
+  it("explains net deposits, the column most often misread as a gain", async () => {
+    const user = userEvent.setup();
+    server.use(...signedIn());
+    mount();
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: `What is ${explain.series.net_flow.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.series.net_flow.body),
+    ).toBeInTheDocument();
+  });
+
+  it("explains the flow-adjusted monthly return", async () => {
+    server.use(...signedIn());
+    mount();
+
+    expect(
+      await screen.findByRole("button", {
+        name: `What is ${explain.series.monthly_return.label.toLocaleLowerCase()}?`,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("says the projection assumes no further deposits", async () => {
+    const user = userEvent.setup();
+    server.use(...signedIn());
+    mount();
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: `What is ${explain.forecast.expected.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.forecast.expected.body),
+    ).toBeInTheDocument();
   });
 
   it("does not list a position that has been sold down to nothing", async () => {
@@ -435,6 +516,33 @@ describe("the overview screen", () => {
     mount();
 
     expect(await screen.findByText(app.overview.firstRun.title)).toBeVisible();
+  });
+
+  it("qualifies the ranking rate with its lack of a minimum holding period", async () => {
+    const user = userEvent.setup();
+    server.use(...signedIn());
+    mount();
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: `What is ${explain.ranking.monthly_profit_rate.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.ranking.monthly_profit_rate.body),
+    ).toBeInTheDocument();
+  });
+
+  it("explains what a share is measured against", async () => {
+    server.use(...signedIn());
+    mount();
+
+    expect(
+      await screen.findByRole("button", {
+        name: `What is ${explain.allocation.weight.label.toLocaleLowerCase()}?`,
+      }),
+    ).toBeInTheDocument();
   });
 
   it("makes each holding row the way into its detail", async () => {

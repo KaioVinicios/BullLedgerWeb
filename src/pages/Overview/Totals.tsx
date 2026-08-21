@@ -2,10 +2,12 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { SignedPercent } from "@/components/SignedPercent";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
 import { PATHS } from "@/routes/path";
+import type { ExplainMetric } from "@/i18n/explain";
 import type { AccountGroup, PortfolioOverview } from "@/services/portfolio";
 import { formatCalendarDate, type CalendarDate } from "@/utils/date";
 
@@ -44,11 +46,14 @@ export function Totals({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-x-12 gap-y-6">
-        <Figure label={t("overview.totalValue")}>
+        <Figure label={t("overview.totalValue")} metric="portfolio.total_value">
           <MoneyValue value={total} className="text-4xl" />
         </Figure>
 
-        <Figure label={t("overview.nominalReturn")}>
+        <Figure
+          label={t("overview.nominalReturn")}
+          metric="portfolio.nominal_return"
+        >
           {nominal ? (
             <SignedPercent value={nominal} className="text-xl" />
           ) : (
@@ -60,7 +65,7 @@ export function Totals({
             no inflation reference is set — a setting the user controls, so the
             slot names the setting instead of showing an em dash that explains
             nothing. */}
-        <Figure label={t("overview.realReturn")}>
+        <Figure label={t("overview.realReturn")} metric="portfolio.real_return">
           {real ? (
             <SignedPercent value={real} className="text-xl" />
           ) : (
@@ -76,7 +81,7 @@ export function Totals({
         {/* An account's cash is nullable where the portfolio's never is, so
             this slot takes the em dash the other nullable figures already
             get rather than printing a zero the server did not report. */}
-        <Figure label={t("overview.freeCash")}>
+        <Figure label={t("overview.freeCash")} metric="portfolio.free_cash">
           {cash ? (
             <MoneyValue value={cash} className="text-xl" />
           ) : (
@@ -96,8 +101,9 @@ export function Totals({
             points at the one screen that can fix it. */}
         {!complete && (
           <>
-            <span>
+            <span className="inline-flex items-center gap-0.5">
               {t("overview.incomplete", { count: overview.missing.length })}
+              <InfoHint metric="portfolio.complete" />
             </span>
             <Link
               to={PATHS.PRICING}
@@ -112,11 +118,25 @@ export function Totals({
   );
 }
 
-function Figure({ label, children }: { label: string; children: ReactNode }) {
+function Figure({
+  label,
+  metric,
+  children,
+}: {
+  label: string;
+  metric?: ExplainMetric;
+  children: ReactNode;
+}) {
   return (
     <div className="space-y-1">
       <div>{children}</div>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      {/* The hint sits with the label rather than with the figure. Per
+          `PRODUCT.md`'s first principle the number owns the hierarchy, and an
+          icon beside it would be the one piece of chrome competing with it. */}
+      <p className="flex items-center gap-0.5 text-xs text-muted-foreground">
+        {label}
+        {metric && <InfoHint metric={metric} />}
+      </p>
     </div>
   );
 }

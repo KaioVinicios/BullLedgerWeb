@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import {
   Table,
@@ -68,8 +69,9 @@ export function AccountGroupBlock({
             {name}
           </span>
           {!group.complete && (
-            <span className="text-xs font-normal text-muted-foreground">
+            <span className="inline-flex items-center gap-0.5 text-xs font-normal text-muted-foreground">
               {t("overview.groupIncomplete")}
+              <InfoHint metric="account.complete" />
             </span>
           )}
         </div>
@@ -77,7 +79,8 @@ export function AccountGroupBlock({
         <div className="flex items-center gap-6 text-sm">
           {group.cash && (
             <span className="text-muted-foreground">
-              {t("overview.cash")}{" "}
+              {t("overview.cash")}
+              <InfoHint metric="account.cash" />{" "}
               <MoneyValue value={group.cash} className="text-foreground" />
             </span>
           )}
@@ -92,16 +95,28 @@ export function AccountGroupBlock({
               <TableRow>
                 <TableHead>{t("overview.columns.asset")}</TableHead>
                 <TableHead className="text-right">
-                  {t("overview.columns.quantity")}
+                  <span className="inline-flex items-center gap-0.5">
+                    {t("overview.columns.quantity")}
+                    <InfoHint metric="holding.quantity" />
+                  </span>
                 </TableHead>
                 <TableHead className="text-right">
-                  {t("overview.columns.value")}
+                  <span className="inline-flex items-center gap-0.5">
+                    {t("overview.columns.value")}
+                    <InfoHint metric="holding.current_value" />
+                  </span>
                 </TableHead>
                 <TableHead className="text-right">
-                  {t("overview.columns.return")}
+                  <span className="inline-flex items-center gap-0.5">
+                    {t("overview.columns.return")}
+                    <InfoHint metric="holding.total_return" />
+                  </span>
                 </TableHead>
                 <TableHead className="text-right">
-                  {t("overview.columns.status")}
+                  <span className="inline-flex items-center gap-0.5">
+                    {t("overview.columns.status")}
+                    <InfoHint metric="target.status" />
+                  </span>
                 </TableHead>
               </TableRow>
             </TableHeader>

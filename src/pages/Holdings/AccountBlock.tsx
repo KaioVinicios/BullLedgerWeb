@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 
 import { HoldingRow } from "@/components/HoldingRow";
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import {
   Table,
@@ -66,16 +67,28 @@ export function AccountBlock({
           <TableRow>
             <TableHead>{t("holdings.columns.asset")}</TableHead>
             <TableHead className="text-right">
-              {t("holdings.columns.quantity")}
+              <span className="inline-flex items-center gap-0.5">
+                {t("holdings.columns.quantity")}
+                <InfoHint metric="holding.quantity" />
+              </span>
             </TableHead>
             <TableHead className="text-right">
-              {t("holdings.columns.value")}
+              <span className="inline-flex items-center gap-0.5">
+                {t("holdings.columns.value")}
+                <InfoHint metric="holding.current_value" />
+              </span>
             </TableHead>
             <TableHead className="text-right">
-              {t("holdings.columns.return")}
+              <span className="inline-flex items-center gap-0.5">
+                {t("holdings.columns.return")}
+                <InfoHint metric="holding.total_return" />
+              </span>
             </TableHead>
             <TableHead className="text-right">
-              {t("holdings.columns.status")}
+              <span className="inline-flex items-center gap-0.5">
+                {t("holdings.columns.status")}
+                <InfoHint metric="target.status" />
+              </span>
             </TableHead>
           </TableRow>
         </TableHeader>

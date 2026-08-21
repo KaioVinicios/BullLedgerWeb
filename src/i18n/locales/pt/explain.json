@@ -1,0 +1,399 @@
+{
+  "trigger": "O que é {{label}}?",
+  "portfolio": {
+    "complete": {
+      "label": "Parcialmente avaliado",
+      "body": "Pelo menos uma posição não tem preço ou câmbio utilizável, então ela fica de fora destes totais em vez de contar como zero."
+    },
+    "free_cash": {
+      "label": "Caixa livre",
+      "body": "Dinheiro nas suas contas que não está em nenhuma posição. Um produto de poupança ou depósito não entra aqui — o saldo dele pertence ao produto."
+    },
+    "nominal_return": {
+      "label": "Retorno nominal",
+      "body": "O que o seu dinheiro investido rendeu desde o início, em termos de moeda. O caixa parado não pesa contra ele."
+    },
+    "real_return": {
+      "label": "Retorno real",
+      "body": "Seu retorno descontada a inflação: o que a carteira ganhou em poder de compra, não só em moeda. Medido da sua primeira posição até hoje."
+    },
+    "total_value": {
+      "label": "Valor total",
+      "body": "Tudo o que você tem pelo preço mais recente registrado, convertido para sua moeda de referência, mais o dinheiro parado nas suas contas."
+    }
+  },
+  "account": {
+    "cash": {
+      "label": "Caixa",
+      "body": "O saldo não investido desta conta, convertido para sua moeda de referência."
+    },
+    "complete": {
+      "label": "Parcialmente avaliado",
+      "body": "Algo nesta conta não pôde ser precificado, então o subtotal dela fica aquém em vez de contar aquilo como zero."
+    },
+    "contribution_room": {
+      "label": "Limite disponível",
+      "body": "Seu próprio registro de quanto ainda pode aportar este ano. É conferido contra o limite publicado e mostrado a você, nunca imposto."
+    },
+    "registration_br_prev_pgbl": {
+      "label": "Previdência PGBL",
+      "body": "Plano de previdência cujas contribuições você pode deduzir da base do imposto, até o limite legal. Na retirada, o imposto incide sobre todo o saldo, não só sobre o ganho."
+    },
+    "registration_br_prev_vgbl": {
+      "label": "Previdência VGBL",
+      "body": "Plano de previdência cujas contribuições não são dedutíveis. Em troca, o imposto na retirada incide só sobre o que rendeu, não sobre todo o saldo."
+    },
+    "registration_br_taxable": {
+      "label": "Tributável (BR)",
+      "body": "Uma conta brasileira comum, sem envelope fiscal. A vantagem tributária que você tiver vem dos instrumentos dentro dela, não da conta."
+    },
+    "registration_ca_fhsa": {
+      "label": "FHSA",
+      "body": "Conta canadense para a primeira casa, que junta dedução na entrada com retirada qualificada isenta."
+    },
+    "registration_ca_non_registered": {
+      "label": "Não registrada (CA)",
+      "body": "Uma conta canadense comum, sem envelope registrado em volta."
+    },
+    "registration_ca_rrsp": {
+      "label": "RRSP",
+      "body": "Plano canadense de poupança para aposentadoria. As contribuições reduzem sua renda tributável agora, e as retiradas são tributadas depois."
+    },
+    "registration_ca_tfsa": {
+      "label": "TFSA",
+      "body": "Conta canadense de poupança livre de imposto. O rendimento dentro dela e as retiradas não são tributados."
+    },
+    "registration_us_401k": {
+      "label": "401(k)",
+      "body": "Plano de aposentadoria americano oferecido pelo empregador. Contribuições e retiradas seguem as regras do próprio plano."
+    },
+    "registration_us_ira_roth": {
+      "label": "Roth IRA",
+      "body": "Conta de aposentadoria americana aportada depois do imposto. Retiradas qualificadas, inclusive o rendimento, não são tributadas."
+    },
+    "registration_us_ira_traditional": {
+      "label": "IRA tradicional",
+      "body": "Conta de aposentadoria americana aportada antes do imposto. O dinheiro cresce sem tributação e as retiradas são tributadas como renda."
+    },
+    "registration_us_taxable": {
+      "label": "Tributável (EUA)",
+      "body": "Uma conta de corretagem americana comum, sem envelope fiscal em volta."
+    },
+    "tax_regime": {
+      "label": "Regime tributário",
+      "body": "Se a alíquota do plano é progressiva, subindo com o valor, ou regressiva, caindo quanto mais tempo o dinheiro fica."
+    },
+    "taxed_on": {
+      "label": "Tributado sobre",
+      "body": "Se o imposto na retirada incide sobre todo o valor ou apenas sobre o que o plano rendeu."
+    }
+  },
+  "holding": {
+    "average_cost": {
+      "label": "Custo médio",
+      "body": "Quanto uma unidade da parte que você ainda tem custou em média, com taxas incluídas."
+    },
+    "cost_basis_remaining": {
+      "label": "Custo remanescente",
+      "body": "O que a parte que você ainda tem custou originalmente. Vender retira uma fração dele, seguindo a regra do país da conta."
+    },
+    "costs": {
+      "label": "Custos",
+      "body": "Taxas avulsas cobradas sobre esta posição, como custódia ou administração. Taxas pagas na operação estão dentro do investido."
+    },
+    "current_price": {
+      "label": "Preço",
+      "body": "O preço mais recente registrado para uma unidade deste ativo. A data ao lado diz o quanto ele é atual."
+    },
+    "current_value": {
+      "label": "Valor atual",
+      "body": "Quanto esta posição vale pelo preço mais recente registrado, convertido para sua moeda de referência."
+    },
+    "holding_period_days": {
+      "label": "Tempo de posse",
+      "body": "Há quanto tempo você tem esta posição, contado da sua primeira compra."
+    },
+    "income_received": {
+      "label": "Proventos recebidos",
+      "body": "O que esta posição pagou a você em dividendos, distribuições ou juros."
+    },
+    "invested": {
+      "label": "Investido",
+      "body": "Tudo o que você já colocou nesta posição, incluindo as taxas dessas operações. Vender não reduz esse valor."
+    },
+    "principal": {
+      "label": "Principal",
+      "body": "O saldo que você tem neste instrumento, para produtos medidos por valor e não por unidades."
+    },
+    "quantity": {
+      "label": "Posição",
+      "body": "Quantas unidades você tem agora. Instrumentos medidos por saldo, e não por unidades, mostram o principal no lugar."
+    },
+    "quote_date": {
+      "label": "Avaliado em",
+      "body": "A data do preço por trás deste valor. Comprar registra um preço, então uma posição raramente fica sem preço — esta data separa um preço fresco de um antigo."
+    },
+    "real_return": {
+      "label": "Retorno real",
+      "body": "O retorno desta posição descontada a inflação, medido do dia em que você a abriu até hoje."
+    },
+    "realized_gain": {
+      "label": "Ganho realizado",
+      "body": "O que a venda de fato produziu: o valor recebido menos o que a parte vendida havia custado."
+    },
+    "total_return": {
+      "label": "Retorno total",
+      "body": "O que esta posição rendeu sobre o que você colocou nela: ganhos realizados, ganhos no papel e proventos recebidos, contra o que pagou."
+    },
+    "unrealized_gain": {
+      "label": "Ganho não realizado",
+      "body": "O que a parte que você ainda tem ganhou no papel: o valor de hoje contra o que custou. Nada é realizado até você vender."
+    }
+  },
+  "series": {
+    "monthly_return": {
+      "label": "Retorno",
+      "body": "Como a carteira se saiu naquele mês, descontados os seus aportes, para que colocar dinheiro nunca pareça um ganho."
+    },
+    "net_flow": {
+      "label": "Aportes líquidos",
+      "body": "Dinheiro que você moveu para dentro ou para fora naquele mês, não dinheiro que ganhou. Compras, vendas, proventos e taxas não estão aqui."
+    },
+    "partial": {
+      "label": "Até agora",
+      "body": "Este mês ainda não terminou, então o número é o de hoje e não o de fechamento. Ele não é comparável com os meses completos acima."
+    },
+    "total_value": {
+      "label": "Valor total",
+      "body": "Quanto a carteira valia no fim daquele mês, usando os preços registrados para aquela data."
+    }
+  },
+  "forecast": {
+    "expected": {
+      "label": "Projetado",
+      "body": "O que você já tem, projetado no ritmo que o seu próprio histórico manteve. Supõe que não haverá novos aportes e não é uma previsão."
+    }
+  },
+  "ranking": {
+    "monthly_profit_rate": {
+      "label": "Resultado mensal",
+      "body": "O que cada venda rendeu, dividido pelos meses que você segurou. Não há prazo mínimo, então algo vendido dias após a compra pode mostrar uma taxa enorme."
+    },
+    "realized_only": {
+      "label": "Medido nas vendas",
+      "body": "Só o que você vendeu entra neste ranking. Um ativo que você ainda tem não tem resultado realizado a medir, por melhor que esteja indo."
+    }
+  },
+  "allocation": {
+    "by_archetype": {
+      "label": "Por tipo",
+      "body": "Sua carteira dividida por tipo de instrumento: depósitos, renda fixa, ativos listados, fundos e cripto."
+    },
+    "by_country": {
+      "label": "Por país",
+      "body": "Sua carteira dividida por onde a conta está registrada, que é o que fixa o tratamento fiscal e a regra de custo dela."
+    },
+    "by_currency": {
+      "label": "Por moeda",
+      "body": "Sua carteira dividida pela moeda em que cada instrumento é precificado, não pela moeda da conta que o guarda."
+    },
+    "invested": {
+      "label": "Investido",
+      "body": "O que você pagou pela parte que ainda tem nesta fatia, incluindo as taxas dessas operações."
+    },
+    "slice_incomplete": {
+      "label": "Parcialmente avaliado",
+      "body": "Algo nesta fatia não pôde ser precificado, então o valor e a participação cobrem o restante dela."
+    },
+    "value": {
+      "label": "Valor hoje",
+      "body": "Quanto esta fatia vale hoje pelos preços mais recentes, convertido para sua moeda de referência."
+    },
+    "weight": {
+      "label": "Participação",
+      "body": "A parte desta fatia dentro de tudo o que pôde ser precificado. Posições sem preço utilizável ficam fora da fatia e do total."
+    }
+  },
+  "target": {
+    "actual": {
+      "label": "Realizado",
+      "body": "O que esta posição de fato rendeu até aqui — ganhos realizados, ganhos no papel e proventos recebidos, contra o que você colocou."
+    },
+    "band": {
+      "label": "Tolerância",
+      "body": "O quanto pode se afastar do esperado e ainda contar como no rumo: um décimo dele, ou meio ponto percentual, o que for maior."
+    },
+    "expected": {
+      "label": "Esperado",
+      "body": "O que a sua meta diz que esta posição deveria ter rendido até agora, dado o tempo que você a tem."
+    },
+    "status": {
+      "label": "Situação",
+      "body": "Como esta posição está diante da meta que se aplica a ela. No rumo significa dentro da tolerância do retorno esperado até agora."
+    }
+  },
+  "lot": {
+    "income_attributed": {
+      "label": "Proventos",
+      "body": "A parte dos proventos da posição atribuída a esta compra, rateada entre as compras abertas pelo tamanho de cada uma."
+    },
+    "invested": {
+      "label": "Investido",
+      "body": "O que esta compra custou, com taxas. Vender a partir dela não reduz esse valor."
+    },
+    "lot_return": {
+      "label": "Retorno",
+      "body": "O que esta compra rendeu sobre o que você colocou nela — a mesma medida do retorno da posição, restrita a este aporte."
+    },
+    "quantity_remaining": {
+      "label": "Restante",
+      "body": "Quanto desta compra específica você ainda tem, depois das vendas feitas contra ela."
+    },
+    "realized_gain": {
+      "label": "Ganho realizado",
+      "body": "O que vender a partir desta compra específica produziu, contra o que aquela parte havia custado."
+    },
+    "status": {
+      "label": "Situação",
+      "body": "Se esta compra ainda tem algo. Ela fecha quando a última unidade comprada nela é vendida."
+    },
+    "unrealized_gain": {
+      "label": "Ganho não realizado",
+      "body": "O que a parte desta compra que você ainda tem ganhou no papel, contra o que custou."
+    }
+  },
+  "basis": {
+    "method": {
+      "label": "Método de custo",
+      "body": "De qual parte da sua posição uma venda sai: a média ponderada no Brasil e no Canadá, a compra mais antiga primeiro nos EUA. O país da conta decide, não você."
+    }
+  },
+  "asset": {
+    "chain": {
+      "label": "Rede",
+      "body": "A blockchain onde este token é liquidado. O mesmo token pode existir em várias, e elas não são intercambiáveis."
+    },
+    "compounding": {
+      "label": "Capitalização",
+      "body": "Com que frequência os juros acumulados entram no saldo e passam a render por sua vez: diária ou mensal."
+    },
+    "coupon_frequency": {
+      "label": "Frequência do cupom",
+      "body": "Com que frequência esse cupom é pago: duas vezes ao ano, uma vez ao ano, ou nunca. Um papel com cupom precisa de uma; um sem cupom não pode ter."
+    },
+    "deposit_insurance": {
+      "label": "Garantia",
+      "body": "Qual fundo garantidor cobre este instrumento se o emissor quebrar: FGC no Brasil, FDIC nos EUA, CDIC no Canadá. Limites de cobertura não são acompanhados."
+    },
+    "early_redemption": {
+      "label": "Resgate antecipado",
+      "body": "Se este papel pode ser resgatado antes do vencimento, normalmente a uma taxa pior do que levá-lo até o fim."
+    },
+    "exchange": {
+      "label": "Bolsa",
+      "body": "O local onde este ativo é negociado, que é o que torna o ticker dele inequívoco."
+    },
+    "face_value": {
+      "label": "Valor de face",
+      "body": "O que o emissor devolve por unidade no vencimento — a denominação declarada do papel. Não é o que você pagou por ele, nem o que ele vale hoje."
+    },
+    "fund_category": {
+      "label": "Categoria do fundo",
+      "body": "A categoria do fundo, como o gestor dele a descreve."
+    },
+    "instrument_kind": {
+      "label": "Instrumento",
+      "body": "Se este papel é um certificado emitido por um banco onde você tem conta, ou um título, que pode ser público e não ter instituição por trás."
+    },
+    "isin": {
+      "label": "ISIN",
+      "body": "O código internacional de identificação do ativo. Diferente do ticker, ele identifica o instrumento no mundo todo."
+    },
+    "issue_date": {
+      "label": "Data de emissão",
+      "body": "Quando o papel foi emitido, que é quando o prazo e a rentabilidade dele começam."
+    },
+    "issuer_type": {
+      "label": "Tipo de emissor",
+      "body": "Quem emitiu o papel: um governo, uma empresa, um município ou um banco."
+    },
+    "liquidity": {
+      "label": "Liquidez",
+      "body": "Se você pode tirar o dinheiro quando quiser, ou só quando o papel vencer."
+    },
+    "management_fee": {
+      "label": "Taxa de administração",
+      "body": "A taxa anual que o gestor cobra sobre o que administra para você. Registrada como informação — não é descontada de nenhum número aqui."
+    },
+    "maturity_date": {
+      "label": "Vencimento",
+      "body": "Quando o emissor devolve o papel. Chegar nessa data fecha de uma vez todas as compras abertas da posição."
+    },
+    "pays_distributions": {
+      "label": "Paga proventos",
+      "body": "Se este ativo paga dividendos ou distribuições, em vez de devolver tudo pelo preço."
+    },
+    "performance_fee": {
+      "label": "Taxa de performance",
+      "body": "A taxa cobrada sobre o retorno acima do referencial do fundo. Registrada como informação — não é descontada de nenhum número aqui."
+    },
+    "rate_index": {
+      "label": "Índice",
+      "body": "O índice que uma taxa pós-fixada ou indexada acompanha: CDI, Selic, IPCA ou IGP-M. A taxa ao lado é lida como um percentual desse índice."
+    },
+    "rate_type": {
+      "label": "Tipo de taxa",
+      "body": "Como o rendimento é definido: prefixado para todo o prazo, pós-fixado contra um índice, ou indexado à inflação mais um spread."
+    },
+    "security_type": {
+      "label": "Tipo de ativo",
+      "body": "Que tipo de ativo listado é este: uma ação, um ETF, um REIT ou um FII."
+    },
+    "symbol": {
+      "label": "Símbolo",
+      "body": "O ticker da moeda ou token, como BTC ou ETH."
+    },
+    "tax_advantaged": {
+      "label": "Instrumento isento",
+      "body": "Se este instrumento carrega uma isenção brasileira, como LCI, LCA e Poupança. Nos EUA e no Canadá a vantagem pertence à conta."
+    },
+    "ticker": {
+      "label": "Ticker",
+      "body": "O código sob o qual este ativo é negociado na bolsa dele. O mesmo código pode significar empresas diferentes em bolsas diferentes."
+    },
+    "unit_price": {
+      "label": "Valor da cota",
+      "body": "Quanto vale uma cota do fundo hoje, conforme publicado pelo gestor. É assim que um fundo por cota é precificado."
+    }
+  },
+  "sale": {
+    "cost_removed": {
+      "label": "Custo baixado",
+      "body": "O que a parte vendida havia custado. Qual parte é essa segue a regra do país da sua conta, não a sua escolha."
+    },
+    "fully_sold": {
+      "label": "Parcialmente vendido",
+      "body": "Se ainda resta algo na compra de onde estas vendas saíram. Descreve a compra em si, não as vendas que você filtrou."
+    },
+    "kind": {
+      "label": "Tipo",
+      "body": "O que encerrou a posição: venda, resgate, retirada ou o papel vencendo. Um vencimento fecha todas as compras abertas de uma vez."
+    },
+    "proceeds": {
+      "label": "Valor recebido",
+      "body": "O que a venda trouxe, já descontadas as taxas daquela operação."
+    },
+    "profit": {
+      "label": "Lucro",
+      "body": "O que você de fato fez na venda: o valor recebido menos o que a parte vendida havia custado."
+    },
+    "profit_rate": {
+      "label": "Resultado",
+      "body": "O que a venda rendeu sobre o que aquela compra custou, com as taxas da operação, na moeda do ativo. Custódia e administração não entram."
+    },
+    "quantity_sold": {
+      "label": "Quantidade vendida",
+      "body": "Quantas unidades saíram desta compra nas vendas mostradas."
+    }
+  }
+}

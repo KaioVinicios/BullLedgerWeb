@@ -52,7 +52,7 @@ test("offers only the selected country's registrations, with tax fields in the r
     page.getByText(app.accounts.form.accountAdvantageNote),
   ).toBeVisible();
   await expect(
-    page.getByLabel(app.accounts.form.contributionRoom),
+    page.getByLabel(app.accounts.form.contributionRoom, { exact: true }),
   ).toBeVisible();
 
   // One account per country, created for real.

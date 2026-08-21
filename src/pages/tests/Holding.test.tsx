@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import { delay, http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
+import explain from "@/i18n/locales/en/explain.json";
 import { createQueryClient } from "@/lib/queryClient";
 import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
@@ -327,6 +329,24 @@ describe("cost basis and tax context", () => {
     ).toBeVisible();
   });
 
+  it("explains why the method is not the reader's to choose", async () => {
+    // Two identical positions in two countries report different realized
+    // gains. Without this, that reads as a bug rather than as the rule.
+    const user = userEvent.setup();
+    server.use(...signedIn(singleCurrency, brAccount));
+    await mount();
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: `What is ${explain.basis.method.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.basis.method.body),
+    ).toBeInTheDocument();
+  });
+
   it("states FIFO for a US account, so the divergence reads as intentional", async () => {
     server.use(
       ...signedIn(
@@ -480,6 +500,22 @@ describe("the holding's target block", () => {
     expect(screen.getByText("18.2%")).toBeVisible();
     expect(screen.getByText("12%")).toBeVisible();
     expect(screen.getByText("2%")).toBeVisible();
+  });
+
+  it("puts the tolerance in words, since a band is not self-explaining", async () => {
+    const user = userEvent.setup();
+    server.use(...signedIn(withTarget(onTrack)));
+    await mount();
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: `What is ${explain.target.band.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.target.band.body),
+    ).toBeInTheDocument();
   });
 
   it("names the level the verdict resolved from", async () => {

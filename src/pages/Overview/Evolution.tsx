@@ -13,6 +13,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
+import { InfoHint } from "@/components/InfoHint";
 import { MoneyValue } from "@/components/MoneyValue";
 import { SignedPercent } from "@/components/SignedPercent";
 import {
@@ -88,8 +89,15 @@ export function Evolution({ accountId }: { accountId: string | undefined }) {
 
   return (
     <section aria-labelledby="overview-evolution" className="space-y-4">
-      <h2 id="overview-evolution" className="text-sm font-medium">
+      <h2
+        id="overview-evolution"
+        className="flex items-center gap-0.5 text-sm font-medium"
+      >
         {t("overview.evolution.title")}
+        {/* The projected rows below say "(estimate)" and nothing more. This is
+            where the reader learns they assume no further deposits — the chart
+            is aria-hidden, so no explanation may live in its legend. */}
+        <InfoHint metric="forecast.expected" />
       </h2>
 
       {drawable ? (
@@ -137,13 +145,22 @@ export function Evolution({ accountId }: { accountId: string | undefined }) {
                 {t("overview.evolution.month")}
               </th>
               <th scope="col" className="text-right font-normal">
-                {t("overview.evolution.value")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("overview.evolution.value")}
+                  <InfoHint metric="series.total_value" />
+                </span>
               </th>
               <th scope="col" className="text-right font-normal">
-                {t("overview.evolution.netFlow")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("overview.evolution.netFlow")}
+                  <InfoHint metric="series.net_flow" />
+                </span>
               </th>
               <th scope="col" className="text-right font-normal">
-                {t("overview.evolution.monthlyReturn")}
+                <span className="inline-flex items-center gap-0.5">
+                  {t("overview.evolution.monthlyReturn")}
+                  <InfoHint metric="series.monthly_return" />
+                </span>
               </th>
             </tr>
           </thead>
@@ -152,7 +169,12 @@ export function Evolution({ accountId }: { accountId: string | undefined }) {
               <tr key={point.month}>
                 <th scope="row" className="text-left font-normal">
                   {point.month}
-                  {point.partial && ` ${t("overview.evolution.partial")}`}
+                  {point.partial && (
+                    <span className="inline-flex items-center gap-0.5">
+                      {` ${t("overview.evolution.partial")}`}
+                      <InfoHint metric="series.partial" />
+                    </span>
+                  )}
                 </th>
                 <td className="text-right">
                   {point.total_value ? (

@@ -6,6 +6,7 @@ import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import { http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
+import explain from "@/i18n/locales/en/explain.json";
 import { createQueryClient } from "@/lib/queryClient";
 import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
@@ -131,6 +132,27 @@ describe("the assets list", () => {
 });
 
 describe("the archetype-driven asset form", () => {
+  it("explains face value, which is neither what you paid nor what it is worth", async () => {
+    const user = userEvent.setup();
+    server.use(...signedIn());
+    mount(PATHS.ASSETS_NEW);
+
+    await user.click(
+      await screen.findByRole("radio", {
+        name: app.enums.archetype.FIXED_INCOME,
+      }),
+    );
+    await user.click(
+      await screen.findByRole("button", {
+        name: `What is ${explain.asset.face_value.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.asset.face_value.body),
+    ).toBeInTheDocument();
+  });
+
   it("reveals exactly the selected archetype's field set", async () => {
     server.use(...signedIn());
     mount(PATHS.ASSETS_NEW);

@@ -1,0 +1,399 @@
+{
+  "trigger": "What is {{label}}?",
+  "portfolio": {
+    "complete": {
+      "label": "Partly valued",
+      "body": "At least one holding has no usable price or exchange rate, so it is left out of these totals rather than counted as zero."
+    },
+    "free_cash": {
+      "label": "Free cash",
+      "body": "Money in your accounts that is not in any position. A savings or deposit product is not counted here — its balance belongs to that product."
+    },
+    "nominal_return": {
+      "label": "Nominal return",
+      "body": "What your invested money has earned since you started, in currency terms. Cash sitting uninvested is not counted against it."
+    },
+    "real_return": {
+      "label": "Real return",
+      "body": "Your return with inflation taken out: what the portfolio gained in buying power, not just in currency. Measured from your first holding to today."
+    },
+    "total_value": {
+      "label": "Total value",
+      "body": "Everything you hold at its most recent recorded price, converted to your reporting currency, plus the cash sitting in your accounts."
+    }
+  },
+  "account": {
+    "cash": {
+      "label": "Cash",
+      "body": "This account's uninvested balance, converted to your reporting currency."
+    },
+    "complete": {
+      "label": "Partly valued",
+      "body": "Something in this account could not be priced, so its subtotal is short of it rather than counting it as zero."
+    },
+    "contribution_room": {
+      "label": "Contribution room",
+      "body": "Your own record of how much you may still contribute this year. It is checked against the published limit and shown to you, never enforced."
+    },
+    "registration_br_prev_pgbl": {
+      "label": "PGBL private pension",
+      "body": "A Brazilian pension plan whose contributions you can deduct from taxable income, up to the legal limit. Tax at withdrawal falls on the whole balance, not only on the gain."
+    },
+    "registration_br_prev_vgbl": {
+      "label": "VGBL private pension",
+      "body": "A Brazilian pension plan whose contributions are not deductible. In exchange, tax at withdrawal falls only on what it gained, not on the whole balance."
+    },
+    "registration_br_taxable": {
+      "label": "Taxable (BR)",
+      "body": "An ordinary Brazilian account with no tax wrapper. Whatever tax advantage you have comes from the instruments inside it, not from the account."
+    },
+    "registration_ca_fhsa": {
+      "label": "FHSA",
+      "body": "A Canadian first home savings account, combining a deduction on the way in with tax-free qualified withdrawals."
+    },
+    "registration_ca_non_registered": {
+      "label": "Non-registered (CA)",
+      "body": "An ordinary Canadian account with no registered wrapper around it."
+    },
+    "registration_ca_rrsp": {
+      "label": "RRSP",
+      "body": "A Canadian retirement savings plan. Contributions reduce your taxable income now, and withdrawals are taxed as income later."
+    },
+    "registration_ca_tfsa": {
+      "label": "TFSA",
+      "body": "A Canadian tax-free savings account. Growth inside it and withdrawals from it are not taxed."
+    },
+    "registration_us_401k": {
+      "label": "401(k)",
+      "body": "A US retirement plan offered through an employer. Contributions and withdrawals follow that plan's own rules."
+    },
+    "registration_us_ira_roth": {
+      "label": "Roth IRA",
+      "body": "A US retirement account funded after tax. Qualified withdrawals, including the growth, are not taxed."
+    },
+    "registration_us_ira_traditional": {
+      "label": "Traditional IRA",
+      "body": "A US retirement account funded before tax. The money grows untaxed and withdrawals are taxed as income."
+    },
+    "registration_us_taxable": {
+      "label": "Taxable (US)",
+      "body": "An ordinary US brokerage account with no tax wrapper around it."
+    },
+    "tax_regime": {
+      "label": "Tax regime",
+      "body": "Whether the plan's rate is progressive, rising with the amount, or regressive, falling the longer the money stays in."
+    },
+    "taxed_on": {
+      "label": "Taxed on",
+      "body": "Whether tax at withdrawal falls on the whole amount or only on what the plan gained."
+    }
+  },
+  "holding": {
+    "average_cost": {
+      "label": "Average cost",
+      "body": "What one unit of the part you still hold cost you on average, fees included."
+    },
+    "cost_basis_remaining": {
+      "label": "Cost basis remaining",
+      "body": "What the part you still hold originally cost. Selling removes a share of it, following your account's country rule."
+    },
+    "costs": {
+      "label": "Costs",
+      "body": "Standalone fees charged against this position, such as custody or management. Fees paid on a trade are inside what you invested, not here."
+    },
+    "current_price": {
+      "label": "Price",
+      "body": "The most recent recorded price for one unit of this asset. The date beside it tells you how current it is."
+    },
+    "current_value": {
+      "label": "Current value",
+      "body": "What this position is worth at its most recent recorded price, converted to your reporting currency."
+    },
+    "holding_period_days": {
+      "label": "Held for",
+      "body": "How long you have held this position, counted from your first purchase."
+    },
+    "income_received": {
+      "label": "Income received",
+      "body": "What this position has paid you in dividends, distributions or interest."
+    },
+    "invested": {
+      "label": "Invested",
+      "body": "Everything you have ever put into this position, including the fees on those trades. Selling does not reduce it."
+    },
+    "principal": {
+      "label": "Principal",
+      "body": "The balance you hold in this instrument, for products measured by amount rather than by units."
+    },
+    "quantity": {
+      "label": "Position",
+      "body": "How many units you hold right now. Instruments measured by balance rather than units show their principal instead."
+    },
+    "quote_date": {
+      "label": "Valued on",
+      "body": "The date of the price behind this value. Buying records a price, so a position is rarely unpriced — this date is what tells a fresh price from an old one."
+    },
+    "real_return": {
+      "label": "Real return",
+      "body": "This position's return with inflation taken out, measured from the day you opened it to today."
+    },
+    "realized_gain": {
+      "label": "Realized gain",
+      "body": "What selling actually produced: the proceeds less what the sold part had cost you."
+    },
+    "total_return": {
+      "label": "Total return",
+      "body": "What this position earned on the money you put in: gains you have taken, gains on paper, and income received, against what you paid."
+    },
+    "unrealized_gain": {
+      "label": "Unrealized gain",
+      "body": "What the part you still hold has gained on paper: its value today against what it cost. Nothing is realised until you sell."
+    }
+  },
+  "series": {
+    "monthly_return": {
+      "label": "Return",
+      "body": "How the portfolio performed that month with your deposits taken out, so putting money in never looks like a gain."
+    },
+    "net_flow": {
+      "label": "Net deposits",
+      "body": "Money you moved in or out that month, not money you made. Buys, sells, income and fees are not here — those are what the return measures."
+    },
+    "partial": {
+      "label": "So far",
+      "body": "This month is not over, so the figure is today's rather than a month-end one. It is not comparable with the completed months above it."
+    },
+    "total_value": {
+      "label": "Total value",
+      "body": "What the portfolio was worth at the end of that month, using the prices on record for that date."
+    }
+  },
+  "forecast": {
+    "expected": {
+      "label": "Projected",
+      "body": "What you already hold, carried forward at the pace your own record has kept. It assumes no further deposits and is not a prediction."
+    }
+  },
+  "ranking": {
+    "monthly_profit_rate": {
+      "label": "Monthly result",
+      "body": "What each sale returned, divided by the months you held it. There is no minimum holding period, so something sold days after buying can show a very large rate."
+    },
+    "realized_only": {
+      "label": "Measured on sales",
+      "body": "Only what you have sold is ranked here. An asset you still hold has no realised result to measure, however well it is doing."
+    }
+  },
+  "allocation": {
+    "by_archetype": {
+      "label": "By type",
+      "body": "Your portfolio split by kind of instrument: cash deposits, fixed income, listed securities, funds and crypto."
+    },
+    "by_country": {
+      "label": "By country",
+      "body": "Your portfolio split by where the account is registered, which is what fixes its tax treatment and its cost basis rule."
+    },
+    "by_currency": {
+      "label": "By currency",
+      "body": "Your portfolio split by the currency each instrument is priced in, not by the currency of the account holding it."
+    },
+    "invested": {
+      "label": "Invested",
+      "body": "What you paid for the part you still hold in this slice, including the fees on those trades."
+    },
+    "slice_incomplete": {
+      "label": "Partly valued",
+      "body": "Something in this slice could not be priced, so its value and share cover the rest of it."
+    },
+    "value": {
+      "label": "Value now",
+      "body": "What this slice is worth today at the latest recorded prices, converted to your reporting currency."
+    },
+    "weight": {
+      "label": "Share",
+      "body": "This slice's part of everything that could be priced. Holdings without a usable price are outside both the slice and the total."
+    }
+  },
+  "target": {
+    "actual": {
+      "label": "Actual",
+      "body": "What this position has actually returned so far — gains taken, gains on paper, and income received, against what you put in."
+    },
+    "band": {
+      "label": "Tolerance",
+      "body": "How far from the expected return still counts as on track: a tenth of it, or half a percentage point, whichever is wider."
+    },
+    "expected": {
+      "label": "Expected",
+      "body": "What your target says this position should have returned by now, given how long you have held it."
+    },
+    "status": {
+      "label": "Status",
+      "body": "How this position stands against its target: ahead of it, on track within tolerance, behind it, or through the loss limit you set."
+    }
+  },
+  "lot": {
+    "income_attributed": {
+      "label": "Income",
+      "body": "This purchase's share of the income the position received, split across your open purchases by their size."
+    },
+    "invested": {
+      "label": "Invested",
+      "body": "What this one purchase cost you, fees included. Selling out of it does not reduce the figure."
+    },
+    "lot_return": {
+      "label": "Return",
+      "body": "What this one purchase earned on what you put into it — the same measure as the position's return, narrowed to this contribution."
+    },
+    "quantity_remaining": {
+      "label": "Remaining",
+      "body": "How much of this particular purchase you still hold, after the sales drawn against it."
+    },
+    "realized_gain": {
+      "label": "Realized gain",
+      "body": "What selling out of this particular purchase produced, against what that part had cost."
+    },
+    "status": {
+      "label": "Status",
+      "body": "Whether this purchase still holds anything. It closes when the last unit bought in it has been sold."
+    },
+    "unrealized_gain": {
+      "label": "Unrealized gain",
+      "body": "What the part of this purchase you still hold has gained on paper, against what it cost."
+    }
+  },
+  "basis": {
+    "method": {
+      "label": "Cost basis method",
+      "body": "Which part of your holding a sale draws from: the weighted average in Brazil and Canada, the oldest purchase first in the US. Your account's country decides, not you."
+    }
+  },
+  "asset": {
+    "chain": {
+      "label": "Network",
+      "body": "The blockchain this token settles on. The same token can exist on several, and they are not interchangeable."
+    },
+    "compounding": {
+      "label": "Compounding",
+      "body": "How often the accrued interest is added to the balance and starts earning in its turn: daily or monthly."
+    },
+    "coupon_frequency": {
+      "label": "Coupon frequency",
+      "body": "How often that coupon is paid: twice a year, once a year, or never. A paper with a coupon needs one; a paper without one must not have it."
+    },
+    "deposit_insurance": {
+      "label": "Deposit insurance",
+      "body": "Which guarantee fund covers this instrument if the issuer fails: FGC in Brazil, FDIC in the US, CDIC in Canada. Coverage limits are not tracked."
+    },
+    "early_redemption": {
+      "label": "Early redemption",
+      "body": "Whether this paper can be cashed in before its maturity date, usually at a worse rate than holding it to term."
+    },
+    "exchange": {
+      "label": "Exchange",
+      "body": "The venue this security trades on, which is what makes its ticker unambiguous."
+    },
+    "face_value": {
+      "label": "Face value",
+      "body": "What the issuer pays back per unit at maturity — the paper's stated denomination. It is not what you paid for it, and not what it is worth today."
+    },
+    "fund_category": {
+      "label": "Fund category",
+      "body": "The fund's own category label, as its manager describes it."
+    },
+    "instrument_kind": {
+      "label": "Instrument",
+      "body": "Whether this paper is a certificate issued by a bank you hold an account with, or a bond, which may be government paper with no institution behind it."
+    },
+    "isin": {
+      "label": "ISIN",
+      "body": "The security's international identification number. Unlike a ticker, it identifies the instrument worldwide."
+    },
+    "issue_date": {
+      "label": "Issue date",
+      "body": "When the paper was issued, which is when its term and its accrual start."
+    },
+    "issuer_type": {
+      "label": "Issuer type",
+      "body": "Who issued the paper: a government, a company, a municipality, or a bank."
+    },
+    "liquidity": {
+      "label": "Liquidity",
+      "body": "Whether you can take the money out whenever you want, or only when the paper matures."
+    },
+    "management_fee": {
+      "label": "Management fee",
+      "body": "The annual fee the manager charges on what it holds for you. Recorded as information — it is not deducted from any figure here."
+    },
+    "maturity_date": {
+      "label": "Maturity date",
+      "body": "When the issuer repays the paper. Reaching it closes every open purchase in the position at once."
+    },
+    "pays_distributions": {
+      "label": "Pays distributions",
+      "body": "Whether this security pays dividends or distributions, as opposed to returning everything through its price."
+    },
+    "performance_fee": {
+      "label": "Performance fee",
+      "body": "The fee charged on returns above the fund's benchmark. Recorded as information — it is not deducted from any figure here."
+    },
+    "rate_index": {
+      "label": "Rate index",
+      "body": "The index a floating or inflation-linked rate tracks: CDI, Selic, IPCA or IGP-M. The rate beside it is then read as a percentage of that index."
+    },
+    "rate_type": {
+      "label": "Rate type",
+      "body": "How the yield is set: fixed for the whole term, floating against an index, or linked to inflation plus a spread."
+    },
+    "security_type": {
+      "label": "Security type",
+      "body": "What kind of listed security this is: a stock, an ETF, a REIT, or a Brazilian FII."
+    },
+    "symbol": {
+      "label": "Symbol",
+      "body": "The coin or token's ticker, such as BTC or ETH."
+    },
+    "tax_advantaged": {
+      "label": "Tax-advantaged instrument",
+      "body": "Whether this instrument itself carries a Brazilian exemption, as LCI, LCA and Poupança do. In the US and Canada the advantage belongs to the account instead."
+    },
+    "ticker": {
+      "label": "Ticker",
+      "body": "The symbol this security trades under on its exchange. The same symbol can mean different companies on different exchanges."
+    },
+    "unit_price": {
+      "label": "Unit price",
+      "body": "What one unit of the fund is currently worth, as published by the manager. This is how a NAV fund is priced."
+    }
+  },
+  "sale": {
+    "cost_removed": {
+      "label": "Cost removed",
+      "body": "What the part you sold had cost you. Which part that is follows your account's country rule, not your choice."
+    },
+    "fully_sold": {
+      "label": "Partly sold",
+      "body": "Whether anything is left in the purchase these sales came from. It describes the purchase itself, not the sales you filtered to."
+    },
+    "kind": {
+      "label": "Type",
+      "body": "What ended the position: a sale, a redemption, a withdrawal, or the paper reaching maturity. A maturity closes every open purchase at once."
+    },
+    "proceeds": {
+      "label": "Proceeds",
+      "body": "What the sale brought in, after the fees on that trade."
+    },
+    "profit": {
+      "label": "Profit",
+      "body": "What you actually made on the sale: the proceeds less what the sold part had cost."
+    },
+    "profit_rate": {
+      "label": "Result",
+      "body": "What the sale returned against what that purchase cost, trade fees included, in the asset's own currency. Custody and management fees are not in it."
+    },
+    "quantity_sold": {
+      "label": "Quantity sold",
+      "body": "How many units left this purchase in the sales shown."
+    }
+  }
+}

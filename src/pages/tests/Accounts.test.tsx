@@ -7,6 +7,7 @@ import { http, HttpResponse } from "msw";
 
 import app from "@/i18n/locales/en/app.json";
 import errors from "@/i18n/locales/en/errors.json";
+import explain from "@/i18n/locales/en/explain.json";
 import { createQueryClient } from "@/lib/queryClient";
 import { TEST_API_URL } from "@/mocks/env";
 import { server } from "@/mocks/server";
@@ -125,6 +126,25 @@ describe("the accounts list", () => {
 });
 
 describe("the account form", () => {
+  it("explains PGBL beside the option, where the choice is actually made", async () => {
+    // PGBL and VGBL differ on deductibility and on what is taxed at
+    // withdrawal. That is a comparison made *before* choosing, so the
+    // explanation sits on each option and not on the selected one.
+    const user = userEvent.setup();
+    server.use(...handlers());
+    mount(PATHS.ACCOUNTS_NEW);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: `What is ${explain.account.registration_br_prev_pgbl.label.toLocaleLowerCase()}?`,
+      }),
+    );
+
+    expect(
+      await screen.findByText(explain.account.registration_br_prev_pgbl.body),
+    ).toBeInTheDocument();
+  });
+
   it("offers only the selected country's registrations — an invalid pairing is unofferable", async () => {
     server.use(...handlers());
     mount(PATHS.ACCOUNTS_NEW);

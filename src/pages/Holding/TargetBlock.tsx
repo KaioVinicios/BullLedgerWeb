@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { IconArrowRight } from "@tabler/icons-react";
 
+import { InfoHint } from "@/components/InfoHint";
 import { PercentValue } from "@/components/PercentValue";
 import { TargetStatusBadge } from "@/components/TargetStatusBadge";
 import { useFormatLocale } from "@/hooks/useFormatLocale";
@@ -103,6 +104,7 @@ export function TargetBlock({
               </dd>
               <dt className="text-xs text-muted-foreground">
                 {t("holding.target.actual")}
+                <InfoHint metric="target.actual" />
               </dt>
             </div>
             <div>
@@ -111,6 +113,7 @@ export function TargetBlock({
               </dd>
               <dt className="text-xs text-muted-foreground">
                 {t("holding.target.expected")}
+                <InfoHint metric="target.expected" />
               </dt>
             </div>
             <div>
@@ -121,6 +124,7 @@ export function TargetBlock({
               </dd>
               <dt className="text-xs text-muted-foreground">
                 {t("holding.target.band")}
+                <InfoHint metric="target.band" />
               </dt>
             </div>
           </dl>
