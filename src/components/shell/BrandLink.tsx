@@ -1,6 +1,5 @@
-import { useRouter } from "@tanstack/react-router";
-
 import { BullLedgerLogo } from "@/components/BullLedgerLogo";
+import { useShellAnchor } from "@/components/shell/useShellAnchor";
 import { cn } from "@/lib/utils";
 import { PATHS } from "@/routes/path";
 
@@ -10,13 +9,11 @@ import { PATHS } from "@/routes/path";
  * mark off screen with it, so the app header carries it there instead. Two
  * call sites, one anchor — including the reason it is an anchor.
  *
- * A plain anchor, not a `Link`, and deliberately so. `Link` appends
- * `aria-current="page"` whenever its target matches, and spreads it last, so no
- * prop can suppress it. The brand points at /app — a prefix of every screen —
- * which made it claim to be the current page alongside the real nav item
- * everywhere, and `exact` only narrows that to /app itself, where Overview
- * claims it too. `href` keeps middle-click and open-in-new-tab honest; the
- * handler keeps an ordinary click on the client side.
+ * A plain anchor, not a `Link`, and deliberately so: the brand points at /app,
+ * a prefix of every screen, which had it claiming to be the current page
+ * alongside the real nav item everywhere, and `exact` only narrows that to
+ * /app itself where Overview claims it too. `useShellAnchor` carries that
+ * behaviour and the rest of the reasoning; the record shortcut needs it too.
  *
  * `wordmarkClassName` exists for the collapsed rail, the one context that hides
  * the name and keeps the mark.
@@ -26,24 +23,12 @@ export function BrandLink({
   wordmarkClassName,
   ...props
 }: React.ComponentProps<"a"> & { wordmarkClassName?: string }) {
-  const router = useRouter();
+  const anchor = useShellAnchor(PATHS.APP);
 
   return (
     <a
       {...props}
-      href={PATHS.APP}
-      onClick={(event) => {
-        const wantsNewContext =
-          event.button !== 0 ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.shiftKey ||
-          event.altKey;
-        if (event.defaultPrevented || wantsNewContext) return;
-
-        event.preventDefault();
-        void router.navigate({ to: PATHS.APP });
-      }}
+      {...anchor}
       className={cn(
         "flex items-center gap-2 rounded-md px-2 py-1.5 outline-none focus-visible:ring-3 focus-visible:ring-ring",
         className,

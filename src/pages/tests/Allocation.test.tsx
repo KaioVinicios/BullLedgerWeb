@@ -199,7 +199,13 @@ describe("the allocation screen", () => {
     });
 
     // A projection surface carries no create, edit, or archive affordance.
-    for (const link of screen.queryAllByRole("link")) {
+    // Scoped to the content region, which is what "surface" meant here: the
+    // shell around it is allowed its own affordances, and since the record
+    // shortcut landed in the sidebar an unscoped query reads them as this
+    // screen's.
+    const content = within(screen.getByRole("main"));
+
+    for (const link of content.queryAllByRole("link")) {
       expect(link).not.toHaveAttribute("href", expect.stringMatching(/\/new$/));
     }
   });

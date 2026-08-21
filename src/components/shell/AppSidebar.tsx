@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ACTIVE_ITEM, ACTIVE_MARKER } from "@/components/shell/activeStyles";
 import { AppSidebarFooter } from "@/components/shell/AppSidebarFooter";
 import { BrandLink } from "@/components/shell/BrandLink";
+import { RecordMovementButton } from "@/components/shell/RecordMovementButton";
 import {
   Sidebar,
   SidebarContent,
@@ -38,6 +39,11 @@ export function AppSidebar() {
           className="group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 focus-visible:ring-sidebar-ring"
           wordmarkClassName="group-data-[collapsible=icon]:hidden"
         />
+
+        {/* In the header rather than in the content: the header does not
+            scroll, and an action this central should not be able to leave
+            the screen on a short viewport. */}
+        <RecordMovementButton />
       </SidebarHeader>
 
       <SidebarContent>
